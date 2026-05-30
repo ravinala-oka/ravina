@@ -97,100 +97,31 @@
 
     .nav-cart svg { width: 18px; height: 18px; }
 
-    /* ── HERO ── */
+    /* ── HERO (背景画像に差し替え) ── */
     .hero {
       position: relative;
       min-height: 100vh;
       display: flex;
       align-items: center;
       overflow: hidden;
+      /* 背景画像をIMG_0180.jpgに設定 */
+      background-image: url('IMG_0180.jpg');
+      background-size: cover;
+      background-position: center;
     }
 
-    .hero-bg {
+    /* 文字の視認性を上げるためのグラデーションオーバーレイ */
+    .hero-overlay {
       position: absolute;
       inset: 0;
-      background:
-        linear-gradient(
-          135deg,
-          rgba(200, 225, 210, 0.55) 0%,
-          rgba(180, 215, 200, 0.35) 40%,
-          rgba(160, 200, 190, 0.20) 100%
-        ),
-        linear-gradient(
-          to bottom right,
-          #c8ddd4 0%,
-          #a8c8be 35%,
-          #8db5ab 70%,
-          #7aa09a 100%
-        );
-    }
-
-    /* decorative leaf shapes */
-    .hero-leaf {
-      position: absolute;
-      right: -4%;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 68%;
-      height: 90%;
-      background: radial-gradient(ellipse 60% 80% at 40% 50%,
-        #5a9a7a 0%,
-        #3d7a5e 40%,
-        #2d6050 70%,
-        #1e4a3e 100%
-      );
-      border-radius: 50% 50% 50% 50% / 60% 40% 60% 40%;
-      opacity: 0.92;
-      box-shadow: -20px 20px 80px rgba(0,0,0,0.25);
-    }
-
-    .hero-leaf-overlay {
-      position: absolute;
-      right: 0%;
-      top: 45%;
-      transform: translateY(-50%);
-      width: 60%;
-      height: 75%;
       background: linear-gradient(
-        135deg,
-        rgba(120, 180, 140, 0.4) 0%,
-        rgba(80, 150, 110, 0.2) 50%,
-        transparent 100%
+        90deg,
+        rgba(245, 240, 234, 0.85) 0%,
+        rgba(245, 240, 234, 0.6) 40%,
+        rgba(245, 240, 234, 0) 100-80%
       );
-      border-radius: 50% 50% 50% 50% / 60% 40% 60% 40%;
+      z-index: 1;
     }
-
-    /* rings image area */
-    .hero-rings {
-      position: absolute;
-      right: 8%;
-      top: 50%;
-      transform: translateY(-44%);
-      width: 46%;
-      max-width: 600px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      animation: floatRings 6s ease-in-out infinite;
-    }
-
-    @keyframes floatRings {
-      0%, 100% { transform: translateY(-44%); }
-      50% { transform: translateY(-48%); }
-    }
-
-    .rings-placeholder {
-      width: 100%;
-      aspect-ratio: 4/3;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      padding-bottom: 8%;
-      gap: 6px;
-    }
-
-    /* SVG ring illustrations */
-    .ring-svg { filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3)); }
 
     /* ── HERO CONTENT ── */
     .hero-content {
@@ -478,9 +409,15 @@
     @media (max-width: 768px) {
       nav { padding: 16px 20px; }
       .nav-links { gap: 18px; }
-      .hero-content { padding: 0 20px; max-width: 100%; }
-      .hero-leaf { width: 100%; right: -20%; opacity: 0.5; }
-      .hero-rings { width: 80%; right: 0; opacity: 0.55; }
+      .hero-content { padding: 0 20px; max-width: 100%; z-index: 10; }
+      .hero-overlay {
+        background: linear-gradient(
+          to bottom,
+          rgba(245, 240, 234, 0.9) 0%,
+          rgba(245, 240, 234, 0.7) 60%,
+          rgba(245, 240, 234, 0.2) 100%
+        );
+      }
       .section { padding: 60px 20px; }
       .section-about { grid-template-columns: 1fr; gap: 40px; }
       .shop-grid { grid-template-columns: 1fr 1fr; }
@@ -519,63 +456,8 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-leaf"></div>
-  <div class="hero-leaf-overlay"></div>
-
-  <!-- Rings illustration -->
-  <div class="hero-rings">
-    <svg class="ring-svg" viewBox="0 0 520 380" xmlns="http://www.w3.org/2000/svg" fill="none">
-      <!-- Gold textured ring (wide) -->
-      <ellipse cx="200" cy="270" rx="72" ry="28" fill="#c9a84c" stroke="#a8862e" stroke-width="1.5"/>
-      <ellipse cx="200" cy="240" rx="72" ry="28" fill="#d4b05a" stroke="#a8862e" stroke-width="1.5"/>
-      <ellipse cx="200" cy="255" rx="62" ry="20" fill="none" stroke="#b8902a" stroke-width="1"/>
-      <!-- vertical stripes on gold ring -->
-      <line x1="145" y1="242" x2="143" y2="268" stroke="#a8862e" stroke-width="0.8" opacity="0.6"/>
-      <line x1="158" y1="238" x2="156" y2="271" stroke="#a8862e" stroke-width="0.8" opacity="0.6"/>
-      <line x1="171" y1="235" x2="170" y2="272" stroke="#a8862e" stroke-width="0.8" opacity="0.6"/>
-      <line x1="184" y1="234" x2="183" y2="272" stroke="#a8862e" stroke-width="0.8" opacity="0.6"/>
-      <line x1="197" y1="233" x2="197" y2="272" stroke="#a8862e" stroke-width="0.8" opacity="0.6"/>
-      <line x1="210" y1="234" x2="211" y2="272" stroke="#a8862e" stroke-width="0.8" opacity="0.6"/>
-      <line x1="223" y1="235" x2="225" y2="272" stroke="#a8862e" stroke-width="0.8" opacity="0.6"/>
-      <line x1="236" y1="238" x2="239" y2="271" stroke="#a8862e" stroke-width="0.8" opacity="0.6"/>
-      <line x1="249" y1="242" x2="253" y2="268" stroke="#a8862e" stroke-width="0.8" opacity="0.6"/>
-
-      <!-- Silver hammered ring 1 (back) -->
-      <ellipse cx="310" cy="235" rx="58" ry="22" fill="#b0b8b8" stroke="#888f8f" stroke-width="1.5"/>
-      <ellipse cx="310" cy="210" rx="58" ry="22" fill="#c8d0d0" stroke="#888f8f" stroke-width="1.5"/>
-      <ellipse cx="310" cy="222" rx="48" ry="15" fill="none" stroke="#9aa0a0" stroke-width="0.8"/>
-      <!-- hammered texture -->
-      <circle cx="285" cy="216" r="3" fill="#a0a8a8" opacity="0.6"/>
-      <circle cx="298" cy="212" r="2.5" fill="#a0a8a8" opacity="0.6"/>
-      <circle cx="311" cy="211" r="3.5" fill="#a0a8a8" opacity="0.6"/>
-      <circle cx="324" cy="213" r="2" fill="#a0a8a8" opacity="0.6"/>
-      <circle cx="336" cy="217" r="3" fill="#a0a8a8" opacity="0.6"/>
-      <circle cx="292" cy="222" r="2" fill="#9aa0a0" opacity="0.5"/>
-      <circle cx="305" cy="219" r="2.5" fill="#9aa0a0" opacity="0.5"/>
-      <circle cx="318" cy="220" r="2" fill="#9aa0a0" opacity="0.5"/>
-      <circle cx="330" cy="222" r="2.5" fill="#9aa0a0" opacity="0.5"/>
-
-      <!-- Silver thin ring (front right) -->
-      <ellipse cx="370" cy="255" rx="48" ry="18" fill="#d0d8d8" stroke="#9aa0a0" stroke-width="1"/>
-      <ellipse cx="370" cy="234" rx="48" ry="18" fill="#e0e8e8" stroke="#9aa0a0" stroke-width="1"/>
-      <ellipse cx="370" cy="244" rx="40" ry="12" fill="none" stroke="#aab0b0" stroke-width="0.6"/>
-      <!-- diamond sparkles -->
-      <circle cx="356" cy="238" r="1.5" fill="white" opacity="0.9"/>
-      <circle cx="366" cy="236" r="1" fill="white" opacity="0.8"/>
-      <circle cx="376" cy="237" r="1.5" fill="white" opacity="0.9"/>
-      <circle cx="386" cy="239" r="1" fill="white" opacity="0.8"/>
-      <path d="M356 238 l2-3 2 3-2 3z" fill="white" opacity="0.5" transform="scale(0.7) translate(150, 100)"/>
-
-      <!-- thin silver ring (slim) -->
-      <ellipse cx="340" cy="278" rx="44" ry="16" fill="#c4cccc" stroke="#8a9090" stroke-width="1"/>
-      <ellipse cx="340" cy="262" rx="44" ry="16" fill="#d8e0e0" stroke="#8a9090" stroke-width="1"/>
-      <ellipse cx="340" cy="270" rx="36" ry="10" fill="none" stroke="#a0a8a8" stroke-width="0.6"/>
-
-      <!-- reflection/shadow on leaf -->
-      <ellipse cx="280" cy="310" rx="120" ry="18" fill="rgba(0,0,0,0.12)"/>
-    </svg>
-  </div>
+  <!-- 写真の上に文字を読みやすくするためのレイヤー -->
+  <div class="hero-overlay"></div>
 
   <div class="hero-content">
     <h1 class="hero-title">RAVINA</h1>

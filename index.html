@@ -31,7 +31,7 @@
       background-color: #000;
     }
 
-    /* ── 背景動画（固定・全画面） ── */
+    /* ── 背景動画（固定・全画面・ランダム再生） ── */
     #bg-video {
       position: fixed;
       top: 0; left: 0;
@@ -808,9 +808,7 @@
 </head>
 <body>
 <div id="bg-video">
-  <video autoplay muted loop playsinline>
-    <source src="movie/001.mp4" type="video/mp4">
-  </video>
+  <video id="bg-vid" autoplay muted playsinline></video>
 </div>
 
 <!-- NAV -->
@@ -1274,7 +1272,46 @@ function rsSubmit() {
 </script>
 
 <script>
+// ── 背景動画：ランダム順で順番に再生 ──
+(function() {
+  const files = [
+    'movie/001.mov','movie/002.mov','movie/003.mov',
+    'movie/004.mov','movie/005.mov','movie/006.mov',
+    'movie/007.mov','movie/008.mov','movie/009.mov'
+  ];
+  const vid = document.getElementById('bg-vid');
+  let playlist = [];
+  let idx = 0;
 
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function playNext() {
+    if (idx >= playlist.length) {
+      playlist = shuffle([...files]);
+      idx = 0;
+    }
+    vid.classList.remove('fade-out');
+    vid.src = playlist[idx++];
+    vid.load();
+    vid.play().catch(() => {});
+  }
+
+  vid.addEventListener('ended', function() {
+    vid.classList.add('fade-out');
+    setTimeout(playNext, 800);
+  });
+
+  vid.addEventListener('error', playNext);
+
+  playlist = shuffle([...files]);
+  playNext();
+})();
 </script>
 
 </body>

@@ -21,8 +21,8 @@
 
     /* ─────────────────────────────────────────
        全画面背景画像
-       PC  : cover（画面を埋める・固定）
-       携帯 : 縦幅（100vh）基準で縮小・スクロール追従
+       PC : cover（画面を埋める）
+       携帯: contain（画像全体を縦か横に合わせて縮小・繰り返しなし）
     ───────────────────────────────────────── */
     body {
       font-family: 'Noto Serif JP', serif;
@@ -32,14 +32,14 @@
       background-repeat: no-repeat;
       background-position: center top;
       background-attachment: fixed;
-      background-size: cover;
-      background-color: #1a1a18;
+      background-size: cover;        /* PCはcoverで全画面 */
+      background-color: #1a1a18;    /* 画像のない余白を暗色で埋める */
     }
 
     @media (max-width: 768px) {
       body {
-        /* 縦幅100vhに合わせて画像全体を表示（横は中央揃え） */
-        background-size: auto 100vh;
+        /* 携帯: 幅100vwに合わせて縮小（画像全体が見える） */
+        background-size: 100% auto;
         background-attachment: scroll;
         background-position: center top;
       }
@@ -61,6 +61,7 @@
       transition: background 0.3s;
     }
 
+    /* ロゴ画像（ravina_logo.png） */
     .nav-logo {
       display: flex;
       align-items: center;
@@ -105,8 +106,7 @@
       transition: transform 0.3s;
     }
 
-    .nav-links a:hover::after,
-    .nav-links a.active::after { transform: scaleX(1); }
+    .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
 
     /* ── HERO ── */
     .hero {
@@ -130,17 +130,7 @@
       z-index: 1;
     }
 
-    @media (max-width: 768px) {
-      .hero-overlay {
-        background: linear-gradient(
-          to bottom,
-          rgba(26, 26, 24, 0.50) 0%,
-          rgba(26, 26, 24, 0.28) 60%,
-          rgba(26, 26, 24, 0.05) 100%
-        );
-      }
-    }
-
+    /* ── HERO CONTENT ── */
     .hero-content {
       position: relative;
       z-index: 10;
@@ -247,8 +237,18 @@
     /* ── セクション共通 ── */
     .section { padding: 100px 48px; }
     .section-light { background: rgba(245, 240, 234, 0.88); }
+    .section-shop-bg { background: rgba(240, 235, 227, 0.90); }
 
-    /* ── ABOUT / LABEL ── */
+    /* ── ABOUT ── */
+    .section-about {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
     .about-label {
       font-family: 'Cormorant Garamond', serif;
       font-size: 11px;
@@ -267,7 +267,63 @@
       margin-bottom: 24px;
     }
 
-    /* ── CONCEPT ── */
+    /* ─────────────────────────────────────────
+       RAVINA と 株式会社RAVINALA を分けて表示
+    ───────────────────────────────────────── */
+    .company-name-block {
+      margin-bottom: 24px;
+    }
+
+    .company-name-shop {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(36px, 4.5vw, 56px);
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      color: var(--dark);
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .company-name-corp {
+      font-family: 'Noto Serif JP', serif;
+      font-size: clamp(13px, 1.5vw, 17px);
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      display: block;
+      padding-top: 6px;
+      border-top: 1px solid rgba(90,90,82,0.2);
+    }
+
+    .about-text {
+      font-size: 13px;
+      line-height: 2.2;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+    }
+
+    .about-visual {
+      position: relative;
+      height: 400px;
+      background: linear-gradient(135deg, #8ab5a8 0%, #5a8e82 100%);
+      border-radius: 2px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .about-visual-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 80px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.15);
+      letter-spacing: 0.1em;
+      user-select: none;
+    }
+
+    /* ── SHOP / CONCEPT ── */
     .shop-header { text-align: center; margin-bottom: 60px; }
 
     .shop-grid {
@@ -330,105 +386,6 @@
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       opacity: 0.35;
-    }
-
-    /* ═══════════════════════════════════════════
-       COMPANY セクション
-       画像（左）＋ 詳細テーブル（右）の2カラム構成
-       上段：店舗概要（bg_RAVINA.png）
-       下段：会社概要（bg_company.png）
-    ═══════════════════════════════════════════ */
-    .company-section {
-      background: rgba(245, 240, 234, 0.90);
-      padding: 100px 48px;
-    }
-
-    /* 各ブロック（店舗概要 / 会社概要）の間隔 */
-    .company-block {
-      display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 64px;
-      align-items: start;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .company-block + .company-block {
-      margin-top: 80px;
-      padding-top: 80px;
-      border-top: 1px solid rgba(90,90,82,0.15);
-    }
-
-    /* 左カラム：写真 */
-    .company-img {
-      width: 100%;
-      aspect-ratio: 4/3;
-      object-fit: cover;
-      border-radius: 2px;
-      display: block;
-    }
-
-    /* 右カラム：テキスト */
-    .company-info {}
-
-    /* 見出し：元デザインの .about-heading スタイルを踏襲 */
-    .company-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(28px, 3.5vw, 46px);
-      font-weight: 300;
-      letter-spacing: 0.04em;
-      line-height: 1.2;
-      color: var(--dark);
-      margin-bottom: 32px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid rgba(201,168,76,0.35);
-    }
-
-    /* テーブル形式の詳細 */
-    .company-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .company-table tr {
-      border-bottom: 1px solid rgba(90,90,82,0.10);
-    }
-
-    .company-table tr:last-child {
-      border-bottom: none;
-    }
-
-    .company-table th {
-      font-family: 'Noto Serif JP', serif;
-      font-size: 13px;
-      font-weight: 300;
-      letter-spacing: 0.08em;
-      color: var(--dark);
-      text-align: left;
-      padding: 12px 0;
-      padding-right: 24px;
-      white-space: nowrap;
-      width: 90px;
-      vertical-align: top;
-    }
-
-    /* コロン区切り */
-    .company-table .col-sep {
-      color: var(--muted);
-      padding: 12px 16px 12px 0;
-      font-size: 13px;
-      vertical-align: top;
-    }
-
-    .company-table td {
-      font-family: 'Noto Serif JP', serif;
-      font-size: 13px;
-      font-weight: 300;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      padding: 12px 0;
-      line-height: 1.9;
-      vertical-align: top;
     }
 
     /* ── MAP ── */
@@ -518,46 +475,259 @@
       color: rgba(245,240,234,0.25);
     }
 
-    /* ═══════════════════════════════════════════
-       MOBILE
-    ═══════════════════════════════════════════ */
+    /* ── 予約ボタン ── */
+    .btn-reservation {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: var(--gold);
+      color: #1a1a18;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.25s, transform 0.2s;
+      text-decoration: none;
+    }
+    .btn-reservation:hover { opacity: 0.88; transform: translateX(4px); }
+
+    /* ── ボトムシート オーバーレイ ── */
+    #resv-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,8,0.55);
+      z-index: 200;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    #resv-overlay.open { display: block; }
+
+    /* ── ボトムシート 本体 ── */
+    #resv-sheet {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 201;
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.32,0.72,0,1);
+      -webkit-overflow-scrolling: touch;
+    }
+    #resv-sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      display: flex;
+      justify-content: center;
+      padding: 12px 0 4px;
+    }
+    .sheet-handle-bar {
+      width: 40px; height: 4px;
+      background: #d0ccc6;
+      border-radius: 2px;
+    }
+    .sheet-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: #f0ece6;
+      color: #5a5a52;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      line-height: 1;
+    }
+    .sheet-close:hover { background: #e0dbd2; }
+
+    /* ── ボトムシート内の予約UIリセット ── */
+    #resv-sheet * { box-sizing: border-box; }
+    #resv-sheet .rs-wrap { padding: 0 16px 32px; }
+
+    #resv-sheet .rs-header {
+      background: #1a6fa8;
+      color: #fff;
+      padding: 1.25rem 1.25rem 1rem;
+      text-align: center;
+    }
+    #resv-sheet .rs-header h2 {
+      font-size: 18px;
+      font-weight: 500;
+      color: #fff;
+      margin-bottom: 2px;
+      font-family: 'Noto Serif JP', serif;
+    }
+    #resv-sheet .rs-header p {
+      font-size: 12px;
+      opacity: .8;
+      color: #fff;
+    }
+    #resv-sheet .rs-step-bar {
+      display: flex;
+      align-items: center;
+      padding: .65rem 1rem;
+      background: #f5f0ea;
+      border-bottom: 1px solid #e0dbd2;
+    }
+    #resv-sheet .rs-step {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 12px; color: #888780;
+    }
+    #resv-sheet .rs-step.active { color: #1a6fa8; font-weight: 500; }
+    #resv-sheet .rs-step.done  { color: #1a6fa8; }
+    #resv-sheet .rs-step-num {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 1.5px solid currentColor;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 500; flex-shrink: 0;
+    }
+    #resv-sheet .rs-step.done .rs-step-num {
+      background: #1a6fa8; border-color: #1a6fa8; color: #fff;
+    }
+    #resv-sheet .rs-step-sep {
+      flex: 1; height: 1px; background: #d0ccc6; margin: 0 6px;
+    }
+    #resv-sheet .rs-content { padding: 1rem 0 .5rem; }
+    #resv-sheet .rs-section-title {
+      font-size: 13px; font-weight: 500; color: #1a1a18;
+      margin-bottom: .65rem; display: flex; align-items: center; gap: 5px;
+    }
+    #resv-sheet .rs-cal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: .65rem;
+    }
+    #resv-sheet .rs-cal-header span { font-size: 14px; font-weight: 500; color: #1a1a18; }
+    #resv-sheet .rs-cal-nav {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid #c8c4bc; background: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #5a5a52; font-size: 13px;
+    }
+    #resv-sheet .rs-cal-nav:hover { background: #f5f0ea; }
+    #resv-sheet .rs-cal-grid {
+      display: grid; grid-template-columns: repeat(7,1fr); gap: 2px;
+    }
+    #resv-sheet .rs-dow {
+      text-align: center; font-size: 10px; color: #888780;
+      padding: 3px 0; font-weight: 500;
+    }
+    #resv-sheet .rs-dow.sun { color: #e24b4a; }
+    #resv-sheet .rs-dow.sat { color: #1a6fa8; }
+    #resv-sheet .rs-day {
+      text-align: center; padding: 6px 2px; font-size: 12px;
+      border-radius: 6px; cursor: pointer; color: #1a1a18;
+      border: 1px solid transparent; transition: all .12s;
+    }
+    #resv-sheet .rs-day:hover:not(.empty):not(.past) { background: #e6f1fb; color: #185fa5; }
+    #resv-sheet .rs-day.selected { background: #1a6fa8; color: #fff !important; font-weight: 500; }
+    #resv-sheet .rs-day.today { border-color: #1a6fa8; font-weight: 500; }
+    #resv-sheet .rs-day.past  { color: #c8c4bc; cursor: default; }
+    #resv-sheet .rs-day.empty { cursor: default; }
+    #resv-sheet .rs-day.sun:not(.past):not(.empty) { color: #e24b4a; }
+    #resv-sheet .rs-day.sat:not(.past):not(.empty) { color: #1a6fa8; }
+    #resv-sheet .rs-divider { height: 1px; background: #e8e4de; margin: .85rem 0; }
+    #resv-sheet .rs-time-grid {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 5px;
+    }
+    #resv-sheet .rs-time-slot {
+      padding: 8px 4px; text-align: center; font-size: 12px;
+      border: 1px solid #c8c4bc; border-radius: 6px; cursor: pointer;
+      color: #1a1a18; background: #fff; transition: all .12s;
+    }
+    #resv-sheet .rs-time-slot:hover { border-color: #1a6fa8; color: #1a6fa8; background: #e6f1fb; }
+    #resv-sheet .rs-time-slot.selected { background: #1a6fa8; color: #fff; border-color: #1a6fa8; font-weight: 500; }
+    #resv-sheet .rs-form-group { margin-bottom: .75rem; }
+    #resv-sheet .rs-form-group label {
+      display: block; font-size: 12px; color: #5a5a52;
+      margin-bottom: 3px; font-weight: 500;
+    }
+    #resv-sheet .rs-form-group input {
+      width: 100%; padding: 9px 12px; font-size: 14px;
+      border: 1px solid #c8c4bc; border-radius: 6px;
+      background: #fff; color: #1a1a18; font-family: 'Noto Serif JP', serif;
+    }
+    #resv-sheet .rs-form-group input:focus {
+      outline: none; border-color: #1a6fa8;
+      box-shadow: 0 0 0 2px rgba(26,111,168,.1);
+    }
+    #resv-sheet .rs-hint { font-size: 10px; color: #888780; margin-top: 2px; }
+    #resv-sheet .rs-err  { color: #e24b4a; font-size: 11px; margin-top: 2px; }
+    #resv-sheet .rs-notice {
+      background: #e6f1fb; border: 1px solid #b5d4f4; border-radius: 6px;
+      padding: .55rem .75rem; font-size: 11px; color: #185fa5;
+      margin-bottom: .85rem; display: flex; align-items: center; gap: 5px;
+    }
+    #resv-sheet .rs-summary-card {
+      background: #f5f0ea; border: 1px solid #e0dbd2; border-radius: 6px;
+      padding: .75rem .9rem; margin-bottom: .85rem;
+    }
+    #resv-sheet .rs-summary-row {
+      display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0;
+    }
+    #resv-sheet .rs-summary-row .lb { color: #888780; }
+    #resv-sheet .rs-summary-row .vl { font-weight: 500; color: #1a1a18; }
+    #resv-sheet .rs-btn-next {
+      width: 100%; padding: 11px; background: #1a6fa8; color: #fff;
+      border: none; border-radius: 6px; font-size: 14px; font-weight: 500;
+      cursor: pointer; margin-top: .4rem; font-family: 'Noto Serif JP', serif;
+    }
+    #resv-sheet .rs-btn-next:hover { background: #155d8f; }
+    #resv-sheet .rs-btn-next:disabled {
+      background: #e0dbd2; color: #888780; cursor: default;
+    }
+    #resv-sheet .rs-btn-back {
+      width: 100%; padding: 9px; background: transparent; color: #5a5a52;
+      border: 1px solid #c8c4bc; border-radius: 6px; font-size: 12px;
+      cursor: pointer; margin-top: 5px; font-family: 'Noto Serif JP', serif;
+    }
+    #resv-sheet .rs-btn-back:hover { background: #f5f0ea; }
+    #resv-sheet .rs-complete { text-align: center; padding: 1.5rem .5rem; }
+    #resv-sheet .rs-complete-icon {
+      width: 56px; height: 56px; background: #e1f5ee; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto .85rem; font-size: 26px; color: #0f6e56;
+    }
+    #resv-sheet .rs-complete h3 {
+      font-size: 16px; font-weight: 500; margin-bottom: .4rem; color: #1a1a18;
+    }
+    #resv-sheet .rs-complete p { font-size: 12px; color: #5a5a52; line-height: 1.7; }
+    #resv-sheet .rs-error { text-align: center; padding: 1.5rem .5rem; }
+    #resv-sheet .rs-error-icon {
+      width: 56px; height: 56px; background: #fcebeb; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto .85rem; font-size: 26px; color: #a32d2d;
+    }
+    @keyframes rs-spin { to { transform: rotate(360deg); } }
+    #resv-sheet .rs-spin { animation: rs-spin 1s linear infinite; display: inline-block; }
+
+    /* ── MOBILE ── */
     @media (max-width: 768px) {
       nav { padding: 12px 16px; }
       .nav-links { gap: 16px; }
       .nav-links a { font-size: 13px; }
 
       .hero-content { padding: 0 20px; max-width: 100%; }
+
+      .hero-overlay {
+        background: linear-gradient(
+          to bottom,
+          rgba(26, 26, 24, 0.50) 0%,
+          rgba(26, 26, 24, 0.28) 60%,
+          rgba(26, 26, 24, 0.05) 100%
+        );
+      }
+
       .hero-buttons { max-width: 182px; }
 
       .section { padding: 60px 20px; }
+      .section-about { grid-template-columns: 1fr; gap: 40px; }
       .shop-grid { grid-template-columns: 1fr 1fr; }
-
-      /* COMPANY：縦積みに変更 */
-      .company-section { padding: 60px 20px; }
-
-      .company-block {
-        grid-template-columns: 1fr;
-        gap: 28px;
-      }
-
-      .company-block + .company-block {
-        margin-top: 56px;
-        padding-top: 56px;
-      }
-
-      .company-img {
-        aspect-ratio: 16/9;
-      }
-
-      .company-table th {
-        width: 72px;
-        font-size: 12px;
-        padding-right: 12px;
-      }
-
-      .company-table td {
-        font-size: 12px;
-      }
 
       .map-container iframe { height: 260px; }
 
@@ -569,6 +739,7 @@
 
 <!-- NAV -->
 <nav>
+  <!-- ravina_logo.png をロゴとして表示（同じフォルダに配置） -->
   <a href="#" class="nav-logo">
     <img src="ravina_logo.png" alt="RAVINA" />
   </a>
@@ -590,8 +761,12 @@
       海が見えるジュエリー工房・アメリカンビレッジ3階<br>
       結婚指輪・ペアリング・その他・ジュエリーオーダー
     </p>
-    <p class="hero-reservation">ご予約は <a href="https://www.jalan.net/kankou/spt_guide000000229081/" target="_blank" rel="noopener noreferrer">【じゃらん】</a> にて</p>
+    <p class="hero-reservation" style="margin-bottom:16px;">ご予約はこちらから</p>
     <div class="hero-buttons">
+      <button class="btn-reservation" onclick="openResvSheet()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        ご予約
+      </button>
       <a href="https://www.instagram.com/ravina.okinawa/" class="btn-instagram" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
@@ -661,136 +836,58 @@
   </div>
 </section>
 
-<!-- COMPANY ─────────────────────────────────────
-     上段：店舗概要（bg_RAVINA.png）
-     下段：会社概要（bg_company.png）
-──────────────────────────────────────────────── -->
-<section class="company-section" id="company">
-
-  <!-- 上段：店舗概要 -->
-  <div class="company-block">
-    <!-- 左：写真 -->
-    <img
-      src="bg_RAVINA.png"
-      alt="RAVINA 店舗"
-      class="company-img"
-    />
-    <!-- 右：テキスト -->
-    <div class="company-info">
-      <h2 class="company-title">店舗概要</h2>
-      <table class="company-table">
-        <tbody>
-          <tr>
-            <th>店舗</th>
-            <td class="col-sep">：</td>
-            <td>RAVINA　jewelry workshop studio</td>
-          </tr>
-          <tr>
-            <th>設立</th>
-            <td class="col-sep">：</td>
-            <td>2026年３月５日</td>
-          </tr>
-          <tr>
-            <th>事業内容</th>
-            <td class="col-sep">：</td>
-            <td>アクセサリー＆ジュエリー販売・体験サービス</td>
-          </tr>
-          <tr>
-            <th>郵便番号</th>
-            <td class="col-sep">：</td>
-            <td>〒904-0115</td>
-          </tr>
-          <tr>
-            <th>住所</th>
-            <td class="col-sep">：</td>
-            <td>沖縄県中頭郡北谷町美浜９−４６ ディストーションシーサイドビル ３F</td>
-          </tr>
-          <tr>
-            <th>広報</th>
-            <td class="col-sep">：</td>
-            <td>TEL 090-1999-7770</td>
-          </tr>
-          <tr>
-            <th>お客様予約</th>
-            <td class="col-sep">：</td>
-            <td>TEL 070-8404-0550</td>
-          </tr>
-        </tbody>
-      </table>
+<!-- COMPANY -->
+<section class="section section-shop-bg" id="company">
+  <div class="section-about">
+    <div>
+      <p class="about-label">Our Story</p>
+      <!-- RAVINA（ショップ名）と 株式会社RAVINALA（法人名）を分けて表示 -->
+      <div class="company-name-block">
+        <span class="company-name-shop">RAVINA</span>
+        <span class="company-name-corp">株式会社 RAVINALA</span>
+      </div>
+      <p class="about-text">
+        沖縄・アメリカンビレッジの3階に佇む、海を見渡せるジュエリー工房。<br><br>
+        熟練の職人と共に、あなただけの指輪を世界にひとつだけ手作りすることができます。結婚指輪・ペアリング・その他ジュエリーのオーダーを承っております。<br><br>
+        素材の選定から仕上げまで、すべての工程で妥協しない品質をお届けします。
+      </p>
+    </div>
+    <div class="about-visual">
+      <span class="about-visual-text">RAVINA</span>
     </div>
   </div>
-
-  <!-- 下段：会社概要 -->
-  <div class="company-block">
-    <!-- 左：写真 -->
-    <img
-      src="bg_company.png"
-      alt="株式会社RAVINALA"
-      class="company-img"
-    />
-    <!-- 右：テキスト -->
-    <div class="company-info">
-      <h2 class="company-title">会社概要</h2>
-      <table class="company-table">
-        <tbody>
-          <tr>
-            <th>会社名</th>
-            <td class="col-sep">：</td>
-            <td>株式会社RAVINALA（ラビナラ）</td>
-          </tr>
-          <tr>
-            <th>設立</th>
-            <td class="col-sep">：</td>
-            <td>2026年１月２０日</td>
-          </tr>
-          <tr>
-            <th>役員</th>
-            <td class="col-sep">：</td>
-            <td>
-              代表取締役　宮地 瞳<br>
-              取締役　宮地 常司
-            </td>
-          </tr>
-          <tr>
-            <th>Email</th>
-            <td class="col-sep">：</td>
-            <td><a href="mailto:ravinala.oka@gmail.com" style="color:var(--muted); text-underline-offset:3px;">ravinala.oka@gmail.com</a></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
 </section>
 
 <!-- ACCESS -->
 <section class="section section-light" id="access">
   <div style="max-width:1100px; margin:0 auto; text-align:center;">
     <p class="about-label" style="text-align:center;">Access</p>
-    <h2 class="about-heading" style="text-align:center; margin-bottom:32px;">アクセス</h2>
+    <h2 class="about-heading" style="text-align:center; margin-bottom:32px;">Access</h2>
     <p style="font-size:14px; line-height:2.2; letter-spacing:0.06em; color:var(--muted);">
       〒904-0115 沖縄県中頭郡北谷町美浜９−４６ ディストーションシーサイドビル ３F RAVINA<br>
       営業時間：10:00 – 19:00（定休日なし）<br>
-      ご予約は <a href="https://www.jalan.net/kankou/spt_guide000000229081/" target="_blank" rel="noopener noreferrer" style="color:var(--dark); text-decoration:underline; text-underline-offset:3px;">じゃらん</a> よりお願いいたします。
+      ご予約は <button onclick="openResvSheet()" style="background:none;border:none;padding:0;color:var(--dark);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-family:inherit;font-size:inherit;letter-spacing:inherit;">こちらから予約</button> お願いいたします。
     </p>
+
+    <!-- Google Map：住所ピン選択状態で表示 -->
     <div class="map-container">
       <iframe
-        src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d894.0820544812578!2d127.75349827394261!3d26.31586948835363!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x34e51372c3965559%3A0xe58fb2ae900653dc!2zUkFWSU5B77yI44Op44OT44Ka77yJ!5e0!3m2!1sja!2sjp!4v1780201438152!5m2!1sja!2sjp"
+        src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d894.0820544812578!2d127.75349827394261!3d26.31586948835363!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x34e51372c3965559%3A0xe58fb2ae900653dc!2zUkFWSU5B77yI44Op44OT44OK77yJ!5e0!3m2!1sja!2sjp!4v1780201438152!5m2!1sja!2sjp" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
         allowfullscreen=""
         loading="lazy"
         referrerpolicy="no-referrer-when-downgrade"
         title="RAVINA アクセスマップ"
       ></iframe>
     </div>
+    <!-- ※ 上記embed/v1はAPIキーが必要なため、下記の標準埋め込みURLをGoogle Mapsで取得して差し替えることを推奨します -->
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
   <div>
-    <p class="footer-brand">RAVINA</p>
-    <p class="footer-brand-corp">株式会社 RAVINALA</p>
-    <p class="footer-tagline">jewelry workshop studio</p>
+    <p class="footer-brand">RAVINALA</p>
+    <p class="footer-tagline">RAVINA jewelry workshop studio</p>
   </div>
   <div>
     <p class="footer-col-title">Navigation</p>
@@ -806,13 +903,213 @@
     <ul class="footer-links">
       <li><a href="https://www.tiktok.com/@ravina_jewelry" target="_blank" rel="noopener noreferrer">TikTok</a></li>
       <li><a href="https://www.instagram.com/ravina.okinawa/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
-      <li><a href="https://www.jalan.net/kankou/spt_guide000000229081/" target="_blank" rel="noopener noreferrer">じゃらん予約</a></li>
+      <li><a href="#" onclick="openResvSheet();return false;">ご予約</a></li>
     </ul>
   </div>
 </footer>
 <div class="footer-bottom">
   &copy; RAVINALA Co., Ltd. All rights reserved.
 </div>
+<!-- ボトムシート オーバーレイ -->
+<div id="resv-overlay" onclick="closeResvSheet()"></div>
+
+<!-- ボトムシート 本体 -->
+<div id="resv-sheet" role="dialog" aria-modal="true" aria-label="ご予約">
+  <div class="sheet-handle"><div class="sheet-handle-bar"></div></div>
+  <button class="sheet-close" onclick="closeResvSheet()" aria-label="閉じる">&#215;</button>
+
+  <div class="rs-header">
+    <h2>ご予約</h2>
+    <p>RAVINA jewelry workshop studio</p>
+  </div>
+
+  <div class="rs-step-bar" id="rs-step-bar">
+    <div class="rs-step active" id="rs-s1"><div class="rs-step-num">1</div><span>日時選択</span></div>
+    <div class="rs-step-sep"></div>
+    <div class="rs-step" id="rs-s2"><div class="rs-step-num">2</div><span>お客様情報</span></div>
+    <div class="rs-step-sep"></div>
+    <div class="rs-step" id="rs-s3"><div class="rs-step-num">3</div><span>確認・送信</span></div>
+  </div>
+
+  <div class="rs-wrap">
+    <div class="rs-content" id="rs-main"></div>
+  </div>
+</div>
+
+<script>
+const GAS_URL='https://script.google.com/macros/s/AKfycbxfK9f-UBSMnN6-jtxaaxKiZH5KsY6OHQ_uGCzl7ySs_jqj6add5RAHtvEijAwvyE30/exec';
+const RS_MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const RS_DAYS=['日','月','火','水','木','金','土'];
+const RS_HOURS=['9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
+let rs={year:null,month:null,day:null,dow:null,time:null,name:'',guests:'',tel:''};
+const rsToday=new Date();rsToday.setHours(0,0,0,0);
+let rsCalY=rsToday.getFullYear(),rsCalM=rsToday.getMonth();
+
+function openResvSheet(){
+  document.getElementById('resv-overlay').classList.add('open');
+  document.getElementById('resv-sheet').classList.add('open');
+  document.body.style.overflow='hidden';
+  rsStep1();
+}
+function closeResvSheet(){
+  document.getElementById('resv-overlay').classList.remove('open');
+  document.getElementById('resv-sheet').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function rsSetStep(n){
+  ['rs-s1','rs-s2','rs-s3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.className='rs-step'+(i+1===n?' active':i+1<n?' done':'');
+  });
+}
+
+function rsRenderCal(){
+  const first=new Date(rsCalY,rsCalM,1);
+  const lastDay=new Date(rsCalY,rsCalM+1,0).getDate();
+  const startDow=first.getDay();
+  let h=`<div class="rs-cal-header">
+    <button class="rs-cal-nav" onclick="rsPrevMonth()">&#8249;</button>
+    <span>${rsCalY}年 ${RS_MONTHS[rsCalM]}</span>
+    <button class="rs-cal-nav" onclick="rsNextMonth()">&#8250;</button>
+  </div><div class="rs-cal-grid">
+    ${RS_DAYS.map((d,i)=>`<div class="rs-dow${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('')}
+  `;
+  for(let i=0;i<startDow;i++) h+=`<div class="rs-day empty"></div>`;
+  for(let d=1;d<=lastDay;d++){
+    const dt=new Date(rsCalY,rsCalM,d);
+    const dow=dt.getDay();
+    const isPast=dt<rsToday;
+    const isSel=rs.day===d&&rs.month===rsCalM&&rs.year===rsCalY;
+    const isTod=dt.getTime()===rsToday.getTime();
+    let cls='rs-day';
+    if(dow===0) cls+=' sun';
+    if(dow===6) cls+=' sat';
+    if(isPast) cls+=' past';
+    if(isSel) cls+=' selected';
+    if(isTod&&!isSel) cls+=' today';
+    h+=`<div class="${cls}"${!isPast?` onclick="rsSelDay(${d},${dow})"`:''} >${d}</div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+
+function rsRenderTimes(){
+  if(!rs.day) return `<p style="font-size:12px;color:#888780;text-align:center;padding:.75rem 0">日付を選択してください</p>`;
+  let h=`<div class="rs-time-grid">`;
+  RS_HOURS.forEach(t=>{
+    const isSel=rs.time===t;
+    h+=`<div class="rs-time-slot${isSel?' selected':''}" onclick="rsSelTime('${t}')">${t}</div>`;
+  });
+  return h+`</div>`;
+}
+
+function rsStep1(){
+  rsSetStep(1);
+  document.getElementById('rs-main').innerHTML=`
+    <div class="rs-section-title">&#128197; 予約日を選んでください</div>
+    <div id="rs-cal">${rsRenderCal()}</div>
+    <div class="rs-divider"></div>
+    <div class="rs-section-title">&#128336; ご希望の時間帯</div>
+    <div id="rs-times">${rsRenderTimes()}</div>
+    <button class="rs-btn-next" id="rs-btn1" onclick="rsGoStep2()" ${rs.day&&rs.time?'':'disabled'}>次へ：お客様情報を入力 →</button>
+  `;
+}
+
+function rsStep2(){
+  rsSetStep(2);
+  const ds=rs.year+'年'+(rs.month+1)+'月'+rs.day+'日('+RS_DAYS[rs.dow]+') '+rs.time+'〜';
+  document.getElementById('rs-main').innerHTML=`
+    <div class="rs-notice">&#128197; ${ds}</div>
+    <div class="rs-section-title">&#128100; お客様情報</div>
+    <div class="rs-form-group">
+      <label>代表者名 <span style="color:#e24b4a">*</span></label>
+      <input type="text" id="rs-inp-name" placeholder="例：山田 太郎" value="${rs.name}">
+      <div class="rs-err" id="rs-err-name"></div>
+    </div>
+    <div class="rs-form-group">
+      <label>予約人数 <span style="color:#e24b4a">*</span></label>
+      <input type="number" id="rs-inp-guests" placeholder="例：2" min="1" max="50" value="${rs.guests}">
+      <div class="rs-hint">1〜50名まで</div>
+      <div class="rs-err" id="rs-err-guests"></div>
+    </div>
+    <div class="rs-form-group">
+      <label>連絡先（携帯番号） <span style="color:#e24b4a">*</span></label>
+      <input type="tel" id="rs-inp-tel" placeholder="例：090-1234-5678" value="${rs.tel}">
+      <div class="rs-err" id="rs-err-tel"></div>
+    </div>
+    <button class="rs-btn-next" onclick="rsGoStep3()">確認画面へ →</button>
+    <button class="rs-btn-back" onclick="rsStep1()">&#8592; 日時選択に戻る</button>
+  `;
+}
+
+function rsStep3(){
+  rsSetStep(3);
+  const ds=rs.year+'年'+(rs.month+1)+'月'+rs.day+'日('+RS_DAYS[rs.dow]+') '+rs.time+'〜';
+  document.getElementById('rs-main').innerHTML=`
+    <div class="rs-section-title">&#10003; 予約内容の確認</div>
+    <div class="rs-summary-card">
+      <div class="rs-summary-row"><span class="lb">予約日時</span><span class="vl">${ds}</span></div>
+      <div class="rs-summary-row"><span class="lb">代表者名</span><span class="vl">${rs.name}</span></div>
+      <div class="rs-summary-row"><span class="lb">予約人数</span><span class="vl">${rs.guests}名</span></div>
+      <div class="rs-summary-row"><span class="lb">携帯番号</span><span class="vl">${rs.tel}</span></div>
+    </div>
+    <p style="font-size:11px;color:#888780;margin-bottom:.85rem;line-height:1.7">上記の内容でよろしければ「予約を確定する」を押してください。<br>確認メールが ravina.okinawa@gmail.com に自動送信されます。</p>
+    <button class="rs-btn-next" onclick="rsSubmit()">&#9993; 予約を確定する</button>
+    <button class="rs-btn-back" onclick="rsStep2()">&#8592; お客様情報に戻る</button>
+  `;
+}
+
+function rsPrevMonth(){rsCalM--;if(rsCalM<0){rsCalM=11;rsCalY--;}document.getElementById('rs-cal').innerHTML=rsRenderCal();}
+function rsNextMonth(){rsCalM++;if(rsCalM>11){rsCalM=0;rsCalY++;}document.getElementById('rs-cal').innerHTML=rsRenderCal();}
+function rsSelDay(d,dow){rs.day=d;rs.month=rsCalM;rs.year=rsCalY;rs.dow=dow;rs.time=null;document.getElementById('rs-cal').innerHTML=rsRenderCal();document.getElementById('rs-times').innerHTML=rsRenderTimes();rsCheckBtn();}
+function rsSelTime(t){rs.time=t;document.getElementById('rs-times').innerHTML=rsRenderTimes();rsCheckBtn();}
+function rsCheckBtn(){const b=document.getElementById('rs-btn1');if(b)b.disabled=!(rs.day&&rs.time);}
+function rsGoStep2(){rsSetStep(2);rsStep2();}
+function rsGoStep3(){
+  const n=document.getElementById('rs-inp-name').value.trim();
+  const g=document.getElementById('rs-inp-guests').value.trim();
+  const t=document.getElementById('rs-inp-tel').value.trim();
+  let ok=true;
+  document.getElementById('rs-err-name').textContent='';
+  document.getElementById('rs-err-guests').textContent='';
+  document.getElementById('rs-err-tel').textContent='';
+  if(!n){document.getElementById('rs-err-name').textContent='代表者名を入力してください';ok=false;}
+  if(!g||isNaN(g)||+g<1||+g>50){document.getElementById('rs-err-guests').textContent='1〜50の人数を入力してください';ok=false;}
+  if(!t||!/^[\d\-\+\(\) ]+$/.test(t)){document.getElementById('rs-err-tel').textContent='有効な携帯番号を入力してください';ok=false;}
+  if(!ok)return;
+  rs.name=n;rs.guests=g;rs.tel=t;
+  rsStep3();
+}
+function rsSubmit(){
+  const ds=rs.year+'年'+(rs.month+1)+'月'+rs.day+'日('+RS_DAYS[rs.dow]+') '+rs.time+'〜';
+  document.getElementById('rs-main').innerHTML=`<div style="text-align:center;padding:2rem;color:#5a5a52;font-size:13px"><span class="rs-spin" style="font-size:28px;display:block;margin:0 auto 10px;color:#1a6fa8">&#8635;</span>送信中...</div>`;
+  fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({date:ds,name:rs.name,guests:rs.guests,tel:rs.tel})})
+  .then(()=>{
+    document.getElementById('rs-main').innerHTML=`
+      <div class="rs-complete">
+        <div class="rs-complete-icon">&#10003;</div>
+        <h3>ご予約が完了しました</h3>
+        <p style="margin-bottom:.85rem">予約内容を <strong>ravina.okinawa@gmail.com</strong> に送信しました。<br>確認後、担当よりご連絡いたします。</p>
+        <div class="rs-summary-card" style="text-align:left;margin-bottom:.85rem">
+          <div class="rs-summary-row"><span class="lb">予約日時</span><span class="vl">${ds}</span></div>
+          <div class="rs-summary-row"><span class="lb">代表者名</span><span class="vl">${rs.name} 様</span></div>
+          <div class="rs-summary-row"><span class="lb">予約人数</span><span class="vl">${rs.guests}名</span></div>
+          <div class="rs-summary-row"><span class="lb">携帯番号</span><span class="vl">${rs.tel}</span></div>
+        </div>
+        <button class="rs-btn-back" onclick="closeResvSheet()">閉じる</button>
+      </div>`;
+  })
+  .catch(()=>{
+    document.getElementById('rs-main').innerHTML=`
+      <div class="rs-error">
+        <div class="rs-error-icon">&#9888;</div>
+        <p style="font-size:13px;color:#5a5a52;margin-bottom:.85rem">送信に失敗しました。<br>もう一度お試しください。</p>
+        <button class="rs-btn-next" onclick="rsStep3()" style="max-width:180px;margin:0 auto;display:block">もう一度試す</button>
+      </div>`;
+  });
+}
+</script>
 
 </body>
 </html>

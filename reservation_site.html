@@ -1,0 +1,302 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.container{max-width:680px;padding:0}
+.header{background:#1a6fa8;color:#fff;padding:1.5rem;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;text-align:center}
+.header h1{font-size:20px;font-weight:500;margin-bottom:4px;color:#fff}
+.header p{font-size:13px;opacity:.85;color:#fff}
+.step-bar{display:flex;align-items:center;padding:.75rem 1.25rem;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+.step{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-text-secondary)}
+.step.active{color:#1a6fa8;font-weight:500}
+.step.done{color:#1a6fa8}
+.step-num{width:22px;height:22px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+.step.done .step-num{background:#1a6fa8;border-color:#1a6fa8;color:#fff}
+.step-sep{flex:1;height:1px;background:var(--color-border-tertiary);margin:0 8px}
+.content{padding:1.25rem}
+.section-title{font-size:14px;font-weight:500;color:var(--color-text-primary);margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+.section-title i{font-size:16px;color:#1a6fa8}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.cal-header span{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+.cal-nav{width:30px;height:30px;border-radius:50%;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary)}
+.cal-nav:hover{background:var(--color-background-secondary)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-dow{text-align:center;font-size:11px;color:var(--color-text-secondary);padding:4px 0;font-weight:500}
+.cal-dow.sun{color:#e24b4a}.cal-dow.sat{color:#1a6fa8}
+.cal-day{text-align:center;padding:7px 4px;font-size:13px;border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-primary);border:0.5px solid transparent;transition:all .15s}
+.cal-day:hover:not(.empty):not(.past){background:#e6f1fb;color:#185fa5}
+.cal-day.selected{background:#1a6fa8;color:#fff;font-weight:500}
+.cal-day.today{border-color:#1a6fa8;font-weight:500}
+.cal-day.past{color:var(--color-text-tertiary);cursor:default}
+.cal-day.empty{cursor:default}
+.cal-day.sun:not(.past):not(.empty){color:#e24b4a}
+.cal-day.sat:not(.past):not(.empty){color:#1a6fa8}
+.cal-day.selected{color:#fff !important}
+.divider{height:0.5px;background:var(--color-border-tertiary);margin:1rem 0}
+.time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.time-slot{padding:9px 6px;text-align:center;font-size:13px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-primary);background:var(--color-background-primary);transition:all .15s}
+.time-slot:hover{border-color:#1a6fa8;color:#1a6fa8;background:#e6f1fb}
+.time-slot.selected{background:#1a6fa8;color:#fff;border-color:#1a6fa8;font-weight:500}
+.time-slot.unavail{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:default;border-color:var(--color-border-tertiary)}
+.form-group{margin-bottom:.85rem}
+.form-group label{display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:4px;font-weight:500}
+.form-group input{width:100%;padding:9px 12px;font-size:14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary)}
+.form-group input:focus{outline:none;border-color:#1a6fa8;box-shadow:0 0 0 2px rgba(26,111,168,.12)}
+.form-group .hint{font-size:11px;color:var(--color-text-tertiary);margin-top:3px}
+.summary-card{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:.85rem 1rem;margin-bottom:1rem}
+.summary-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
+.summary-row .label{color:var(--color-text-secondary)}
+.summary-row .val{font-weight:500;color:var(--color-text-primary)}
+.btn-next{width:100%;padding:11px;background:#1a6fa8;color:#fff;border:none;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;margin-top:.5rem}
+.btn-next:hover{background:#155d8f}
+.btn-next:disabled{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:default}
+.btn-back{width:100%;padding:10px;background:transparent;color:var(--color-text-secondary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;margin-top:6px}
+.btn-back:hover{background:var(--color-background-secondary)}
+.notice{background:#e6f1fb;border:0.5px solid #b5d4f4;border-radius:var(--border-radius-md);padding:.65rem .85rem;font-size:12px;color:#185fa5;margin-bottom:1rem;display:flex;align-items:center;gap:6px}
+.err{color:#e24b4a;font-size:12px;margin-top:3px}
+.sending-box{text-align:center;padding:2.5rem 1rem;color:var(--color-text-secondary);font-size:14px}
+.complete-box{text-align:center;padding:2rem 1rem}
+.complete-icon{width:60px;height:60px;background:#e1f5ee;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:28px;color:#0f6e56}
+.complete-box h2{font-size:17px;font-weight:500;margin-bottom:.5rem;color:var(--color-text-primary)}
+.complete-box p{font-size:13px;color:var(--color-text-secondary);line-height:1.6}
+.error-box{text-align:center;padding:2rem 1rem}
+.error-icon{width:60px;height:60px;background:#fcebeb;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:28px;color:#a32d2d}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+</style>
+
+<div class="container">
+<div style="border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden">
+
+<div class="header">
+  <h1><i class="ti ti-calendar-event" style="font-size:20px;vertical-align:-2px;margin-right:6px" aria-hidden="true"></i>ご予約</h1>
+  <p>RAVINA オキナワ</p>
+</div>
+
+<div class="step-bar" id="step-bar">
+  <div class="step active" id="s1"><div class="step-num">1</div><span>日時選択</span></div>
+  <div class="step-sep"></div>
+  <div class="step" id="s2"><div class="step-num">2</div><span>お客様情報</span></div>
+  <div class="step-sep"></div>
+  <div class="step" id="s3"><div class="step-num">3</div><span>確認・送信</span></div>
+</div>
+
+<div class="content" id="main"></div>
+</div>
+</div>
+
+<script>
+const GAS_URL='https://script.google.com/macros/s/AKfycbxfK9f-UBSMnN6-jtxaaxKiZH5KsY6OHQ_uGCzl7ySs_jqj6add5RAHtvEijAwvyE30/exec';
+const MONTHS_JP=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const DAYS_JP=['日','月','火','水','木','金','土'];
+const HOURS=['9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
+let state={step:1,year:null,month:null,day:null,dow:null,time:null,name:'',guests:'',tel:''};
+const today=new Date();today.setHours(0,0,0,0);
+let calYear=today.getFullYear(),calMonth=today.getMonth();
+
+function setStep(n){
+  state.step=n;
+  ['s1','s2','s3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.className='step'+(i+1===n?' active':i+1<n?' done':'');
+  });
+}
+
+function renderCal(){
+  const first=new Date(calYear,calMonth,1);
+  const lastDay=new Date(calYear,calMonth+1,0).getDate();
+  const startDow=first.getDay();
+  let html=`<div class="cal-header">
+    <button class="cal-nav" onclick="prevMonth()"><i class="ti ti-chevron-left"></i></button>
+    <span>${calYear}年 ${MONTHS_JP[calMonth]}</span>
+    <button class="cal-nav" onclick="nextMonth()"><i class="ti ti-chevron-right"></i></button>
+  </div>
+  <div class="cal-grid">
+    ${DAYS_JP.map((d,i)=>`<div class="cal-dow${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('')}
+  `;
+  for(let i=0;i<startDow;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=lastDay;d++){
+    const dt=new Date(calYear,calMonth,d);
+    const dow=dt.getDay();
+    const isPast=dt<today;
+    const isSel=state.day===d&&state.month===calMonth&&state.year===calYear;
+    const isTod=dt.getTime()===today.getTime();
+    let cls='cal-day';
+    if(dow===0) cls+=' sun';
+    if(dow===6) cls+=' sat';
+    if(isPast) cls+=' past';
+    if(isSel) cls+=' selected';
+    if(isTod&&!isSel) cls+=' today';
+    html+=`<div class="${cls}"${!isPast?` onclick="selDay(${d},${dow})"`:''} >${d}</div>`;
+  }
+  html+=`</div>`;
+  return html;
+}
+
+function renderTimes(){
+  if(!state.day) return `<p style="font-size:13px;color:var(--color-text-tertiary);text-align:center;padding:1rem 0">日付を選択してください</p>`;
+  let html=`<div class="time-grid">`;
+  HOURS.forEach(h=>{
+    const isSel=state.time===h;
+    let cls='time-slot'+(isSel?' selected':'');
+    html+=`<div class="${cls}" onclick="selTime('${h}')">${h}</div>`;
+  });
+  html+=`</div>`;
+  return html;
+}
+
+function step1(){
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><i class="ti ti-calendar" aria-hidden="true"></i>予約日を選んでください</div>
+    <div id="cal">${renderCal()}</div>
+    <div class="divider"></div>
+    <div class="section-title"><i class="ti ti-clock" aria-hidden="true"></i>ご希望の時間帯</div>
+    <div id="times">${renderTimes()}</div>
+    <button class="btn-next" id="btn1" onclick="goStep2()" ${state.day&&state.time?'':'disabled'}>次へ：お客様情報を入力 →</button>
+  `;
+}
+
+function step2(){
+  setStep(2);
+  const dateStr=state.year+'年'+(state.month+1)+'月'+state.day+'日('+DAYS_JP[state.dow]+') '+state.time+'〜';
+  document.getElementById('main').innerHTML=`
+    <div class="notice"><i class="ti ti-calendar-check" aria-hidden="true"></i>${dateStr}</div>
+    <div class="section-title"><i class="ti ti-user" aria-hidden="true"></i>お客様情報</div>
+    <div class="form-group">
+      <label>代表者名 <span style="color:#e24b4a">*</span></label>
+      <input type="text" id="inp-name" placeholder="例：山田 太郎" value="${state.name}">
+      <div class="err" id="err-name"></div>
+    </div>
+    <div class="form-group">
+      <label>予約人数 <span style="color:#e24b4a">*</span></label>
+      <input type="number" id="inp-guests" placeholder="例：2" min="1" max="50" value="${state.guests}">
+      <div class="hint">1〜50名まで</div>
+      <div class="err" id="err-guests"></div>
+    </div>
+    <div class="form-group">
+      <label>連絡先（携帯番号） <span style="color:#e24b4a">*</span></label>
+      <input type="tel" id="inp-tel" placeholder="例：090-1234-5678" value="${state.tel}">
+      <div class="err" id="err-tel"></div>
+    </div>
+    <button class="btn-next" onclick="goStep3()">確認画面へ →</button>
+    <button class="btn-back" onclick="goStep1Back()"><i class="ti ti-arrow-left" aria-hidden="true"></i> 日時選択に戻る</button>
+  `;
+}
+
+function step3(){
+  setStep(3);
+  const dateStr=state.year+'年'+(state.month+1)+'月'+state.day+'日('+DAYS_JP[state.dow]+') '+state.time+'〜';
+  document.getElementById('main').innerHTML=`
+    <div class="section-title"><i class="ti ti-clipboard-check" aria-hidden="true"></i>予約内容の確認</div>
+    <div class="summary-card">
+      <div class="summary-row"><span class="label">予約日時</span><span class="val">${dateStr}</span></div>
+      <div class="summary-row"><span class="label">代表者名</span><span class="val">${state.name}</span></div>
+      <div class="summary-row"><span class="label">予約人数</span><span class="val">${state.guests}名</span></div>
+      <div class="summary-row"><span class="label">携帯番号</span><span class="val">${state.tel}</span></div>
+    </div>
+    <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:1rem;line-height:1.6">上記の内容でよろしければ「予約を確定する」を押してください。<br>確認メールが <strong>ravina.okinawa@gmail.com</strong> に自動送信されます。</p>
+    <button class="btn-next" onclick="submitReservation()"><i class="ti ti-send" style="font-size:14px;vertical-align:-1px;margin-right:4px" aria-hidden="true"></i>予約を確定する</button>
+    <button class="btn-back" onclick="step2()"><i class="ti ti-arrow-left" aria-hidden="true"></i> お客様情報に戻る</button>
+  `;
+}
+
+function prevMonth(){
+  calMonth--;if(calMonth<0){calMonth=11;calYear--;}
+  document.getElementById('cal').innerHTML=renderCal();
+}
+function nextMonth(){
+  calMonth++;if(calMonth>11){calMonth=0;calYear++;}
+  document.getElementById('cal').innerHTML=renderCal();
+}
+function selDay(d,dow){
+  state.day=d;state.month=calMonth;state.year=calYear;state.dow=dow;state.time=null;
+  document.getElementById('cal').innerHTML=renderCal();
+  document.getElementById('times').innerHTML=renderTimes();
+  checkBtn1();
+}
+function selTime(h){
+  state.time=h;
+  document.getElementById('times').innerHTML=renderTimes();
+  checkBtn1();
+}
+function checkBtn1(){
+  const b=document.getElementById('btn1');
+  if(b) b.disabled=!(state.day&&state.time);
+}
+function goStep1Back(){setStep(1);step1();}
+function goStep2(){setStep(2);step2();}
+function goStep3(){
+  const n=document.getElementById('inp-name').value.trim();
+  const g=document.getElementById('inp-guests').value.trim();
+  const t=document.getElementById('inp-tel').value.trim();
+  let ok=true;
+  document.getElementById('err-name').textContent='';
+  document.getElementById('err-guests').textContent='';
+  document.getElementById('err-tel').textContent='';
+  if(!n){document.getElementById('err-name').textContent='代表者名を入力してください';ok=false;}
+  if(!g||isNaN(g)||+g<1||+g>50){document.getElementById('err-guests').textContent='1〜50の人数を入力してください';ok=false;}
+  if(!t||!/^[\d\-\+\(\) ]+$/.test(t)){document.getElementById('err-tel').textContent='有効な携帯番号を入力してください';ok=false;}
+  if(!ok) return;
+  state.name=n;state.guests=g;state.tel=t;
+  step3();
+}
+
+function submitReservation(){
+  const dateStr=state.year+'年'+(state.month+1)+'月'+state.day+'日('+DAYS_JP[state.dow]+') '+state.time+'〜';
+  document.getElementById('main').innerHTML=`
+    <div class="sending-box">
+      <i class="ti ti-loader-2 spin" style="font-size:32px;color:#1a6fa8;display:block;margin:0 auto 12px" aria-hidden="true"></i>
+      <p>予約情報を送信しています...</p>
+    </div>
+  `;
+
+  const payload=JSON.stringify({
+    date: dateStr,
+    name: state.name,
+    guests: state.guests,
+    tel: state.tel
+  });
+
+  fetch(GAS_URL, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body: payload
+  })
+  .then(()=>{
+    showComplete(dateStr);
+  })
+  .catch(err=>{
+    showError();
+  });
+}
+
+function showComplete(dateStr){
+  document.getElementById('main').innerHTML=`
+    <div class="complete-box">
+      <div class="complete-icon"><i class="ti ti-check" aria-hidden="true"></i></div>
+      <h2>ご予約が完了しました</h2>
+      <p style="margin-bottom:1rem">予約内容を <strong>ravina.okinawa@gmail.com</strong> に送信しました。<br>確認後、担当よりご連絡いたします。</p>
+      <div class="summary-card" style="text-align:left;margin-bottom:1rem">
+        <div class="summary-row"><span class="label">予約日時</span><span class="val">${dateStr}</span></div>
+        <div class="summary-row"><span class="label">代表者名</span><span class="val">${state.name} 様</span></div>
+        <div class="summary-row"><span class="label">予約人数</span><span class="val">${state.guests}名</span></div>
+        <div class="summary-row"><span class="label">携帯番号</span><span class="val">${state.tel}</span></div>
+      </div>
+      <p style="font-size:12px;color:var(--color-text-tertiary)">ご不明な点はお気軽にお問い合わせください</p>
+    </div>
+  `;
+}
+
+function showError(){
+  document.getElementById('main').innerHTML=`
+    <div class="error-box">
+      <div class="error-icon"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div>
+      <h2 style="font-size:16px;font-weight:500;margin-bottom:.5rem;color:var(--color-text-primary)">送信に失敗しました</h2>
+      <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1rem">通信エラーが発生しました。<br>もう一度お試しください。</p>
+      <button class="btn-next" onclick="step3()" style="max-width:200px;margin:0 auto;display:block">もう一度試す</button>
+    </div>
+  `;
+}
+
+step1();
+</script>

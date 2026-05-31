@@ -21,8 +21,8 @@
 
     /* ─────────────────────────────────────────
        全画面背景画像
-       PC : cover（画面を埋める）
-       携帯: contain（画像全体を縦か横に合わせて縮小・繰り返しなし）
+       PC  : cover（画面を埋める・固定）
+       携帯 : 縦幅（100vh）基準で縮小・スクロール追従
     ───────────────────────────────────────── */
     body {
       font-family: 'Noto Serif JP', serif;
@@ -32,14 +32,14 @@
       background-repeat: no-repeat;
       background-position: center top;
       background-attachment: fixed;
-      background-size: cover;        /* PCはcoverで全画面 */
-      background-color: #1a1a18;    /* 画像のない余白を暗色で埋める */
+      background-size: cover;
+      background-color: #1a1a18;
     }
 
     @media (max-width: 768px) {
       body {
-        /* 携帯: 幅100vwに合わせて縮小（画像全体が見える） */
-        background-size: 100% auto;
+        /* 縦幅100vhに合わせて画像全体を表示（横は中央揃え） */
+        background-size: auto 100vh;
         background-attachment: scroll;
         background-position: center top;
       }
@@ -61,7 +61,6 @@
       transition: background 0.3s;
     }
 
-    /* ロゴ画像（ravina_logo.png） */
     .nav-logo {
       display: flex;
       align-items: center;
@@ -106,7 +105,8 @@
       transition: transform 0.3s;
     }
 
-    .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
+    .nav-links a:hover::after,
+    .nav-links a.active::after { transform: scaleX(1); }
 
     /* ── HERO ── */
     .hero {
@@ -130,7 +130,17 @@
       z-index: 1;
     }
 
-    /* ── HERO CONTENT ── */
+    @media (max-width: 768px) {
+      .hero-overlay {
+        background: linear-gradient(
+          to bottom,
+          rgba(26, 26, 24, 0.50) 0%,
+          rgba(26, 26, 24, 0.28) 60%,
+          rgba(26, 26, 24, 0.05) 100%
+        );
+      }
+    }
+
     .hero-content {
       position: relative;
       z-index: 10;
@@ -237,18 +247,8 @@
     /* ── セクション共通 ── */
     .section { padding: 100px 48px; }
     .section-light { background: rgba(245, 240, 234, 0.88); }
-    .section-shop-bg { background: rgba(240, 235, 227, 0.90); }
 
-    /* ── ABOUT ── */
-    .section-about {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 80px;
-      align-items: center;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
+    /* ── ABOUT / LABEL ── */
     .about-label {
       font-family: 'Cormorant Garamond', serif;
       font-size: 11px;
@@ -267,63 +267,7 @@
       margin-bottom: 24px;
     }
 
-    /* ─────────────────────────────────────────
-       RAVINA と 株式会社RAVINALA を分けて表示
-    ───────────────────────────────────────── */
-    .company-name-block {
-      margin-bottom: 24px;
-    }
-
-    .company-name-shop {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(36px, 4.5vw, 56px);
-      font-weight: 300;
-      letter-spacing: 0.08em;
-      line-height: 1;
-      color: var(--dark);
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    .company-name-corp {
-      font-family: 'Noto Serif JP', serif;
-      font-size: clamp(13px, 1.5vw, 17px);
-      font-weight: 300;
-      letter-spacing: 0.12em;
-      color: var(--muted);
-      display: block;
-      padding-top: 6px;
-      border-top: 1px solid rgba(90,90,82,0.2);
-    }
-
-    .about-text {
-      font-size: 13px;
-      line-height: 2.2;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-    }
-
-    .about-visual {
-      position: relative;
-      height: 400px;
-      background: linear-gradient(135deg, #8ab5a8 0%, #5a8e82 100%);
-      border-radius: 2px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .about-visual-text {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 80px;
-      font-weight: 300;
-      color: rgba(255,255,255,0.15);
-      letter-spacing: 0.1em;
-      user-select: none;
-    }
-
-    /* ── SHOP / CONCEPT ── */
+    /* ── CONCEPT ── */
     .shop-header { text-align: center; margin-bottom: 60px; }
 
     .shop-grid {
@@ -386,6 +330,105 @@
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       opacity: 0.35;
+    }
+
+    /* ═══════════════════════════════════════════
+       COMPANY セクション
+       画像（左）＋ 詳細テーブル（右）の2カラム構成
+       上段：店舗概要（bg_RAVINA.png）
+       下段：会社概要（bg_company.png）
+    ═══════════════════════════════════════════ */
+    .company-section {
+      background: rgba(245, 240, 234, 0.90);
+      padding: 100px 48px;
+    }
+
+    /* 各ブロック（店舗概要 / 会社概要）の間隔 */
+    .company-block {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 64px;
+      align-items: start;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .company-block + .company-block {
+      margin-top: 80px;
+      padding-top: 80px;
+      border-top: 1px solid rgba(90,90,82,0.15);
+    }
+
+    /* 左カラム：写真 */
+    .company-img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      border-radius: 2px;
+      display: block;
+    }
+
+    /* 右カラム：テキスト */
+    .company-info {}
+
+    /* 見出し：元デザインの .about-heading スタイルを踏襲 */
+    .company-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(28px, 3.5vw, 46px);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+      color: var(--dark);
+      margin-bottom: 32px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(201,168,76,0.35);
+    }
+
+    /* テーブル形式の詳細 */
+    .company-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .company-table tr {
+      border-bottom: 1px solid rgba(90,90,82,0.10);
+    }
+
+    .company-table tr:last-child {
+      border-bottom: none;
+    }
+
+    .company-table th {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      color: var(--dark);
+      text-align: left;
+      padding: 12px 0;
+      padding-right: 24px;
+      white-space: nowrap;
+      width: 90px;
+      vertical-align: top;
+    }
+
+    /* コロン区切り */
+    .company-table .col-sep {
+      color: var(--muted);
+      padding: 12px 16px 12px 0;
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    .company-table td {
+      font-family: 'Noto Serif JP', serif;
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      padding: 12px 0;
+      line-height: 1.9;
+      vertical-align: top;
     }
 
     /* ── MAP ── */
@@ -475,28 +518,46 @@
       color: rgba(245,240,234,0.25);
     }
 
-    /* ── MOBILE ── */
+    /* ═══════════════════════════════════════════
+       MOBILE
+    ═══════════════════════════════════════════ */
     @media (max-width: 768px) {
       nav { padding: 12px 16px; }
       .nav-links { gap: 16px; }
       .nav-links a { font-size: 13px; }
 
       .hero-content { padding: 0 20px; max-width: 100%; }
-
-      .hero-overlay {
-        background: linear-gradient(
-          to bottom,
-          rgba(26, 26, 24, 0.50) 0%,
-          rgba(26, 26, 24, 0.28) 60%,
-          rgba(26, 26, 24, 0.05) 100%
-        );
-      }
-
       .hero-buttons { max-width: 182px; }
 
       .section { padding: 60px 20px; }
-      .section-about { grid-template-columns: 1fr; gap: 40px; }
       .shop-grid { grid-template-columns: 1fr 1fr; }
+
+      /* COMPANY：縦積みに変更 */
+      .company-section { padding: 60px 20px; }
+
+      .company-block {
+        grid-template-columns: 1fr;
+        gap: 28px;
+      }
+
+      .company-block + .company-block {
+        margin-top: 56px;
+        padding-top: 56px;
+      }
+
+      .company-img {
+        aspect-ratio: 16/9;
+      }
+
+      .company-table th {
+        width: 72px;
+        font-size: 12px;
+        padding-right: 12px;
+      }
+
+      .company-table td {
+        font-size: 12px;
+      }
 
       .map-container iframe { height: 260px; }
 
@@ -508,7 +569,6 @@
 
 <!-- NAV -->
 <nav>
-  <!-- ravina_logo.png をロゴとして表示（同じフォルダに配置） -->
   <a href="#" class="nav-logo">
     <img src="ravina_logo.png" alt="RAVINA" />
   </a>
@@ -601,26 +661,106 @@
   </div>
 </section>
 
-<!-- COMPANY -->
-<section class="section section-shop-bg" id="company">
-  <div class="section-about">
-    <div>
-      <p class="about-label">Our Story</p>
-      <!-- RAVINA（ショップ名）と 株式会社RAVINALA（法人名）を分けて表示 -->
-      <div class="company-name-block">
-        <span class="company-name-shop">RAVINA</span>
-        <span class="company-name-corp">株式会社 RAVINALA</span>
-      </div>
-      <p class="about-text">
-        沖縄・アメリカンビレッジの3階に佇む、海を見渡せるジュエリー工房。<br><br>
-        熟練の職人と共に、あなただけの指輪を世界にひとつだけ手作りすることができます。結婚指輪・ペアリング・その他ジュエリーのオーダーを承っております。<br><br>
-        素材の選定から仕上げまで、すべての工程で妥協しない品質をお届けします。
-      </p>
-    </div>
-    <div class="about-visual">
-      <span class="about-visual-text">RAVINA</span>
+<!-- COMPANY ─────────────────────────────────────
+     上段：店舗概要（bg_RAVINA.png）
+     下段：会社概要（bg_company.png）
+──────────────────────────────────────────────── -->
+<section class="company-section" id="company">
+
+  <!-- 上段：店舗概要 -->
+  <div class="company-block">
+    <!-- 左：写真 -->
+    <img
+      src="bg_RAVINA.png"
+      alt="RAVINA 店舗"
+      class="company-img"
+    />
+    <!-- 右：テキスト -->
+    <div class="company-info">
+      <h2 class="company-title">店舗概要</h2>
+      <table class="company-table">
+        <tbody>
+          <tr>
+            <th>店舗</th>
+            <td class="col-sep">：</td>
+            <td>RAVINA　jewelry workshop studio</td>
+          </tr>
+          <tr>
+            <th>設立</th>
+            <td class="col-sep">：</td>
+            <td>2026年３月５日</td>
+          </tr>
+          <tr>
+            <th>事業内容</th>
+            <td class="col-sep">：</td>
+            <td>アクセサリー＆ジュエリー販売・体験サービス</td>
+          </tr>
+          <tr>
+            <th>郵便番号</th>
+            <td class="col-sep">：</td>
+            <td>〒904-0115</td>
+          </tr>
+          <tr>
+            <th>住所</th>
+            <td class="col-sep">：</td>
+            <td>沖縄県中頭郡北谷町美浜９−４６ ディストーションシーサイドビル ３F</td>
+          </tr>
+          <tr>
+            <th>広報</th>
+            <td class="col-sep">：</td>
+            <td>TEL 090-1999-7770</td>
+          </tr>
+          <tr>
+            <th>お客様予約</th>
+            <td class="col-sep">：</td>
+            <td>TEL 070-8404-0550</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
+
+  <!-- 下段：会社概要 -->
+  <div class="company-block">
+    <!-- 左：写真 -->
+    <img
+      src="bg_company.png"
+      alt="株式会社RAVINALA"
+      class="company-img"
+    />
+    <!-- 右：テキスト -->
+    <div class="company-info">
+      <h2 class="company-title">会社概要</h2>
+      <table class="company-table">
+        <tbody>
+          <tr>
+            <th>会社名</th>
+            <td class="col-sep">：</td>
+            <td>株式会社RAVINALA（ラビナラ）</td>
+          </tr>
+          <tr>
+            <th>設立</th>
+            <td class="col-sep">：</td>
+            <td>2026年１月２０日</td>
+          </tr>
+          <tr>
+            <th>役員</th>
+            <td class="col-sep">：</td>
+            <td>
+              代表取締役　宮地 瞳<br>
+              取締役　宮地 常司
+            </td>
+          </tr>
+          <tr>
+            <th>Email</th>
+            <td class="col-sep">：</td>
+            <td><a href="mailto:ravinala.oka@gmail.com" style="color:var(--muted); text-underline-offset:3px;">ravinala.oka@gmail.com</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </section>
 
 <!-- ACCESS -->
@@ -633,18 +773,15 @@
       営業時間：10:00 – 19:00（定休日なし）<br>
       ご予約は <a href="https://www.jalan.net/kankou/spt_guide000000229081/" target="_blank" rel="noopener noreferrer" style="color:var(--dark); text-decoration:underline; text-underline-offset:3px;">じゃらん</a> よりお願いいたします。
     </p>
-
-    <!-- Google Map：住所ピン選択状態で表示 -->
     <div class="map-container">
       <iframe
-        src="https://www.google.com/maps/embed/v1/place?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&q=沖縄県中頭郡北谷町美浜9-46+ディストーションシーサイドビル&zoom=16&language=ja"
+        src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d894.0820544812578!2d127.75349827394261!3d26.31586948835363!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x34e51372c3965559%3A0xe58fb2ae900653dc!2zUkFWSU5B77yI44Op44OT44Ka77yJ!5e0!3m2!1sja!2sjp!4v1780201438152!5m2!1sja!2sjp"
         allowfullscreen=""
         loading="lazy"
         referrerpolicy="no-referrer-when-downgrade"
         title="RAVINA アクセスマップ"
       ></iframe>
     </div>
-    <!-- ※ 上記embed/v1はAPIキーが必要なため、下記の標準埋め込みURLをGoogle Mapsで取得して差し替えることを推奨します -->
   </div>
 </section>
 

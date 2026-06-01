@@ -808,7 +808,7 @@
 </head>
 <body>
 <div id="bg-video">
-  <video id="bg-vid" autoplay muted playsinline style="pointer-events:none;"></video>
+  <video id="bg-vid" autoplay muted playsinline webkit-playsinline x5-playsinline style="pointer-events:none;"></video>
 </div>
 
 <!-- NAV -->
@@ -1272,11 +1272,12 @@ function rsSubmit() {
 </script>
 
 <script>
-// ── 背景動画：ランダム順で順番に再生（.mp4）──
+// ── 背景動画：ランダム順再生（PC・スマホ対応）──
 (function () {
   const files = [
     'movie/001.mp4','movie/002.mp4','movie/003.mp4',
-    'movie/004.mp4','movie/005.mp4'
+    'movie/004.mp4','movie/005.mp4','movie/006.mp4',
+    'movie/007.mp4'
   ];
   const vid = document.getElementById('bg-vid');
   let playlist = [];
@@ -1291,6 +1292,20 @@ function rsSubmit() {
     return a;
   }
 
+  function tryPlay() {
+    vid.muted = true; // ミュート必須（iOS自動再生ポリシー）
+    var p = vid.play();
+    if (p !== undefined) {
+      p.catch(function () {
+        // iOS Safari: ユーザー操作後に再試行
+        document.addEventListener('touchstart', function retry() {
+          document.removeEventListener('touchstart', retry);
+          vid.play().catch(function(){});
+        }, { once: true });
+      });
+    }
+  }
+
   function playNext() {
     if (idx >= playlist.length) {
       playlist = shuffle([...files]);
@@ -1298,16 +1313,16 @@ function rsSubmit() {
     }
     vid.src = playlist[idx++];
     vid.load();
-    vid.play().catch(function () {
-      vid.muted = true;
-      vid.play().catch(function () {
-        setTimeout(playNext, 300);
-      });
-    });
+    tryPlay();
   }
 
   vid.addEventListener('ended', playNext);
   vid.addEventListener('error', function () { setTimeout(playNext, 300); });
+
+  // iOS Safari は loadedmetadata 後に play() が通りやすい
+  vid.addEventListener('loadedmetadata', function () {
+    tryPlay();
+  });
 
   playlist = shuffle([...files]);
   playNext();

@@ -808,9 +808,7 @@
 </head>
 <body>
 <div id="bg-video">
- <video src="movie/001.MOV" autoplay loop muted playsinline width="100%" style="pointer-events: none;">
-  お使いのブラウザはvideoタグに対応していません。
-</video>
+  <video id="bg-vid" autoplay muted playsinline style="pointer-events: none;"></video>
 </div>
 
 <!-- NAV -->
@@ -1274,45 +1272,109 @@ function rsSubmit() {
 </script>
 
 <script>
-// ── 背景動画：ランダム順で順番に再生 ──
-(function() {
-  const files = [
-    'movie/001.mov','movie/002.mov','movie/003.mov',
-    'movie/004.mov','movie/005.mov','movie/006.mov',
-    'movie/007.mov','movie/008.mov','movie/009.mov'
+// ─────────────────────────────────────────────────────────────────
+//  背景動画プレイヤー
+//  movie/ フォルダの .mov をランダム順で全部再生 → 繰り返し
+//
+//  【設定方法】
+//  movie/ フォルダに .mov ファイルを追加したら
+//  下の VIDEO_FILES 配列にファイル名を追記してください。
+//  例: 'movie/010.mov'
+// ─────────────────────────────────────────────────────────────────
+(function () {
+
+  // ▼▼▼ ここに movie/ フォルダの .mov ファイル名を列挙 ▼▼▼
+  const VIDEO_FILES = [
+    'movie/000.MOV',
+    'movie/001.MOV',
+    'movie/002.MOV',
+    'movie/003.MOV',
+    'movie/004.MOV',
+    'movie/005.MOV',
+    'movie/006.MOV',
+    'movie/007.MOV',
+    'movie/008.MOV',
   ];
+  // ▲▲▲ ────────────────────────────────────────────── ▲▲▲
+
   const vid = document.getElementById('bg-vid');
   let playlist = [];
   let idx = 0;
 
+  /* ── シャッフル（Fisher-Yates） ── */
   function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+      [a[i], a[j]] = [a[j], a[i]];
     }
-    return arr;
+    return a;
   }
 
+  /* ── 次の動画を再生 ── */
   function playNext() {
+    // 全部再生し終えたら再シャッフルして先頭から繰り返す
     if (idx >= playlist.length) {
-      playlist = shuffle([...files]);
+      playlist = shuffle(playlist);
       idx = 0;
     }
+
+    const src = playlist[idx++];
     vid.classList.remove('fade-out');
-    vid.src = playlist[idx++];
+    vid.src = src;
     vid.load();
-    vid.play().catch(() => {});
+    vid.play().catch(function () {
+      // 自動再生ポリシーでブロックされた場合はスキップ
+      setTimeout(playNext, 300);
+    });
   }
 
-  vid.addEventListener('ended', function() {
+  /* ── 再生終了時: フェードアウト → 次の動画 ── */
+  vid.addEventListener('ended', function () {
     vid.classList.add('fade-out');
-    setTimeout(playNext, 800);
+    setTimeout(playNext, 800); // 0.8s フェードアウト後に切り替え
   });
 
-  vid.addEventListener('error', playNext);
+  /* ── 読み込みエラー時: スキップ ── */
+  vid.addEventListener('error', function () {
+    console.warn('[BG-VIDEO] スキップ:', vid.src);
+    playNext();
+  });
 
-  playlist = shuffle([...files]);
-  playNext();
+  /* ── movie/ ディレクトリの .mov を自動検出（autoindex 有効時） ── */
+  function detectMovFiles() {
+    return fetch('movie/')
+      .then(function (res) { return res.text(); })
+      .then(function (html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        return Array.from(doc.querySelectorAll('a[href]'))
+          .map(function (a) { return a.getAttribute('href'); })
+          .filter(function (href) { return /\.mov$/i.test(href); })
+          .map(function (href) { return 'movie/' + href.replace(/^.*\//, ''); });
+      })
+      .catch(function () { return []; });
+  }
+
+  /* ── 起動 ── */
+  function start(files) {
+    if (!files || files.length === 0) {
+      console.warn('[BG-VIDEO] 再生できる動画ファイルが見つかりません。');
+      return;
+    }
+    playlist = shuffle(files);
+    idx = 0;
+    playNext();
+  }
+
+  if (VIDEO_FILES.length > 0) {
+    // 固定リストが設定されていればそれを使用
+    start(VIDEO_FILES);
+  } else {
+    // 空ならサーバーから自動検出を試みる
+    detectMovFiles().then(start);
+  }
+
 })();
 </script>
 

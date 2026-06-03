@@ -762,6 +762,47 @@
     /* ═══════════════════════════════════════════
        MOBILE
     ═══════════════════════════════════════════ */
+    /* ── 指輪彫刻ボトムシート ── */
+    #ring-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,8,0.6);
+      z-index: 200;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    #ring-overlay.open { display: block; }
+
+    #ring-sheet {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 201;
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      max-height: 92vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.32,0.72,0,1);
+      -webkit-overflow-scrolling: touch;
+    }
+    #ring-sheet.open { transform: translateY(0); }
+
+    /* ring_tes.html のCSS変数対応 */
+    #ring-sheet {
+      --font-sans: 'Noto Serif JP', serif;
+      --color-text-primary: #1a1a18;
+      --color-text-secondary: #5a5a52;
+      --color-text-info: #a0822a;
+      --color-background-primary: #fff;
+      --color-background-secondary: #f5f0ea;
+      --color-background-info: #fdf6e3;
+      --color-border-secondary: #c8c4bc;
+      --color-border-tertiary: #e0dbd2;
+      --border-radius-md: 6px;
+      --border-radius-lg: 10px;
+    }
+
     @media (max-width: 768px) {
       nav { padding: 12px 16px; }
       .nav-links { gap: 16px; }
@@ -890,7 +931,7 @@
           <p class="shop-card-name">ペアリング</p>
         </div>
       </div>
-      <div class="shop-card shop-card-3">
+      <div class="shop-card shop-card-3" onclick="openRingSheet()" style="cursor:pointer;">
         <div class="shop-card-bg">
           <svg class="card-ring-icon" width="120" height="120" viewBox="0 0 120 120" fill="none">
             <ellipse cx="60" cy="70" rx="44" ry="16" fill="rgba(255,255,255,0.1)"/>
@@ -901,7 +942,7 @@
         </div>
         <div class="shop-card-info">
           <p class="shop-card-label">Order</p>
-          <p class="shop-card-name">ジュエリーオーダー</p>
+          <p class="shop-card-name">指輪彫刻</p>
         </div>
       </div>
     </div>
@@ -1060,6 +1101,235 @@
 <div class="footer-bottom">
   &copy; RAVINALA Co., Ltd. All rights reserved.
 </div>
+<!-- 指輪彫刻 オーバーレイ -->
+<div id="ring-overlay" onclick="closeRingSheet()"></div>
+
+<!-- 指輪彫刻 ボトムシート -->
+<div id="ring-sheet" role="dialog" aria-modal="true" aria-label="指輪彫刻 料金計算">
+  <div class="sheet-handle">
+    <div class="sheet-handle-bar"></div>
+  </div>
+  <button class="sheet-close" onclick="closeRingSheet()" aria-label="閉じる">&times;</button>
+
+  <div class="rs-header">
+    <h2>Ring Engraving</h2>
+    <p>指輪彫刻 料金計算</p>
+  </div>
+
+  <div class="rs-wrap" id="ring-sheet-content">
+    <style>
+      #ring-sheet * { box-sizing: border-box; }
+      #ring-sheet .wrap { padding: 1.5rem 0; max-width: 680px; font-family: var(--font-sans); }
+      #ring-sheet .section-title {
+        font-size: 11px; font-weight: 500; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--color-text-secondary);
+        margin-bottom: 10px; padding-bottom: 6px;
+        border-bottom: 0.5px solid var(--color-border-tertiary);
+      }
+      #ring-sheet .field-group { margin-bottom: 1.25rem; }
+      #ring-sheet .field-label { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 6px; display: block; }
+      #ring-sheet .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+      #ring-sheet select { width: 100%; font-size: 14px; padding: 8px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); }
+      #ring-sheet .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+      #ring-sheet .btn-opt {
+        border: 0.5px solid var(--color-border-secondary);
+        background: var(--color-background-primary);
+        color: var(--color-text-primary);
+        border-radius: var(--border-radius-md);
+        padding: 7px 14px; font-size: 13px; cursor: pointer;
+        transition: all 0.15s ease; line-height: 1.5;
+      }
+      #ring-sheet .btn-opt:hover { background: var(--color-background-secondary); }
+      #ring-sheet .btn-opt.active {
+        background: var(--color-background-info);
+        color: var(--color-text-info);
+        border-color: transparent; font-weight: 500;
+      }
+      #ring-sheet .option-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary);
+      }
+      #ring-sheet .option-row:last-child { border-bottom: none; }
+      #ring-sheet .option-name { font-size: 14px; }
+      #ring-sheet .option-price { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+      #ring-sheet .counter { display: flex; align-items: center; }
+      #ring-sheet .counter-btn {
+        width: 30px; height: 30px; border: 0.5px solid var(--color-border-secondary);
+        background: var(--color-background-primary); color: var(--color-text-primary);
+        font-size: 16px; cursor: pointer; display: flex; align-items: center;
+        justify-content: center; transition: background 0.1s; line-height: 1;
+      }
+      #ring-sheet .counter-btn:first-child { border-radius: var(--border-radius-md) 0 0 var(--border-radius-md); }
+      #ring-sheet .counter-btn:last-child { border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; }
+      #ring-sheet .counter-btn:hover { background: var(--color-background-secondary); }
+      #ring-sheet .counter-val {
+        width: 36px; height: 30px; text-align: center; font-size: 14px; font-weight: 500;
+        border-top: 0.5px solid var(--color-border-secondary);
+        border-bottom: 0.5px solid var(--color-border-secondary);
+        border-left: none; border-right: none;
+        background: var(--color-background-primary); color: var(--color-text-primary);
+        display: flex; align-items: center; justify-content: center;
+      }
+      #ring-sheet .toggle-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 10px 0; border-bottom: 0.5px solid var(--color-border-tertiary);
+      }
+      #ring-sheet .toggle-wrap { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+      #ring-sheet .toggle-wrap input { opacity: 0; width: 0; height: 0; }
+      #ring-sheet .toggle-slider {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: var(--color-border-secondary); border-radius: 22px;
+        cursor: pointer; transition: background 0.2s;
+      }
+      #ring-sheet .toggle-slider:before {
+        content: ""; position: absolute; width: 16px; height: 16px;
+        background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s;
+      }
+      #ring-sheet .toggle-wrap input:checked + .toggle-slider { background: var(--color-text-info); }
+      #ring-sheet .toggle-wrap input:checked + .toggle-slider:before { transform: translateX(18px); }
+      #ring-sheet .carving-sub {
+        overflow: hidden; transition: max-height 0.25s ease, opacity 0.2s ease;
+        max-height: 0; opacity: 0;
+      }
+      #ring-sheet .carving-sub.open { max-height: 200px; opacity: 1; }
+      #ring-sheet .sub-option {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 0 8px 16px; border-bottom: 0.5px solid var(--color-border-tertiary);
+      }
+      #ring-sheet .sub-option:last-child { border-bottom: none; }
+      #ring-sheet .radio-btn-group { display: flex; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); overflow: hidden; }
+      #ring-sheet .radio-btn {
+        flex: 1; padding: 6px 12px; font-size: 12px; cursor: pointer;
+        background: var(--color-background-primary); color: var(--color-text-secondary);
+        border: none; border-right: 0.5px solid var(--color-border-secondary);
+        transition: all 0.15s; white-space: nowrap;
+      }
+      #ring-sheet .radio-btn:last-child { border-right: none; }
+      #ring-sheet .radio-btn:hover { background: var(--color-background-secondary); }
+      #ring-sheet .radio-btn.active { background: var(--color-background-info); color: var(--color-text-info); font-weight: 500; }
+      #ring-sheet .result-card {
+        background: var(--color-background-secondary);
+        border-radius: var(--border-radius-lg);
+        padding: 1.25rem 1.5rem; margin-top: 1.5rem;
+        border: 0.5px solid var(--color-border-tertiary);
+      }
+      #ring-sheet .result-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 6px 0; font-size: 13px; color: var(--color-text-secondary);
+        border-bottom: 0.5px solid var(--color-border-tertiary);
+      }
+      #ring-sheet .result-row:last-child { border-bottom: none; }
+      #ring-sheet .result-row.total { font-size: 18px; font-weight: 500; color: var(--color-text-primary); padding-top: 10px; margin-top: 4px; }
+      #ring-sheet .divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 1.25rem 0; }
+      #ring-sheet .header { margin-bottom: 1.5rem; }
+      #ring-sheet .header h2 { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+      #ring-sheet .header p { font-size: 13px; color: var(--color-text-secondary); }
+      #ring-sheet .indent-label { font-size: 13px; color: var(--color-text-secondary); }
+    </style>
+
+    <div class="wrap">
+      <div class="field-group">
+        <span class="field-label">素材</span>
+        <div class="btn-group" id="rng-material-group">
+          <button class="btn-opt active" data-val="silver" onclick="rngSetMat(this)">Silver</button>
+          <button class="btn-opt" data-val="10K" onclick="rngSetMat(this)">10K</button>
+          <button class="btn-opt" data-val="18K" onclick="rngSetMat(this)">18K / Pt900</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="rng-width">幅</label>
+          <select id="rng-width" onchange="rngCalc()">
+            <option value="3.0">3.0 mm</option>
+            <option value="4.0">4.0 mm</option>
+            <option value="5.0">5.0 mm</option>
+          </select>
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="rng-size">号数</label>
+          <select id="rng-size" onchange="rngCalc()">
+            <option value="1-20">1〜20号</option>
+            <option value="21-30">21〜30号</option>
+            <option value="31+">31号〜</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div class="section-title">加工・オプション</div>
+
+      <div class="toggle-row">
+        <div>
+          <div class="option-name">ハワイアン彫り</div>
+          <div class="option-price">チャーム2個＋スクロール4個 込み</div>
+        </div>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="rng-opt-carving" checked onchange="rngOnCarvingToggle()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="carving-sub open" id="rng-carving-sub">
+        <div class="sub-option">
+          <span class="indent-label">彫り範囲</span>
+          <div class="radio-btn-group" id="rng-scope-group">
+            <button class="radio-btn active" data-val="full" onclick="rngSetScope(this)">全周</button>
+            <button class="radio-btn" data-val="half" onclick="rngSetScope(this)">半周（半額）</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="option-row">
+        <div>
+          <div class="option-name">石留め</div>
+          <div class="option-price">¥11,000 / 石</div>
+        </div>
+        <div class="counter">
+          <button class="counter-btn" onclick="rngChange('stone',-1)">−</button>
+          <div class="counter-val" id="rng-val-stone">0</div>
+          <button class="counter-btn" onclick="rngChange('stone',1)">＋</button>
+        </div>
+      </div>
+
+      <div class="option-row">
+        <div>
+          <div class="option-name">チャーム追加</div>
+          <div class="option-price">¥11,000 / 個</div>
+        </div>
+        <div class="counter">
+          <button class="counter-btn" onclick="rngChange('charm',-1)">−</button>
+          <div class="counter-val" id="rng-val-charm">0</div>
+          <button class="counter-btn" onclick="rngChange('charm',1)">＋</button>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div class="section-title">納期</div>
+
+      <div class="field-group">
+        <div class="btn-group" id="rng-delivery-group">
+          <button class="btn-opt active" data-val="normal" onclick="rngSetDel(this)">通常（約3週間）<br><span style="font-size:11px;color:var(--color-text-secondary)">追加なし</span></button>
+          <button class="btn-opt" data-val="7day" onclick="rngSetDel(this)">7日後納品<br><span style="font-size:11px;color:var(--color-text-secondary)">+¥20,000</span></button>
+          <button class="btn-opt" data-val="3day" onclick="rngSetDel(this)">3日後納品<br><span style="font-size:11px;color:var(--color-text-secondary)">+¥40,000</span></button>
+        </div>
+      </div>
+
+      <div class="result-card">
+        <div class="section-title" style="margin-bottom:4px">お見積り</div>
+        <div id="rng-result-rows" style="margin-top:1rem">
+          <div class="result-row"><span>基本料金（リング）</span><span id="rng-r-base">—</span></div>
+          <div class="result-row" id="rng-row-carving"><span id="rng-lbl-carving">ハワイアン彫り（全周）</span><span id="rng-r-carving">—</span></div>
+          <div class="result-row" id="rng-row-stone" style="display:none"><span id="rng-lbl-stone">石留め</span><span id="rng-r-stone">—</span></div>
+          <div class="result-row" id="rng-row-charm" style="display:none"><span id="rng-lbl-charm">チャーム追加</span><span id="rng-r-charm">—</span></div>
+          <div class="result-row" id="rng-row-delivery" style="display:none"><span id="rng-lbl-del">—</span><span id="rng-r-delivery">—</span></div>
+          <div class="result-row total"><span>合計（税込）</span><span id="rng-r-total">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ボトムシート オーバーレイ -->
 <div id="resv-overlay" onclick="closeResvSheet()"></div>
 
@@ -1233,7 +1503,20 @@ function rsGoStep3() {
   rs.name=n; rs.guests=g; rs.tel=t;
   rsStep3();
 }
-function rsSubmit() {
+function openRingSheet() {
+  document.getElementById('ring-overlay').classList.add('open');
+  document.getElementById('ring-sheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeRingSheet() {
+  document.getElementById('ring-overlay').classList.remove('open');
+  document.getElementById('ring-sheet').classList.remove('open');
+  document.body.style.overflow = '';
+}
+</script>
+
+<script>
+// ── 背景動画：ランダム順再生（PC・スマホ対応）──
   const ds = rs.year+'年'+(rs.month+1)+'月'+rs.day+'日('+RS_DAYS[rs.dow]+') '+rs.time+'〜';
   document.getElementById('rs-main').innerHTML = `
     <div style="text-align:center;padding:2.5rem 1rem;color:#5a5a52;font-size:13px;font-family:'Noto Serif JP',serif;">
@@ -1329,5 +1612,110 @@ function rsSubmit() {
 })();
 </script>
 
+<script>
+// ── 指輪彫刻 料金計算 ──
+const rngPrices = {
+  silver: {
+    "3.0": {"1-20":56100,"21-30":72710,"31+":73920},
+    "4.0": {"1-20":56100,"21-30":72710,"31+":73920},
+    "5.0": {"1-20":60500,"21-30":77550,"31+":79200}
+  },
+  "10K": {
+    "3.0": {"1-20":106700,"21-30":111650,"31+":125400},
+    "4.0": {"1-20":140800,"21-30":156200,"31+":171600},
+    "5.0": {"1-20":154000,"21-30":180400,"31+":191400}
+  },
+  "18K": {
+    "3.0": {"1-20":275000,"21-30":316250,"31+":338250},
+    "4.0": {"1-20":275000,"21-30":316250,"31+":338250},
+    "5.0": {"1-20":330000,"21-30":376750,"31+":404250}
+  }
+};
+const rngRingOnly = {
+  silver: {"3.0":12100,"4.0":12100,"5.0":16500},
+  "10K":  {"3.0":110000,"4.0":110000,"5.0":140000},
+  "18K":  {"3.0":220000,"4.0":220000,"5.0":275000}
+};
+let rngMat = "silver", rngDel = "normal", rngScope = "full";
+let rngCounts = { stone: 0, charm: 0 };
+
+function rngSetMat(el) {
+  document.querySelectorAll("#rng-material-group .btn-opt").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active"); rngMat = el.dataset.val; rngCalc();
+}
+function rngSetDel(el) {
+  document.querySelectorAll("#rng-delivery-group .btn-opt").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active"); rngDel = el.dataset.val; rngCalc();
+}
+function rngSetScope(el) {
+  document.querySelectorAll("#rng-scope-group .radio-btn").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active"); rngScope = el.dataset.val; rngCalc();
+}
+function rngOnCarvingToggle() {
+  const sub = document.getElementById("rng-carving-sub");
+  const on = document.getElementById("rng-opt-carving").checked;
+  sub.classList.toggle("open", on);
+  rngCalc();
+}
+function rngChange(key, delta) {
+  rngCounts[key] = Math.max(0, rngCounts[key] + delta);
+  document.getElementById("rng-val-"+key).textContent = rngCounts[key];
+  rngCalc();
+}
+function rngFmt(n) { return "¥" + Math.round(n).toLocaleString("ja-JP"); }
+
+function rngCalc() {
+  const width = document.getElementById("rng-width").value;
+  const size  = document.getElementById("rng-size").value;
+  const carving = document.getElementById("rng-opt-carving").checked;
+
+  const fullTotal = rngPrices[rngMat][width][size];
+  const ringBase  = rngRingOnly[rngMat][width];
+  const fullCarvingFee = fullTotal - ringBase;
+
+  let total = ringBase;
+  document.getElementById("rng-r-base").textContent = rngFmt(ringBase);
+
+  if (carving) {
+    const carvingFee = rngScope === "half" ? fullCarvingFee / 2 : fullCarvingFee;
+    total += carvingFee;
+    document.getElementById("rng-lbl-carving").textContent = rngScope === "half" ? "ハワイアン彫り（半周）" : "ハワイアン彫り（全周）";
+    document.getElementById("rng-r-carving").textContent = rngFmt(carvingFee);
+    document.getElementById("rng-row-carving").style.display = "flex";
+  } else {
+    document.getElementById("rng-row-carving").style.display = "none";
+  }
+
+  if (rngCounts.stone > 0) {
+    const s = rngCounts.stone * 11000; total += s;
+    document.getElementById("rng-lbl-stone").textContent = `石留め ×${rngCounts.stone}`;
+    document.getElementById("rng-r-stone").textContent = rngFmt(s);
+    document.getElementById("rng-row-stone").style.display = "flex";
+  } else { document.getElementById("rng-row-stone").style.display = "none"; }
+
+  if (rngCounts.charm > 0) {
+    const c = rngCounts.charm * 11000; total += c;
+    document.getElementById("rng-lbl-charm").textContent = `チャーム追加 ×${rngCounts.charm}`;
+    document.getElementById("rng-r-charm").textContent = rngFmt(c);
+    document.getElementById("rng-row-charm").style.display = "flex";
+  } else { document.getElementById("rng-row-charm").style.display = "none"; }
+
+  const rowDel = document.getElementById("rng-row-delivery");
+  if (rngDel === "7day") {
+    rowDel.style.display = "flex";
+    document.getElementById("rng-lbl-del").textContent = "速納（7日後）";
+    document.getElementById("rng-r-delivery").textContent = "+¥20,000";
+    total += 20000;
+  } else if (rngDel === "3day") {
+    rowDel.style.display = "flex";
+    document.getElementById("rng-lbl-del").textContent = "速納（3日後）";
+    document.getElementById("rng-r-delivery").textContent = "+¥40,000";
+    total += 40000;
+  } else { rowDel.style.display = "none"; }
+
+  document.getElementById("rng-r-total").textContent = rngFmt(total);
+}
+rngCalc();
+</script>
 </body>
 </html>

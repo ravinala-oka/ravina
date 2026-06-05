@@ -127,6 +127,39 @@
     .nav-links a:hover::after,
     .nav-links a.active::after { transform: scaleX(1); }
 
+    /* ── 言語切替ボタン ── */
+    .lang-toggle {
+      display: flex;
+      align-items: center;
+      border: 1px solid rgba(201,168,76,0.45);
+      border-radius: 3px;
+      overflow: hidden;
+      flex-shrink: 0;
+      margin-left: 28px;
+    }
+    .lang-toggle button {
+      background: none;
+      border: none;
+      color: rgba(245,240,234,0.55);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      padding: 5px 11px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      line-height: 1;
+    }
+    .lang-toggle button.active {
+      background: rgba(201,168,76,0.22);
+      color: var(--gold);
+    }
+    .lang-toggle .lang-sep {
+      width: 1px;
+      height: 14px;
+      background: rgba(201,168,76,0.35);
+      flex-shrink: 0;
+    }
+
     /* ── HERO ── */
     .hero {
       position: relative;
@@ -611,6 +644,20 @@
     }
     #resv-sheet .rs-time-slot:hover { border-color: #c9a84c; color: #a0822a; background: #fdf6e3; }
     #resv-sheet .rs-time-slot.selected { background: #c9a84c; color: #1a1a18; border-color: #c9a84c; font-weight: 500; }
+    #resv-sheet .rs-time-slot.unavail {
+      background: #f0ece6; color: #c8c4bc;
+      border-color: #e0dbd2; cursor: not-allowed;
+      text-decoration: line-through;
+    }
+    #resv-sheet .rs-time-slot.unavail:hover {
+      background: #f0ece6; color: #c8c4bc;
+      border-color: #e0dbd2;
+    }
+    #resv-sheet .rs-time-loading {
+      text-align: center; padding: .75rem 0;
+      font-size: 12px; color: #888780;
+      font-family: 'Noto Serif JP', serif;
+    }
     #resv-sheet .rs-form-group { margin-bottom: .75rem; }
     #resv-sheet .rs-form-group label {
       display: block; font-size: 12px; color: #5a5a52;
@@ -858,6 +905,11 @@
     <li><a href="#company">Company</a></li>
     <li><a href="#access">Access</a></li>
   </ul>
+  <div class="lang-toggle">
+    <button id="lang-en" class="active" onclick="setLang('en')">EN</button>
+    <span class="lang-sep"></span>
+    <button id="lang-ja" onclick="setLang('ja')">JP</button>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -866,14 +918,14 @@
   <div class="hero-content">
     <h1 class="hero-title">RAVINA</h1>
     <p class="hero-subtitle">jewelry workshop studio</p>
-    <p class="hero-desc">
-      海が見えるジュエリー工房・アメリカンビレッジ3階<br>
-      結婚指輪・ペアリング・その他・ジュエリーオーダー
+    <p class="hero-desc" data-en="Ocean-view jewelry studio on the 3rd floor of American Village<br>Wedding rings, pair rings, and custom jewelry orders" data-ja="海が見えるジュエリー工房・アメリカンビレッジ3階<br>結婚指輪・ペアリング・その他・ジュエリーオーダー">
+      Ocean-view jewelry studio on the 3rd floor of American Village<br>
+      Wedding rings, pair rings, and custom jewelry orders
     </p>
     <div class="hero-buttons">
       <button class="btn-reservation" onclick="openResvSheet()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        ご予約
+        <span data-en="Reservation" data-ja="ご予約">Reservation</span>
       </button>
       <a href="https://www.instagram.com/ravina.okinawa/" class="btn-instagram" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 24 24" fill="currentColor">
@@ -909,7 +961,7 @@
         </div>
         <div class="shop-card-info">
           <p class="shop-card-label">Wedding</p>
-          <p class="shop-card-name">結婚指輪</p>
+          <p class="shop-card-name" data-en="Wedding Rings" data-ja="結婚指輪">Wedding Rings</p>
         </div>
       </div>
       <div class="shop-card shop-card-2">
@@ -923,7 +975,7 @@
         </div>
         <div class="shop-card-info">
           <p class="shop-card-label">Pair</p>
-          <p class="shop-card-name">ペアリング</p>
+          <p class="shop-card-name" data-en="Pair Rings" data-ja="ペアリング">Pair Rings</p>
         </div>
       </div>
       <div class="shop-card shop-card-3" onclick="openRingSheet()" style="cursor:pointer;">
@@ -937,7 +989,7 @@
         </div>
         <div class="shop-card-info">
           <p class="shop-card-label">Order</p>
-          <p class="shop-card-name">指輪彫刻</p>
+          <p class="shop-card-name" data-en="Ring Engraving" data-ja="指輪彫刻">Ring Engraving</p>
         </div>
       </div>
     </div>
@@ -964,33 +1016,33 @@
       <table class="company-table">
         <tbody>
           <tr>
-            <th>店舗</th>
-            <td class="col-sep">：</td>
+            <th data-en="Store" data-ja="店舗">Store</th>
+            <td class="col-sep">:</td>
             <td>RAVINA　jewelry workshop studio</td>
           </tr>
           <tr>
-            <th>設立</th>
-            <td class="col-sep">：</td>
-            <td>2026年３月５日</td>
+            <th data-en="Founded" data-ja="設立">Founded</th>
+            <td class="col-sep">:</td>
+            <td data-en="March 5, 2026" data-ja="2026年３月５日">March 5, 2026</td>
           </tr>
           <tr>
-            <th>事業内容</th>
-            <td class="col-sep">：</td>
-            <td>アクセサリー＆ジュエリー販売・体験サービス</td>
+            <th data-en="Business" data-ja="事業内容">Business</th>
+            <td class="col-sep">:</td>
+            <td data-en="Accessories &amp; jewelry sales · experience services" data-ja="アクセサリー＆ジュエリー販売・体験サービス">Accessories &amp; jewelry sales · experience services</td>
           </tr>
           <tr>
-            <th>郵便番号</th>
-            <td class="col-sep">：</td>
+            <th data-en="Postal Code" data-ja="郵便番号">Postal Code</th>
+            <td class="col-sep">:</td>
             <td>〒904-0115</td>
           </tr>
           <tr>
-            <th>住所</th>
-            <td class="col-sep">：</td>
-            <td>沖縄県中頭郡北谷町美浜９−４６ ディストーションシーサイドビル ３F</td>
+            <th data-en="Address" data-ja="住所">Address</th>
+            <td class="col-sep">:</td>
+            <td data-en="9-46 Mihama, Chatan-cho, Nakagami-gun, Okinawa, Distortion Seaside Bldg. 3F" data-ja="沖縄県中頭郡北谷町美浜９−４６ ディストーションシーサイドビル ３F">9-46 Mihama, Chatan-cho, Nakagami-gun, Okinawa, Distortion Seaside Bldg. 3F</td>
           </tr>
           <tr>
-            <th>お客様予約</th>
-            <td class="col-sep">：</td>
+            <th data-en="Reservations" data-ja="お客様予約">Reservations</th>
+            <td class="col-sep">:</td>
             <td>TEL 070-8404-0550</td>
           </tr>
         </tbody>
@@ -1012,31 +1064,28 @@
       <table class="company-table">
         <tbody>
           <tr>
-            <th>会社名</th>
-            <td class="col-sep">：</td>
-            <td>株式会社RAVINALA（ラビナラ）</td>
+            <th data-en="Company" data-ja="会社名">Company</th>
+            <td class="col-sep">:</td>
+            <td data-en="RAVINALA Co., Ltd." data-ja="株式会社RAVINALA（ラビナラ）">RAVINALA Co., Ltd.</td>
           </tr>
           <tr>
-            <th>設立</th>
-            <td class="col-sep">：</td>
-            <td>2026年１月２０日</td>
+            <th data-en="Founded" data-ja="設立">Founded</th>
+            <td class="col-sep">:</td>
+            <td data-en="January 20, 2026" data-ja="2026年１月２０日">January 20, 2026</td>
           </tr>
           <tr>
-            <th>役員</th>
-            <td class="col-sep">：</td>
-            <td>
-              代表取締役　宮地 瞳<br>
-              取締役　宮地 常司
-            </td>
+            <th data-en="Officers" data-ja="役員">Officers</th>
+            <td class="col-sep">:</td>
+            <td data-en="CEO &nbsp; Hitomi Miyachi<br>Director &nbsp; Tsuneji Miyachi" data-ja="代表取締役　宮地 瞳<br>取締役　宮地 常司">CEO &nbsp; Hitomi Miyachi<br>Director &nbsp; Tsuneji Miyachi</td>
           </tr>
-                    <tr>
-            <th>広報</th>
-            <td class="col-sep">：</td>
+          <tr>
+            <th data-en="PR" data-ja="広報">PR</th>
+            <td class="col-sep">:</td>
             <td>TEL 090-1999-7770</td>
           </tr>
           <tr>
             <th>Email</th>
-            <td class="col-sep">：</td>
+            <td class="col-sep">:</td>
             <td><a href="mailto:ravinala.oka@gmail.com" style="color:var(--muted); text-underline-offset:3px;">ravinala.oka@gmail.com</a></td>
           </tr>
         </tbody>
@@ -1051,10 +1100,9 @@
   <div style="max-width:1100px; margin:0 auto; text-align:center;">
     <p class="about-label" style="text-align:center;">Access</p>
     <h2 class="about-heading" style="text-align:center; margin-bottom:32px;">Access</h2>
-    <p style="font-size:14px; line-height:2.2; letter-spacing:0.06em; color:var(--muted);">
-      〒904-0115 沖縄県中頭郡北谷町美浜９−４６ ディストーションシーサイドビル ３F RAVINA<br>
-      営業時間：10:00 – 19:00（定休日なし）<br>
-      ご予約は <button onclick="openResvSheet()" style="background:none;border:none;padding:0;color:var(--dark);text-decoration:underline;text-underline-offset:3px;cursor:pointer;font-family:'Noto Serif JP',serif;font-size:14px;letter-spacing:0.06em;">こちら</button> よりお願いいたします。
+    <p style="font-size:14px; line-height:2.2; letter-spacing:0.06em; color:var(--muted);" data-en="〒904-0115 &nbsp;9-46 Mihama, Chatan-cho, Nakagami-gun, Okinawa, Distortion Seaside Bldg. 3F RAVINA<br>Hours: 10:00 – 19:00 (open daily)" data-ja="〒904-0115 沖縄県中頭郡北谷町美浜９−４６ ディストーションシーサイドビル ３F RAVINA<br>営業時間：10:00 – 19:00（定休日なし）">
+      〒904-0115 &nbsp;9-46 Mihama, Chatan-cho, Nakagami-gun, Okinawa, Distortion Seaside Bldg. 3F RAVINA<br>
+      Hours: 10:00 – 19:00 (open daily)
     </p>
     <div class="map-container">
       <iframe
@@ -1072,8 +1120,8 @@
 <footer>
   <div>
     <p class="footer-brand">RAVINA</p>
-    <p class="footer-brand-corp">株式会社 RAVINALA</p>
-    <p class="footer-tagline">jewelry workshop studio</p>
+    <p class="footer-brand-corp">jewelry workshop studio</p>
+    <p class="footer-tagline" data-en="RAVINALA Co., Ltd." data-ja="株式会社 RAVINALA">RAVINALA Co., Ltd.</p>
   </div>
   <div>
     <p class="footer-col-title">Navigation</p>
@@ -1089,7 +1137,7 @@
     <ul class="footer-links">
       <li><a href="https://www.tiktok.com/@ravina_jewelry" target="_blank" rel="noopener noreferrer">TikTok</a></li>
       <li><a href="https://www.instagram.com/ravina.okinawa/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
-      <li><a href="#" onclick="openResvSheet();return false;">ご予約</a></li>
+      <li><a href="#" onclick="openResvSheet();return false;" data-en="Reservation" data-ja="ご予約">Reservation</a></li>
     </ul>
   </div>
 </footer>
@@ -1107,8 +1155,8 @@
   <button class="sheet-close" onclick="closeRingSheet()" aria-label="閉じる">&times;</button>
 
   <div class="rs-header">
-    <h2>Ring Engraving</h2>
-    <p>指輪彫刻 料金計算</p>
+    <h2 data-en="Ring Engraving" data-ja="指輪彫刻">Ring Engraving</h2>
+    <p data-en="Ring Engraving Price Calculator" data-ja="指輪彫刻 料金計算">Ring Engraving Price Calculator</p>
   </div>
 
   <div class="rs-wrap" id="ring-sheet-content">
@@ -1224,7 +1272,7 @@
 
     <div class="wrap">
       <div class="field-group">
-        <span class="field-label">素材</span>
+        <span class="field-label" data-en="Material" data-ja="素材">Material</span>
         <div class="btn-group" id="rng-material-group">
           <button class="btn-opt active" data-val="silver" onclick="rngSetMat(this)">Silver</button>
           <button class="btn-opt" data-val="10K" onclick="rngSetMat(this)">10K</button>
@@ -1234,7 +1282,7 @@
 
       <div class="row">
         <div class="field-group" style="margin-bottom:0">
-          <label class="field-label" for="rng-width">幅</label>
+          <label class="field-label" for="rng-width" data-en="Width" data-ja="幅">Width</label>
           <select id="rng-width" onchange="rngCalc()">
             <option value="3.0">3.0 mm</option>
             <option value="4.0">4.0 mm</option>
@@ -1242,22 +1290,22 @@
           </select>
         </div>
         <div class="field-group" style="margin-bottom:0">
-          <label class="field-label" for="rng-size">号数</label>
+          <label class="field-label" for="rng-size" data-en="Size (JP)" data-ja="号数">Size (JP)</label>
           <select id="rng-size" onchange="rngCalc()">
-            <option value="1-20">1〜20号</option>
-            <option value="21-30">21〜30号</option>
-            <option value="31+">31号〜</option>
+            <option value="1-20" data-en="Size 1–20" data-ja="1〜20号">Size 1–20</option>
+            <option value="21-30" data-en="Size 21–30" data-ja="21〜30号">Size 21–30</option>
+            <option value="31+" data-en="Size 31+" data-ja="31号〜">Size 31+</option>
           </select>
         </div>
       </div>
 
       <hr class="divider">
-      <div class="section-title">加工・オプション</div>
+      <div class="section-title" data-en="Options" data-ja="加工・オプション">Options</div>
 
       <div class="toggle-row">
         <div>
-          <div class="option-name">ハワイアン彫り</div>
-          <div class="option-price">チャーム2個＋スクロール4個 込み</div>
+          <div class="option-name" data-en="Hawaiian Engraving" data-ja="ハワイアン彫り">Hawaiian Engraving</div>
+          <div class="option-price" data-en="Incl. 2 charms + 4 scrolls" data-ja="チャーム2個＋スクロール4個 込み">Incl. 2 charms + 4 scrolls</div>
         </div>
         <label class="toggle-wrap">
           <input type="checkbox" id="rng-opt-carving" checked onchange="rngOnCarvingToggle()">
@@ -1267,18 +1315,18 @@
 
       <div class="carving-sub open" id="rng-carving-sub">
         <div class="sub-option">
-          <span class="indent-label">彫り範囲</span>
+          <span class="indent-label" data-en="Engraving Range" data-ja="彫り範囲">Engraving Range</span>
           <div class="radio-btn-group" id="rng-scope-group">
-            <button class="radio-btn active" data-val="full" onclick="rngSetScope(this)">全周</button>
-            <button class="radio-btn" data-val="half" onclick="rngSetScope(this)">半周（半額）</button>
+            <button class="radio-btn active" data-val="full" onclick="rngSetScope(this)" data-en="Full" data-ja="全周">Full</button>
+            <button class="radio-btn" data-val="half" onclick="rngSetScope(this)" data-en="Half (50% off)" data-ja="半周（半額）">Half (50% off)</button>
           </div>
         </div>
       </div>
 
       <div class="option-row">
         <div>
-          <div class="option-name">石留め</div>
-          <div class="option-price">¥11,000 / 石</div>
+          <div class="option-name" data-en="Stone Setting" data-ja="石留め">Stone Setting</div>
+          <div class="option-price" data-en="¥11,000 / stone" data-ja="¥11,000 / 石">¥11,000 / stone</div>
         </div>
         <div class="counter">
           <button class="counter-btn" onclick="rngChange('stone',-1)">−</button>
@@ -1289,8 +1337,8 @@
 
       <div class="option-row">
         <div>
-          <div class="option-name">チャーム追加</div>
-          <div class="option-price">¥11,000 / 個</div>
+          <div class="option-name" data-en="Extra Charm" data-ja="チャーム追加">Extra Charm</div>
+          <div class="option-price" data-en="¥11,000 / piece" data-ja="¥11,000 / 個">¥11,000 / piece</div>
         </div>
         <div class="counter">
           <button class="counter-btn" onclick="rngChange('charm',-1)">−</button>
@@ -1300,25 +1348,25 @@
       </div>
 
       <hr class="divider">
-      <div class="section-title">納期</div>
+      <div class="section-title" data-en="Delivery" data-ja="納期">Delivery</div>
 
       <div class="field-group">
         <div class="btn-group" id="rng-delivery-group">
-          <button class="btn-opt active" data-val="normal" onclick="rngSetDel(this)">通常（約3週間）<br><span style="font-size:11px;color:var(--color-text-secondary)">追加なし</span></button>
-          <button class="btn-opt" data-val="7day" onclick="rngSetDel(this)">7日後納品<br><span style="font-size:11px;color:var(--color-text-secondary)">+¥20,000</span></button>
-          <button class="btn-opt" data-val="3day" onclick="rngSetDel(this)">3日後納品<br><span style="font-size:11px;color:var(--color-text-secondary)">+¥40,000</span></button>
+          <button class="btn-opt active" data-val="normal" onclick="rngSetDel(this)" data-en="Standard (approx. 3 weeks)<br><span style='font-size:11px;color:var(--color-text-secondary)'>No extra charge</span>" data-ja="通常（約3週間）<br><span style='font-size:11px;color:var(--color-text-secondary)'>追加なし</span>">Standard (approx. 3 weeks)<br><span style="font-size:11px;color:var(--color-text-secondary)">No extra charge</span></button>
+          <button class="btn-opt" data-val="7day" onclick="rngSetDel(this)" data-en="7-day delivery<br><span style='font-size:11px;color:var(--color-text-secondary)'>+¥20,000</span>" data-ja="7日後納品<br><span style='font-size:11px;color:var(--color-text-secondary)'>+¥20,000</span>">7-day delivery<br><span style="font-size:11px;color:var(--color-text-secondary)">+¥20,000</span></button>
+          <button class="btn-opt" data-val="3day" onclick="rngSetDel(this)" data-en="3-day delivery<br><span style='font-size:11px;color:var(--color-text-secondary)'>+¥40,000</span>" data-ja="3日後納品<br><span style='font-size:11px;color:var(--color-text-secondary)'>+¥40,000</span>">3-day delivery<br><span style="font-size:11px;color:var(--color-text-secondary)">+¥40,000</span></button>
         </div>
       </div>
 
       <div class="result-card">
-        <div class="section-title" style="margin-bottom:4px">お見積り</div>
+        <div class="section-title" style="margin-bottom:4px" data-en="Estimate" data-ja="お見積り">Estimate</div>
         <div id="rng-result-rows" style="margin-top:1rem">
-          <div class="result-row"><span>基本料金（リング）</span><span id="rng-r-base">—</span></div>
+          <div class="result-row"><span data-en="Base price (ring)" data-ja="基本料金（リング）">Base price (ring)</span><span id="rng-r-base">—</span></div>
           <div class="result-row" id="rng-row-carving"><span id="rng-lbl-carving">ハワイアン彫り（全周）</span><span id="rng-r-carving">—</span></div>
           <div class="result-row" id="rng-row-stone" style="display:none"><span id="rng-lbl-stone">石留め</span><span id="rng-r-stone">—</span></div>
           <div class="result-row" id="rng-row-charm" style="display:none"><span id="rng-lbl-charm">チャーム追加</span><span id="rng-r-charm">—</span></div>
           <div class="result-row" id="rng-row-delivery" style="display:none"><span id="rng-lbl-del">—</span><span id="rng-r-delivery">—</span></div>
-          <div class="result-row total"><span>合計（税込）</span><span id="rng-r-total">—</span></div>
+          <div class="result-row total"><span data-en="Total (tax incl.)" data-ja="合計（税込）">Total (tax incl.)</span><span id="rng-r-total">—</span></div>
         </div>
       </div>
     </div>
@@ -1336,16 +1384,16 @@
   <button class="sheet-close" onclick="closeResvSheet()" aria-label="閉じる">&times;</button>
 
   <div class="rs-header">
-    <h2>Reservation</h2>
+    <h2 data-en="Reservation" data-ja="ご予約">Reservation</h2>
     <p>RAVINA jewelry workshop studio</p>
   </div>
 
   <div class="rs-step-bar" id="rs-step-bar">
-    <div class="rs-step active" id="rs-s1"><div class="rs-step-num">1</div><span>日時選択</span></div>
+    <div class="rs-step active" id="rs-s1"><div class="rs-step-num">1</div><span data-en="Date &amp; Time" data-ja="日時選択">Date &amp; Time</span></div>
     <div class="rs-step-sep"></div>
-    <div class="rs-step" id="rs-s2"><div class="rs-step-num">2</div><span>お客様情報</span></div>
+    <div class="rs-step" id="rs-s2"><div class="rs-step-num">2</div><span data-en="Your Info" data-ja="お客様情報">Your Info</span></div>
     <div class="rs-step-sep"></div>
-    <div class="rs-step" id="rs-s3"><div class="rs-step-num">3</div><span>確認・送信</span></div>
+    <div class="rs-step" id="rs-s3"><div class="rs-step-num">3</div><span data-en="Confirm" data-ja="確認・送信">Confirm</span></div>
   </div>
 
   <div class="rs-wrap">
@@ -1354,10 +1402,14 @@
 </div>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxfK9f-UBSMnN6-jtxaaxKiZH5KsY6OHQ_uGCzl7ySs_jqj6add5RAHtvEijAwvyE30/exec';
-const RS_MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-const RS_DAYS   = ['日','月','火','水','木','金','土'];
-const RS_HOURS  = ['9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
+const GAS_URL     = 'https://script.google.com/macros/s/AKfycbxfK9f-UBSMnN6-jtxaaxKiZH5KsY6OHQ_uGCzl7ySs_jqj6add5RAHtvEijAwvyE30/exec';
+const GAS_CAL_URL = 'https://script.google.com/macros/s/AKfycbwGZHjbep6K8anZELyR-5rk-RwUrUJ8hIfgbImkZo5dk62l_hoNZ3Mg7l2Y-KAcTbjj/exec';
+let rsBookedSlots = []; // その日の予約済み時間帯キャッシュ
+const RS_MONTHS    = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const RS_MONTHS_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const RS_DAYS    = ['日','月','火','水','木','金','土'];
+const RS_DAYS_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const RS_HOURS  = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
 
 let rs = { year:null, month:null, day:null, dow:null, time:null, name:'', guests:'', tel:'' };
 const rsToday = new Date(); rsToday.setHours(0,0,0,0);
@@ -1388,11 +1440,11 @@ function rsRenderCal() {
   const startDow = first.getDay();
   let h = `<div class="rs-cal-header">
     <button class="rs-cal-nav" onclick="rsPrevMonth()">&#8249;</button>
-    <span>${rsCalY}年 ${RS_MONTHS[rsCalM]}</span>
+    <span>${currentLang==='ja' ? rsCalY+'年 '+RS_MONTHS[rsCalM] : RS_MONTHS_EN[rsCalM]+' '+rsCalY}</span>
     <button class="rs-cal-nav" onclick="rsNextMonth()">&#8250;</button>
   </div>
   <div class="rs-cal-grid">
-    ${RS_DAYS.map((d,i) => `<div class="rs-dow${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('')}
+    ${(currentLang==='ja' ? RS_DAYS : RS_DAYS_EN).map((d,i) => `<div class="rs-dow${i===0?' sun':i===6?' sat':''}">${d}</div>`).join('')}
   `;
   for (let i = 0; i < startDow; i++) h += `<div class="rs-day empty"></div>`;
   for (let d = 1; d <= lastDay; d++) {
@@ -1412,11 +1464,31 @@ function rsRenderCal() {
   return h + `</div>`;
 }
 
+function rsIsBooked(t) {
+  // t = "9:00" などの開始時刻
+  const toMin = s => { const p = s.split(':'); return +p[0]*60 + +p[1]; };
+  const slotStart = toMin(t);
+  const slotEnd   = slotStart + 60;
+  return rsBookedSlots.some(b => {
+    const bs = toMin(b.start);
+    const be = toMin(b.end);
+    return slotStart < be && slotEnd > bs; // 重なりがあればNG
+  });
+}
+
 function rsRenderTimes() {
-  if (!rs.day) return `<p style="font-size:12px;color:#888780;text-align:center;padding:.75rem 0;font-family:'Noto Serif JP',serif;">日付を選択してください</p>`;
+  if (!rs.day) return `<p style="font-size:12px;color:#888780;text-align:center;padding:.75rem 0;font-family:'Noto Serif JP',serif;">${currentLang==='ja' ? '日付を選択してください' : 'Please select a date'}</p>`;
   let h = `<div class="rs-time-grid">`;
   RS_HOURS.forEach(t => {
-    h += `<div class="rs-time-slot${rs.time===t?' selected':''}" onclick="rsSelTime('${t}')">${t}</div>`;
+    const booked  = rsIsBooked(t);
+    const selected = rs.time === t;
+    let cls = 'rs-time-slot';
+    if (selected) cls += ' selected';
+    if (booked)   cls += ' unavail';
+    const click = (!booked && !selected) ? `onclick="rsSelTime('${t}')"` :
+                  (selected            ? `onclick="rsSelTime('${t}')"` : '');
+    const label = booked ? `${t}<br><span style="font-size:9px">×</span>` : t;
+    h += `<div class="${cls}" ${click}>${label}</div>`;
   });
   return h + `</div>`;
 }
@@ -1424,12 +1496,12 @@ function rsRenderTimes() {
 function rsStep1() {
   rsSetStep(1);
   document.getElementById('rs-main').innerHTML = `
-    <div class="rs-section-title">— 予約日を選んでください</div>
+    <div class="rs-section-title">${currentLang==='ja' ? '— 予約日を選んでください' : '— Select a Date'}</div>
     <div id="rs-cal">${rsRenderCal()}</div>
     <div class="rs-divider"></div>
-    <div class="rs-section-title">— ご希望の時間帯</div>
+    <div class="rs-section-title">${currentLang==='ja' ? '— ご希望の時間帯' : '— Preferred Time'}</div>
     <div id="rs-times">${rsRenderTimes()}</div>
-    <button class="rs-btn-next" id="rs-btn1" onclick="rsGoStep2()" ${rs.day&&rs.time?'':'disabled'}>次へ：お客様情報を入力 →</button>
+    <button class="rs-btn-next" id="rs-btn1" onclick="rsGoStep2()" ${rs.day&&rs.time?'':'disabled'}>${currentLang==='ja' ? '次へ：お客様情報を入力 →' : 'Next: Your Info →'}</button>
   `;
 }
 
@@ -1438,25 +1510,25 @@ function rsStep2() {
   const ds = rs.year+'年'+(rs.month+1)+'月'+rs.day+'日('+RS_DAYS[rs.dow]+') '+rs.time+'〜';
   document.getElementById('rs-main').innerHTML = `
     <div class="rs-notice">&#128197; ${ds}</div>
-    <div class="rs-section-title">— お客様情報</div>
+    <div class="rs-section-title">${currentLang==='ja' ? '— お客様情報' : '— Your Information'}</div>
     <div class="rs-form-group">
-      <label>代表者名 <span style="color:#c0392b">*</span></label>
-      <input type="text" id="rs-inp-name" placeholder="例：山田 太郎" value="${rs.name}">
+      <label>${currentLang==='ja' ? '代表者名' : 'Name'} <span style="color:#c0392b">*</span></label>
+      <input type="text" id="rs-inp-name" placeholder="${currentLang==='ja' ? '例：山田 太郎' : 'e.g. Taro Yamada'}" value="${rs.name}">
       <div class="rs-err" id="rs-err-name"></div>
     </div>
     <div class="rs-form-group">
-      <label>予約人数 <span style="color:#c0392b">*</span></label>
-      <input type="number" id="rs-inp-guests" placeholder="例：2" min="1" max="50" value="${rs.guests}">
-      <div class="rs-hint">1〜50名まで</div>
+      <label>${currentLang==='ja' ? '予約人数' : 'Guests'} <span style="color:#c0392b">*</span></label>
+      <input type="number" id="rs-inp-guests" placeholder="${currentLang==='ja' ? '例：2' : 'e.g. 2'}" min="1" max="50" value="${rs.guests}">
+      <div class="rs-hint">${currentLang==='ja' ? '1〜50名まで' : '1–50 guests'}</div>
       <div class="rs-err" id="rs-err-guests"></div>
     </div>
     <div class="rs-form-group">
-      <label>連絡先（携帯番号） <span style="color:#c0392b">*</span></label>
-      <input type="tel" id="rs-inp-tel" placeholder="例：090-1234-5678" value="${rs.tel}">
+      <label>${currentLang==='ja' ? '連絡先（携帯番号）' : 'Phone Number'} <span style="color:#c0392b">*</span></label>
+      <input type="tel" id="rs-inp-tel" placeholder="${currentLang==='ja' ? '例：090-1234-5678' : 'e.g. 090-1234-5678'}" value="${rs.tel}">
       <div class="rs-err" id="rs-err-tel"></div>
     </div>
-    <button class="rs-btn-next" onclick="rsGoStep3()">確認画面へ →</button>
-    <button class="rs-btn-back" onclick="rsStep1()">&#8592; 日時選択に戻る</button>
+    <button class="rs-btn-next" onclick="rsGoStep3()">${currentLang==='ja' ? '確認画面へ →' : 'Review →'}</button>
+    <button class="rs-btn-back" onclick="rsStep1()">&#8592; ${currentLang==='ja' ? '日時選択に戻る' : 'Back to Date'}</button>
   `;
 }
 
@@ -1464,22 +1536,47 @@ function rsStep3() {
   rsSetStep(3);
   const ds = rs.year+'年'+(rs.month+1)+'月'+rs.day+'日('+RS_DAYS[rs.dow]+') '+rs.time+'〜';
   document.getElementById('rs-main').innerHTML = `
-    <div class="rs-section-title">— 予約内容の確認</div>
+    <div class="rs-section-title">${currentLang==='ja' ? '— 予約内容の確認' : '— Review Booking'}</div>
     <div class="rs-summary-card">
-      <div class="rs-summary-row"><span class="lb">予約日時</span><span class="vl">${ds}</span></div>
-      <div class="rs-summary-row"><span class="lb">代表者名</span><span class="vl">${rs.name}</span></div>
-      <div class="rs-summary-row"><span class="lb">予約人数</span><span class="vl">${rs.guests}名</span></div>
-      <div class="rs-summary-row"><span class="lb">携帯番号</span><span class="vl">${rs.tel}</span></div>
+      <div class="rs-summary-row"><span class="lb">${currentLang==='ja' ? '予約日時' : 'Date & Time'}</span><span class="vl">${ds}</span></div>
+      <div class="rs-summary-row"><span class="lb">${currentLang==='ja' ? '代表者名' : 'Name'}</span><span class="vl">${rs.name}</span></div>
+      <div class="rs-summary-row"><span class="lb">${currentLang==='ja' ? '予約人数' : 'Guests'}</span><span class="vl">${rs.guests}${currentLang==='ja' ? '名' : ''}</span></div>
+      <div class="rs-summary-row"><span class="lb">${currentLang==='ja' ? '携帯番号' : 'Phone'}</span><span class="vl">${rs.tel}</span></div>
     </div>
-    <p style="font-size:11px;color:#888780;margin-bottom:.85rem;line-height:1.8;font-family:'Noto Serif JP',serif;">上記の内容でよろしければ「予約を確定する」を押してください。<br>確認メールが ravina.okinawa@gmail.com に自動送信されます。</p>
-    <button class="rs-btn-next" onclick="rsSubmit()">予約を確定する</button>
-    <button class="rs-btn-back" onclick="rsStep2()">&#8592; お客様情報に戻る</button>
+    <p style="font-size:11px;color:#888780;margin-bottom:.85rem;line-height:1.8;font-family:'Noto Serif JP',serif;">${currentLang==='ja' ? '上記の内容でよろしければ「予約を確定する」を押してください。<br>確認メールが ravina.okinawa@gmail.com に自動送信されます。' : 'If everything looks correct, press "Confirm Booking".<br>A confirmation will be sent to ravina.okinawa@gmail.com.'}</p>
+    <button class="rs-btn-next" onclick="rsSubmit()">${currentLang==='ja' ? '予約を確定する' : 'Confirm Booking'}</button>
+    <button class="rs-btn-back" onclick="rsStep2()">&#8592; ${currentLang==='ja' ? 'お客様情報に戻る' : 'Back to Info'}</button>
   `;
 }
 
 function rsPrevMonth() { rsCalM--; if(rsCalM<0){rsCalM=11;rsCalY--;} document.getElementById('rs-cal').innerHTML=rsRenderCal(); }
 function rsNextMonth() { rsCalM++; if(rsCalM>11){rsCalM=0;rsCalY++;} document.getElementById('rs-cal').innerHTML=rsRenderCal(); }
-function rsSelDay(d, dow) { rs.day=d; rs.month=rsCalM; rs.year=rsCalY; rs.dow=dow; rs.time=null; document.getElementById('rs-cal').innerHTML=rsRenderCal(); document.getElementById('rs-times').innerHTML=rsRenderTimes(); rsCheckBtn(); }
+function rsSelDay(d, dow) {
+  rs.day=d; rs.month=rsCalM; rs.year=rsCalY; rs.dow=dow; rs.time=null;
+  rsBookedSlots = [];
+  document.getElementById('rs-cal').innerHTML = rsRenderCal();
+  // ローディング表示
+  document.getElementById('rs-times').innerHTML =
+    '<div class="rs-time-loading">&#128336; 空き時間を確認中...</div>';
+  rsCheckBtn();
+
+  // Googleカレンダーから空き取得
+  const pad = n => String(n).padStart(2,'0');
+  const dateStr = rs.year + '-' + pad(rs.month+1) + '-' + pad(rs.day);
+  fetch(GAS_CAL_URL + '?date=' + dateStr)
+    .then(r => r.json())
+    .then(data => {
+      rsBookedSlots = data.booked || [];
+      document.getElementById('rs-times').innerHTML = rsRenderTimes();
+      rsCheckBtn();
+    })
+    .catch(() => {
+      // エラー時は全時間帯を選択可能にする
+      rsBookedSlots = [];
+      document.getElementById('rs-times').innerHTML = rsRenderTimes();
+      rsCheckBtn();
+    });
+}
 function rsSelTime(t) { rs.time=t; document.getElementById('rs-times').innerHTML=rsRenderTimes(); rsCheckBtn(); }
 function rsCheckBtn() { const b=document.getElementById('rs-btn1'); if(b) b.disabled=!(rs.day&&rs.time); }
 function rsGoStep2() { rsSetStep(2); rsStep2(); }
@@ -1491,9 +1588,9 @@ function rsGoStep3() {
   document.getElementById('rs-err-name').textContent    = '';
   document.getElementById('rs-err-guests').textContent  = '';
   document.getElementById('rs-err-tel').textContent     = '';
-  if (!n) { document.getElementById('rs-err-name').textContent='代表者名を入力してください'; ok=false; }
-  if (!g||isNaN(g)||+g<1||+g>50) { document.getElementById('rs-err-guests').textContent='1〜50の人数を入力してください'; ok=false; }
-  if (!t||!/^[\d\-\+\(\) ]+$/.test(t)) { document.getElementById('rs-err-tel').textContent='有効な携帯番号を入力してください'; ok=false; }
+  if (!n) { document.getElementById('rs-err-name').textContent=currentLang==='ja'?'代表者名を入力してください':'Please enter your name'; ok=false; }
+  if (!g||isNaN(g)||+g<1||+g>50) { document.getElementById('rs-err-guests').textContent=currentLang==='ja'?'1〜50の人数を入力してください':'Please enter 1–50 guests'; ok=false; }
+  if (!t||!/^[\d\-\+\(\) ]+$/.test(t)) { document.getElementById('rs-err-tel').textContent=currentLang==='ja'?'有効な携帯番号を入力してください':'Please enter a valid phone number'; ok=false; }
   if (!ok) return;
   rs.name=n; rs.guests=g; rs.tel=t;
   rsStep3();
@@ -1527,23 +1624,23 @@ function closeRingSheet() {
     document.getElementById('rs-main').innerHTML = `
       <div class="rs-complete">
         <div class="rs-complete-icon">&#10003;</div>
-        <h3>ご予約が完了しました</h3>
-        <p style="margin-bottom:.85rem">予約内容を <strong>ravina.okinawa@gmail.com</strong> に送信しました。<br>確認後、担当よりご連絡いたします。</p>
+        <h3>${currentLang==='ja' ? 'ご予約が完了しました' : 'Booking Confirmed!'}</h3>
+        <p style="margin-bottom:.85rem">${currentLang==='ja' ? '予約内容を <strong>ravina.okinawa@gmail.com</strong> に送信しました。<br>確認後、担当よりご連絡いたします。' : 'Your booking has been sent to <strong>ravina.okinawa@gmail.com</strong>.<br>We will contact you shortly.'}</p>
         <div class="rs-summary-card" style="text-align:left;margin-bottom:.85rem">
-          <div class="rs-summary-row"><span class="lb">予約日時</span><span class="vl">${ds}</span></div>
-          <div class="rs-summary-row"><span class="lb">代表者名</span><span class="vl">${rs.name} 様</span></div>
-          <div class="rs-summary-row"><span class="lb">予約人数</span><span class="vl">${rs.guests}名</span></div>
-          <div class="rs-summary-row"><span class="lb">携帯番号</span><span class="vl">${rs.tel}</span></div>
+          <div class="rs-summary-row"><span class="lb">${currentLang==='ja' ? '予約日時' : 'Date & Time'}</span><span class="vl">${ds}</span></div>
+          <div class="rs-summary-row"><span class="lb">${currentLang==='ja' ? '代表者名' : 'Name'}</span><span class="vl">${rs.name}${currentLang==='ja' ? ' 様' : ''}</span></div>
+          <div class="rs-summary-row"><span class="lb">${currentLang==='ja' ? '予約人数' : 'Guests'}</span><span class="vl">${rs.guests}${currentLang==='ja' ? '名' : ''}</span></div>
+          <div class="rs-summary-row"><span class="lb">${currentLang==='ja' ? '携帯番号' : 'Phone'}</span><span class="vl">${rs.tel}</span></div>
         </div>
-        <button class="rs-btn-back" onclick="closeResvSheet()">閉じる</button>
+        <button class="rs-btn-back" onclick="closeResvSheet()">${currentLang==='ja' ? '閉じる' : 'Close'}</button>
       </div>`;
   })
   .catch(() => {
     document.getElementById('rs-main').innerHTML = `
       <div class="rs-error">
         <div class="rs-error-icon">&#9888;</div>
-        <p style="font-size:13px;color:#5a5a52;margin-bottom:.85rem;font-family:'Noto Serif JP',serif;">送信に失敗しました。<br>もう一度お試しください。</p>
-        <button class="rs-btn-next" onclick="rsStep3()" style="max-width:180px;margin:0 auto;display:block;">もう一度試す</button>
+        <p style="font-size:13px;color:#5a5a52;margin-bottom:.85rem;font-family:'Noto Serif JP',serif;">${currentLang==='ja' ? '送信に失敗しました。<br>もう一度お試しください。' : 'Sending failed.<br>Please try again.'}</p>
+        <button class="rs-btn-next" onclick="rsStep3()" style="max-width:180px;margin:0 auto;display:block;">${currentLang==='ja' ? 'もう一度試す' : 'Try Again'}</button>
       </div>`;
   });
 }
@@ -1674,7 +1771,9 @@ function rngCalc() {
   if (carving) {
     const carvingFee = rngScope === "half" ? fullCarvingFee / 2 : fullCarvingFee;
     total += carvingFee;
-    document.getElementById("rng-lbl-carving").textContent = rngScope === "half" ? "ハワイアン彫り（半周）" : "ハワイアン彫り（全周）";
+    document.getElementById("rng-lbl-carving").textContent = rngScope === "half"
+      ? (currentLang==='ja' ? "ハワイアン彫り（半周）" : "Hawaiian Engraving (Half)")
+      : (currentLang==='ja' ? "ハワイアン彫り（全周）" : "Hawaiian Engraving (Full)");
     document.getElementById("rng-r-carving").textContent = rngFmt(carvingFee);
     document.getElementById("rng-row-carving").style.display = "flex";
   } else {
@@ -1683,14 +1782,14 @@ function rngCalc() {
 
   if (rngCounts.stone > 0) {
     const s = rngCounts.stone * 11000; total += s;
-    document.getElementById("rng-lbl-stone").textContent = `石留め ×${rngCounts.stone}`;
+    document.getElementById("rng-lbl-stone").textContent = currentLang==='ja' ? `石留め ×${rngCounts.stone}` : `Stone Setting ×${rngCounts.stone}`;
     document.getElementById("rng-r-stone").textContent = rngFmt(s);
     document.getElementById("rng-row-stone").style.display = "flex";
   } else { document.getElementById("rng-row-stone").style.display = "none"; }
 
   if (rngCounts.charm > 0) {
     const c = rngCounts.charm * 11000; total += c;
-    document.getElementById("rng-lbl-charm").textContent = `チャーム追加 ×${rngCounts.charm}`;
+    document.getElementById("rng-lbl-charm").textContent = currentLang==='ja' ? `チャーム追加 ×${rngCounts.charm}` : `Extra Charm ×${rngCounts.charm}`;
     document.getElementById("rng-r-charm").textContent = rngFmt(c);
     document.getElementById("rng-row-charm").style.display = "flex";
   } else { document.getElementById("rng-row-charm").style.display = "none"; }
@@ -1698,12 +1797,12 @@ function rngCalc() {
   const rowDel = document.getElementById("rng-row-delivery");
   if (rngDel === "7day") {
     rowDel.style.display = "flex";
-    document.getElementById("rng-lbl-del").textContent = "速納（7日後）";
+    document.getElementById("rng-lbl-del").textContent = currentLang==='ja' ? "速納（7日後）" : "Rush (7 days)";
     document.getElementById("rng-r-delivery").textContent = "+¥20,000";
     total += 20000;
   } else if (rngDel === "3day") {
     rowDel.style.display = "flex";
-    document.getElementById("rng-lbl-del").textContent = "速納（3日後）";
+    document.getElementById("rng-lbl-del").textContent = currentLang==='ja' ? "速納（3日後）" : "Rush (3 days)";
     document.getElementById("rng-r-delivery").textContent = "+¥40,000";
     total += 40000;
   } else { rowDel.style.display = "none"; }
@@ -1711,6 +1810,39 @@ function rngCalc() {
   document.getElementById("rng-r-total").textContent = rngFmt(total);
 }
 rngCalc();
+</script>
+<script>
+// ── 言語切替（EN / JP） ──
+let currentLang = 'en';
+
+function setLang(lang) {
+  currentLang = lang;
+
+  // ボタンのactiveクラス切替
+  document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+  document.getElementById('lang-ja').classList.toggle('active', lang === 'ja');
+
+  // data-en / data-ja 属性を持つ全要素を更新
+  document.querySelectorAll('[data-en]').forEach(el => {
+    const text = el.getAttribute('data-' + lang);
+    if (text !== null) {
+      el.innerHTML = text;
+    }
+  });
+
+  // コロン区切りの全角/半角切替
+  document.querySelectorAll('.col-sep').forEach(el => {
+    el.textContent = lang === 'ja' ? '：' : ':';
+  });
+  // 指輪彫刻シートの動的ラベルを再計算
+  if (typeof rngCalc === 'function') rngCalc();
+  // カレンダーを再描画（月名・曜日を切替）
+  const calEl = document.getElementById('rs-cal');
+  if (calEl) calEl.innerHTML = rsRenderCal();
+}
+
+// 初期表示は英語
+setLang('en');
 </script>
 </body>
 </html>

@@ -804,6 +804,52 @@
     /* ═══════════════════════════════════════════
        MOBILE
     ═══════════════════════════════════════════ */
+    /* ── 価格表ボトムシート（指輪・腕輪共通） ── */
+    #price-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,8,0.6);
+      z-index: 200;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    #price-overlay.open { display: block; }
+
+    #price-sheet {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 201;
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      max-height: 92vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.32,0.72,0,1);
+      -webkit-overflow-scrolling: touch;
+    }
+    #price-sheet.open { transform: translateY(0); }
+
+    .price-sheet-handle {
+      display: flex; justify-content: center;
+      padding: 12px 0 4px;
+      position: sticky; top: 0; background: #fff; z-index: 1;
+    }
+    .price-sheet-handle-bar { width: 40px; height: 4px; background: #d0ccc6; border-radius: 2px; }
+    .price-sheet-close {
+      position: absolute; top: 10px; right: 16px;
+      width: 32px; height: 32px; border-radius: 50%;
+      border: none; background: #f0ece6; color: #5a5a52;
+      font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; z-index: 2;
+    }
+    .price-sheet-close:hover { background: #e0dbd2; }
+    #price-sheet iframe {
+      width: 100%; border: none;
+      height: 92vh;
+      display: block;
+    }
+
     /* ── 指輪彫刻ボトムシート ── */
     #ring-overlay {
       display: none;
@@ -903,8 +949,8 @@
   </a>
   <ul class="nav-links">
     <li><a href="#" class="active">Home</a></li>
-    <li><a href="#concept">Concept</a></li>
-    <li><a href="#company">Company</a></li>
+    <li><a href="#price">Price</a></li>
+    <li><a href="#company">Shop</a></li>
     <li><a href="#access">Access</a></li>
   </ul>
   <div class="lang-toggle">
@@ -946,14 +992,14 @@
 </section>
 
 <!-- CONCEPT -->
-<section class="section section-light" id="concept">
+<section class="section section-light" id="price">
   <div style="max-width:1100px; margin:0 auto;">
     <div class="shop-header">
-      <p class="about-label" style="text-align:center">Collections</p>
-      <h2 class="about-heading" style="text-align:center; margin-bottom:0;">Concept</h2>
+      <p class="about-label" style="text-align:center">Price</p>
+      <h2 class="about-heading" style="text-align:center; margin-bottom:0;">Price</h2>
     </div>
     <div class="shop-grid">
-      <div class="shop-card shop-card-1">
+      <div class="shop-card shop-card-1" onclick="openPriceSheet('ring')" style="cursor:pointer;">
         <div class="shop-card-bg">
           <svg class="card-ring-icon" width="120" height="120" viewBox="0 0 120 120" fill="none">
             <ellipse cx="60" cy="75" rx="50" ry="18" fill="rgba(255,255,255,0.15)"/>
@@ -963,10 +1009,10 @@
         </div>
         <div class="shop-card-info">
           <p class="shop-card-label">Wedding</p>
-          <p class="shop-card-name" data-en="Wedding Rings" data-ja="結婚指輪">Wedding Rings</p>
+          <p class="shop-card-name" data-en="Ring Price List" data-ja="指輪　価格表">Ring Price List</p>
         </div>
       </div>
-      <div class="shop-card shop-card-2">
+      <div class="shop-card shop-card-2" onclick="openPriceSheet('bangle')" style="cursor:pointer;">
         <div class="shop-card-bg">
           <svg class="card-ring-icon" width="120" height="120" viewBox="0 0 120 120" fill="none">
             <ellipse cx="45" cy="72" rx="38" ry="14" fill="rgba(255,255,255,0.15)"/>
@@ -977,7 +1023,7 @@
         </div>
         <div class="shop-card-info">
           <p class="shop-card-label">Pair</p>
-          <p class="shop-card-name" data-en="Pair Rings" data-ja="ペアリング">Pair Rings</p>
+          <p class="shop-card-name" data-en="Bangle Price List" data-ja="腕輪　価格表">Bangle Price List</p>
         </div>
       </div>
       <div class="shop-card shop-card-3" onclick="openRingSheet()" style="cursor:pointer;">
@@ -1014,7 +1060,10 @@
     />
     <!-- 右：テキスト -->
     <div class="company-info">
-      <h2 class="company-title">Shop</h2>
+      <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:0;">
+        <h2 class="company-title" id="tab-shop" onclick="switchTab('shop')" style="cursor:pointer;transition:opacity 0.2s;">Shop</h2>
+        <span id="tab-company" onclick="switchTab('company')" style="font-family:'Cormorant Garamond',serif;font-size:14px;letter-spacing:0.1em;color:var(--muted);cursor:pointer;transition:opacity 0.2s;opacity:0.5;padding-bottom:2px;border-bottom:1px solid transparent;">Company</span>
+      </div>
       <table class="company-table">
         <tbody>
           <tr>
@@ -1053,16 +1102,19 @@
   </div>
 
   <!-- 下段：会社概要 -->
-  <div class="company-block">
+  <div class="company-block" id="company-block" style="display:none;">
     <!-- 左：写真 -->
     <img
       src="bg_company.png"
-      alt="株式会社RAVINALA"
+      alt="RAVINALA Co., Ltd."
       class="company-img"
     />
     <!-- 右：テキスト -->
     <div class="company-info">
-      <h2 class="company-title">Company</h2>
+      <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:0;">
+        <span id="tab-shop-2" onclick="switchTab('shop')" style="font-family:'Cormorant Garamond',serif;font-size:14px;letter-spacing:0.1em;color:var(--muted);cursor:pointer;transition:opacity 0.2s;opacity:0.5;padding-bottom:2px;border-bottom:1px solid transparent;">Shop</span>
+        <h2 class="company-title" id="tab-company-2" onclick="switchTab('company')" style="cursor:pointer;transition:opacity 0.2s;">Company</h2>
+      </div>
       <table class="company-table">
         <tbody>
           <tr>
@@ -1129,8 +1181,8 @@
     <p class="footer-col-title">Navigation</p>
     <ul class="footer-links">
       <li><a href="#">Home</a></li>
-      <li><a href="#concept">Concept</a></li>
-      <li><a href="#company">Company</a></li>
+      <li><a href="#price">Price</a></li>
+      <li><a href="#company">Shop</a></li>
       <li><a href="#access">Access</a></li>
     </ul>
   </div>
@@ -1147,6 +1199,16 @@
   &copy; RAVINALA Co., Ltd. All rights reserved.
 </div>
 <!-- 指輪彫刻 オーバーレイ -->
+<!-- 価格表ボトムシート -->
+<div id="price-overlay" onclick="closePriceSheet()"></div>
+<div id="price-sheet" role="dialog" aria-modal="true" aria-label="価格表">
+  <div class="price-sheet-handle">
+    <div class="price-sheet-handle-bar"></div>
+  </div>
+  <button class="price-sheet-close" onclick="closePriceSheet()" aria-label="閉じる">&times;</button>
+  <iframe id="price-iframe" src="" title="価格表"></iframe>
+</div>
+
 <div id="ring-overlay" onclick="closeRingSheet()"></div>
 
 <!-- 指輪彫刻 ボトムシート -->
@@ -1625,6 +1687,63 @@ function closeRingSheet() {
   document.getElementById('ring-overlay').classList.remove('open');
   document.getElementById('ring-sheet').classList.remove('open');
   document.body.style.overflow = '';
+}
+
+// ============================================================
+// 価格表ボトムシート（指輪・腕輪）
+// ============================================================
+function openPriceSheet(type) {
+  const iframe = document.getElementById('price-iframe');
+  iframe.src = (type === 'ring') ? 'Ring_Price_List.html' : 'Bangle_Price_List.html';
+  document.getElementById('price-overlay').classList.add('open');
+  document.getElementById('price-sheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closePriceSheet() {
+  document.getElementById('price-overlay').classList.remove('open');
+  document.getElementById('price-sheet').classList.remove('open');
+  document.body.style.overflow = '';
+  setTimeout(() => { document.getElementById('price-iframe').src = ''; }, 400);
+}
+
+// ============================================================
+// Shop / Company タブ切り替え
+// ============================================================
+function switchTab(tab) {
+  const shopBlock    = document.getElementById('tab-shop').closest('.company-block');
+  const companyBlock = document.getElementById('company-block');
+  const tabShop    = document.getElementById('tab-shop');
+  const tabCompany = document.getElementById('tab-company');
+  // secondary tab handles (inside company block)
+  const tabShop2    = document.getElementById('tab-shop-2');
+  const tabCompany2 = document.getElementById('tab-company-2');
+
+  if (tab === 'shop') {
+    if (shopBlock)    shopBlock.style.display    = '';
+    if (companyBlock) companyBlock.style.display = 'none';
+    // primary tabs
+    tabShop.style.opacity      = '1';
+    tabShop.style.borderBottom = '2px solid currentColor';
+    tabCompany.style.opacity      = '0.45';
+    tabCompany.style.borderBottom = '2px solid transparent';
+  } else {
+    if (shopBlock)    shopBlock.style.display    = 'none';
+    if (companyBlock) companyBlock.style.display = '';
+    // primary tabs
+    tabShop.style.opacity      = '0.45';
+    tabShop.style.borderBottom = '2px solid transparent';
+    tabCompany.style.opacity      = '1';
+    tabCompany.style.borderBottom = '2px solid currentColor';
+    // secondary tabs (inside company block)
+    if (tabShop2) {
+      tabShop2.style.opacity      = '0.45';
+      tabShop2.style.borderBottom = '2px solid transparent';
+    }
+    if (tabCompany2) {
+      tabCompany2.style.opacity      = '1';
+      tabCompany2.style.borderBottom = '2px solid currentColor';
+    }
+  }
 }
 </script>
 

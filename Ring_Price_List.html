@@ -227,10 +227,10 @@ select:focus { outline: none; border-color: var(--gold); }
   <div>
     <div class="section-title">Material — 素材</div>
     <div class="mat-grid" id="material-group">
-      <button class="btn-opt active" data-val="silver" onclick="setMat(this)">Silver<br><span style="font-size:10px;color:var(--soft)">925</span></button>
-      <button class="btn-opt" data-val="10K"    onclick="setMat(this)">Gold<br><span style="font-size:10px;color:var(--soft)">K10</span></button>
-      <button class="btn-opt" data-val="18K"    onclick="setMat(this)">Gold<br><span style="font-size:10px;color:var(--soft)">K18</span></button>
-      <button class="btn-opt" data-val="pt"     onclick="setMat(this)">Pt900</button>
+      <button class="btn-opt active" data-val="silver" onclick="setMat(this)">Silver<br><span style="font-size:10px;color:var(--soft)">silver925</span></button>
+      <button class="btn-opt" data-val="10K"    onclick="setMat(this)">Gold K10<br><span style="font-size:10px;color:var(--soft)">K10</span></button>
+      <button class="btn-opt" data-val="18K"    onclick="setMat(this)">Gold K18<br><span style="font-size:10px;color:var(--soft)">K18</span></button>
+      <button class="btn-opt" data-val="pt"     onclick="setMat(this)">Platinum<br><span style="font-size:10px;color:var(--soft)">Pt900</span></button>
     </div>
   </div>
 
@@ -271,13 +271,13 @@ select:focus { outline: none; border-color: var(--gold); }
         <div class="option-price-note">チャーム2個＋スクロール4個 込み</div>
       </div>
       <label class="toggle-wrap">
-        <input type="checkbox" id="opt-carving" checked onchange="onCarvingToggle()">
+        <input type="checkbox" id="opt-carving" onchange="onCarvingToggle()">
         <span class="toggle-slider"></span>
       </label>
     </div>
 
     <!-- ハワイアン彫りアコーディオン：彫り範囲・チャーム・納期 -->
-    <div class="accordion-sub open" id="carving-sub">
+    <div class="accordion-sub" id="carving-sub">
       <!-- 彫り範囲 -->
       <div class="sub-row">
         <span class="sub-label">彫り範囲</span>
@@ -381,59 +381,73 @@ const MAIN_SHEET = "Ring";  // スプレのシート名
 // スプレッドシート上のmaterial名 → HTML内部キーへのマッピング
 const MAT_MAP = {
   "silver925": "silver",
-  "Gold 10K":  "10K",
-  "Gold 18K":  "18K",
-  "pt900":     "pt"
+  "K10":       "10K",
+  "Gold K18":  "18K",
+  "Platinum":  "pt"
 };
 
 // フォールバック用デフォルト価格（スプレッドシート読み込み失敗時）
+// スプレッドシートの Ring シートと完全一致するデフォルト価格
+// （スプレ読み込み失敗時のフォールバック）
 let prices = {
   silver: {
-    "1.0": {"1-8":3520,  "9-16":3872,  "17-24":4259, "25-32":4685, "33-40":5154},
-    "1.5": {"1-8":4400,  "9-16":4840,  "17-24":5324, "25-32":5856, "33-40":6442},
-    "2.0": {"1-8":6600,  "9-16":7260,  "17-24":7986, "25-32":8785, "33-40":9663},
-    "2.5": {"1-8":8800,  "9-16":9680,  "17-24":10648,"25-32":11713,"33-40":12884},
-    "3.0": {"1-8":12100, "9-16":13310, "17-24":14641,"25-32":16105,"33-40":17716},
-    "4.0": {"1-8":12100, "9-16":13310, "17-24":14641,"25-32":16105,"33-40":17716},
-    "5.0": {"1-8":275000,"9-16":302500,"17-24":332750,"25-32":366025,"33-40":402628}
+    "1.0": {"1-8":3520,  "9-16":3872,  "17-24":4259,  "25-32":4685,  "33-40":5154},
+    "1.5": {"1-8":4400,  "9-16":4840,  "17-24":5324,  "25-32":5856,  "33-40":6442},
+    "2.0": {"1-8":6600,  "9-16":7260,  "17-24":7986,  "25-32":8785,  "33-40":9663},
+    "2.5": {"1-8":8800,  "9-16":9680,  "17-24":10648, "25-32":11713, "33-40":12884},
+    "3.0": {"1-8":12100, "9-16":13310, "17-24":14641, "25-32":16105, "33-40":17716},
+    "4.0": {"1-8":12100, "9-16":13310, "17-24":14641, "25-32":16105, "33-40":17716},
+    "5.0": {"1-8":27500, "9-16":30250, "17-24":33275, "25-32":36603, "33-40":40263}
   },
   "10K": {
-    "1.0": {"1-8":3520,  "9-16":3872,  "17-24":4259, "25-32":4685, "33-40":5154},
-    "1.5": {"1-8":4400,  "9-16":4840,  "17-24":5324, "25-32":5856, "33-40":6442},
-    "2.0": {"1-8":6600,  "9-16":7260,  "17-24":7986, "25-32":8785, "33-40":9663},
-    "2.5": {"1-8":8800,  "9-16":9680,  "17-24":10648,"25-32":11713,"33-40":12884},
-    "3.0": {"1-8":12100, "9-16":13310, "17-24":14641,"25-32":16105,"33-40":17716},
-    "4.0": {"1-8":12100, "9-16":13310, "17-24":14641,"25-32":16105,"33-40":17716},
-    "5.0": {"1-8":275000,"9-16":302500,"17-24":332750,"25-32":366025,"33-40":402628}
+    "1.0": {"1-8":15400, "9-16":16940, "17-24":18634, "25-32":20497, "33-40":22547},
+    "1.5": {"1-8":27500, "9-16":30250, "17-24":33275, "25-32":36603, "33-40":40263},
+    "2.0": {"1-8":49500, "9-16":54450, "17-24":59895, "25-32":65885, "33-40":72473},
+    "2.5": {"1-8":88000, "9-16":96800, "17-24":106480,"25-32":117128,"33-40":128841},
+    "3.0": {"1-8":110000,"9-16":121000,"17-24":133100, "25-32":146410,"33-40":161051},
+    "4.0": {"1-8":110000,"9-16":121000,"17-24":133100, "25-32":146410,"33-40":161051},
+    "5.0": {"1-8":154000,"9-16":169400,"17-24":186340, "25-32":204974,"33-40":225471}
   },
   "18K": {
-    "1.0": {"1-8":3520,  "9-16":3872,  "17-24":4259, "25-32":4685, "33-40":5154},
-    "1.5": {"1-8":4400,  "9-16":4840,  "17-24":5324, "25-32":5856, "33-40":6442},
-    "2.0": {"1-8":6600,  "9-16":7260,  "17-24":7986, "25-32":8785, "33-40":9663},
-    "2.5": {"1-8":8800,  "9-16":9680,  "17-24":10648,"25-32":11713,"33-40":12884},
-    "3.0": {"1-8":12100, "9-16":13310, "17-24":14641,"25-32":16105,"33-40":17716},
-    "4.0": {"1-8":12100, "9-16":13310, "17-24":14641,"25-32":16105,"33-40":17716},
-    "5.0": {"1-8":275000,"9-16":302500,"17-24":332750,"25-32":366025,"33-40":402628}
+    "1.0": {"1-8":25300, "9-16":27830, "17-24":30613, "25-32":33674, "33-40":37042},
+    "1.5": {"1-8":55000, "9-16":60500, "17-24":66550, "25-32":73205, "33-40":80526},
+    "2.0": {"1-8":110000,"9-16":121000,"17-24":133100, "25-32":146410,"33-40":161051},
+    "2.5": {"1-8":165000,"9-16":181500,"17-24":199650, "25-32":219615,"33-40":241577},
+    "3.0": {"1-8":220000,"9-16":242000,"17-24":266200, "25-32":292820,"33-40":322102},
+    "4.0": {"1-8":220000,"9-16":242000,"17-24":266200, "25-32":292820,"33-40":322102},
+    "5.0": {"1-8":297000,"9-16":326700,"17-24":359370, "25-32":395307,"33-40":434838}
   },
   "pt": {
-    "1.0": {"1-8":3520,  "9-16":3872,  "17-24":4259, "25-32":4685, "33-40":5154},
-    "1.5": {"1-8":4400,  "9-16":4840,  "17-24":5324, "25-32":5856, "33-40":6442},
-    "2.0": {"1-8":6600,  "9-16":7260,  "17-24":7986, "25-32":8785, "33-40":9663},
-    "2.5": {"1-8":8800,  "9-16":9680,  "17-24":10648,"25-32":11713,"33-40":12884},
-    "3.0": {"1-8":12100, "9-16":13310, "17-24":14641,"25-32":16105,"33-40":17716},
-    "4.0": {"1-8":12100, "9-16":13310, "17-24":14641,"25-32":16105,"33-40":17716},
-    "5.0": {"1-8":275000,"9-16":302500,"17-24":332750,"25-32":366025,"33-40":402628}
+    "1.0": {"1-8":25300, "9-16":27830, "17-24":30613, "25-32":33674, "33-40":37042},
+    "1.5": {"1-8":55000, "9-16":60500, "17-24":66550, "25-32":73205, "33-40":80526},
+    "2.0": {"1-8":110000,"9-16":121000,"17-24":133100, "25-32":146410,"33-40":161051},
+    "2.5": {"1-8":165000,"9-16":181500,"17-24":199650, "25-32":219615,"33-40":241577},
+    "3.0": {"1-8":220000,"9-16":242000,"17-24":266200, "25-32":292820,"33-40":322102},
+    "4.0": {"1-8":220000,"9-16":242000,"17-24":266200, "25-32":292820,"33-40":322102},
+    "5.0": {"1-8":297000,"9-16":326700,"17-24":359370, "25-32":395307,"33-40":434838}
   }
 };
 
-// ringOnly はスプレッドシートの prices テーブルから自動生成（最小号数帯の価格を流用）
-// ※ スプレに ringOnly シートがあればそちらを優先
-let ringOnly = {
-  silver: {"1.0":2200, "1.5":2750, "2.0":4400, "2.5":6600, "3.0":9900, "4.0":9900, "5.0":220000},
-  "10K":  {"1.0":2200, "1.5":2750, "2.0":4400, "2.5":6600, "3.0":9900, "4.0":9900, "5.0":220000},
-  "18K":  {"1.0":2200, "1.5":2750, "2.0":4400, "2.5":6600, "3.0":9900, "4.0":9900, "5.0":220000},
-  "pt":   {"1.0":2200, "1.5":2750, "2.0":4400, "2.5":6600, "3.0":9900, "4.0":9900, "5.0":220000}
-};
+// ringOnly = スプレ読み込み後に上書きされる（ハワイアン彫りなしの基本価格）
+// デフォルトは prices と同じ（彫刻なし状態がスプレの価格）
+let ringOnly = JSON.parse(JSON.stringify({
+  silver: {
+    "1.0":3520, "1.5":4400, "2.0":6600, "2.5":8800,
+    "3.0":12100,"4.0":12100,"5.0":27500
+  },
+  "10K": {
+    "1.0":15400,"1.5":27500,"2.0":49500,"2.5":88000,
+    "3.0":110000,"4.0":110000,"5.0":154000
+  },
+  "18K": {
+    "1.0":25300,"1.5":55000,"2.0":110000,"2.5":165000,
+    "3.0":220000,"4.0":220000,"5.0":297000
+  },
+  "pt": {
+    "1.0":25300,"1.5":55000,"2.0":110000,"2.5":165000,
+    "3.0":220000,"4.0":220000,"5.0":297000
+  }
+}));
 
 // ============================================================
 // Google スプレッドシートからデータを読み込む
@@ -455,9 +469,10 @@ function toNum(v) {
 
 // width を "1.0" 形式に統一（整数 1 → "1.0"）
 function normalizeWidth(rawW) {
-  if (typeof rawW === "number" && Number.isInteger(rawW)) return rawW.toFixed(1);
-  if (typeof rawW === "string" && /^\d+$/.test(rawW.trim())) return parseFloat(rawW).toFixed(1);
-  return String(rawW);
+  if (typeof rawW === "number") return rawW.toFixed(1);
+  const s = String(rawW).trim();
+  if (/^\d+(\.\d+)?$/.test(s)) return parseFloat(s).toFixed(1);
+  return s;
 }
 
 // スプレのmaterial名 → HTML内部キーに変換（未知の場合はそのまま）
@@ -485,8 +500,8 @@ function parseMainSheet(table) {
     const p2532= toNum(vals[6]);
     const p3340= toNum(vals[7]);
 
-    if (listType === "Ring") {
-      // Ring 行 → prices テーブルとして格納
+    // listTypeが"Ring"または空でも有効な素材・幅があれば格納
+    if ((listType === "Ring" || listType === "") && mat && width) {
       if (!newPrices[mat]) newPrices[mat] = {};
       newPrices[mat][width] = {
         "1-8":   p18,
@@ -495,10 +510,9 @@ function parseMainSheet(table) {
         "25-32": p2532,
         "33-40": p3340
       };
-    } else if (listType === "ringOnly") {
-      // ringOnly 行があれば格納
+    } else if (listType === "ringOnly" && mat && width) {
       if (!newRingOnly[mat]) newRingOnly[mat] = {};
-      newRingOnly[mat][width] = p18; // ringOnly は号数不問で1列目を使用
+      newRingOnly[mat][width] = p18;
     }
   });
 
@@ -634,24 +648,27 @@ function fmt(n) { return "¥" + Math.round(n).toLocaleString("ja-JP"); }
 function calc() {
   const widthEl = document.querySelector("#width-group .btn-opt.active");
   const sizeEl  = document.querySelector("#size-group .btn-opt.active");
-  const width   = widthEl ? widthEl.dataset.val : "3.0";
+  const width   = widthEl ? widthEl.dataset.val : "1.0";
   const size    = sizeEl  ? sizeEl.dataset.val  : "1-8";
   const carving = document.getElementById("opt-carving").checked;
 
-  const fullTotal     = (prices[mat] && prices[mat][width] && prices[mat][width][size]) || 0;
-  const ringBase      = (ringOnly[mat] && ringOnly[mat][width]) || 0;
-  const fullCarvingFee = fullTotal - ringBase;
+  // スプレの価格 = リング単品価格（彫刻なし状態が正）
+  const ringBase = (prices[mat] && prices[mat][width] && prices[mat][width][size]) || 0;
 
   let total = ringBase;
   document.getElementById("r-base").textContent = fmt(ringBase);
 
-  // ハワイアン彫り
+  // ハワイアン彫り（スプレに彫刻費が含まれていないため別途加算）
   if (carving) {
-    const fee   = scope === "half" ? fullCarvingFee / 2 : fullCarvingFee;
+    // 彫刻料金はringOnly[mat][width]と prices の差分。なければ0（後からスプレに追加可能）
+    const fullCarving = (ringOnly[mat] && ringOnly[mat][width] && ringOnly[mat][width][size])
+      ? Math.max(0, ringOnly[mat][width][size] - ringBase)
+      : 0;
+    const fee   = scope === "half" ? fullCarving / 2 : fullCarving;
     const label = scope === "half" ? "ハワイアン彫り（半周）" : "ハワイアン彫り（全周）";
     total += fee;
     document.getElementById("lbl-carving").textContent = label;
-    document.getElementById("r-carving").textContent   = fmt(fee);
+    document.getElementById("r-carving").textContent   = fee > 0 ? fmt(fee) : "込み";
     document.getElementById("row-carving").style.display = "flex";
   } else {
     document.getElementById("row-carving").style.display = "none";

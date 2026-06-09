@@ -534,23 +534,24 @@ function parseMainSheet(table) {
 // 列構成: list(0) | material(1) | size(2) | width(3) | 大枠番号(4) | 商品番号(5)
 function parsePriceNumSheet(table) {
   const map = {};
-  // スプレのwidth値 → data-val（ボタンのdata-val）への変換テーブル
-  const W = {
-    "1": "1", "1.5": "1.5", "2": "2", "2.5": "2.5",
-    "3": "3", "4×2": "4×2", "5×2": "5×2"
-  };
+  // Price_Numのwidth値 → ボタンdata-val（"1.0"形式）への変換
+  // 数値は normalizeWidth で "1.0"形式に、"4×2"→"4.0"、"5×2"→"5.0" に変換
+  function toWidthKey(raw) {
+    if (raw === null || raw === undefined) return "";
+    if (typeof raw === "number") return raw.toFixed(1);
+    const s = String(raw).trim();
+    if (s === "4×2") return "4.0";
+    if (s === "5×2") return "5.0";
+    if (/^\d+(\.\d+)?$/.test(s)) return parseFloat(s).toFixed(1);
+    return s;
+  }
   table.rows.forEach(row => {
     const vals    = row.c.map(c => (c ? c.v : null));
     const mat     = normalizeMat(String(vals[1] || "").trim());
-    const rawSize = String(vals[2] || "").trim();           // "size_1-8号"
-    const size    = rawSize.replace("size_", "").replace(/号$/, ""); // "1-8"
-    // width は数値 or "4×2"/"5×2" などの文字列で来る
-    const rawW    = vals[3] !== null && vals[3] !== undefined ? String(vals[3]).trim() : "";
-    // 数値の場合: 1 → "1"、1.5 → "1.5" のように文字列化
-    const wStr    = (typeof vals[3] === "number")
-      ? (Number.isInteger(vals[3]) ? String(vals[3]) : String(vals[3]))
-      : rawW;
-    const widthKey = W[wStr] || wStr;
+    const rawSize = String(vals[2] || "").trim();
+    // "size_1-8号" → "1-8"
+    const size    = rawSize.replace(/^size_/, "").replace(/号$/, "");
+    const widthKey = toWidthKey(vals[3]);
     const pNum    = vals[5];
     if (!mat || !size || !widthKey || !pNum) return;
     if (!map[mat]) map[mat] = {};
@@ -839,7 +840,8 @@ function sendInquiry() {
 }
 
 // 初期化（スプレッドシートから読み込み → calc()）
-// 初期スコープはNone（納期非表示）なので carving-sub は閉じたまま
+// 初期スコープ(full)に合わせて納期ブロックを開いておく
+document.getElementById("carving-sub").classList.add("open");
 initPrices();
 </script>
 </body>

@@ -548,7 +548,9 @@ function parsePriceNumSheet(table) {
   }
 
   table.rows.forEach(row => {
-    const vals    = row.c.map(c => (c ? c.v : null));
+    // c.vがnullのとき c.f（フォーマット済み値）を使う
+    // gvizは "4×2"/"5×2" などのテキストをc.vではなくc.fで返すことがある
+    const vals    = row.c.map(c => c ? (c.v !== null && c.v !== undefined ? c.v : (c.f ?? null)) : null);
     const mat     = normalizeMat(String(vals[1] || "").trim());
     const rawSize = String(vals[2] || "").trim();
     // "size_1-8号" → "1-8"

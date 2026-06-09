@@ -466,25 +466,42 @@ let prices = {
   }
 };
 
-// ringOnly = ハワイアン彫りなしの基本価格（Ring_Price の 1-8号価格）
-let ringOnly = JSON.parse(JSON.stringify({
+// ============================================================
+// 彫刻価格テーブル（スプレ「彫刻」シートと同期）
+// carvingPrices[mat][size][width] = 彫刻込み合計価格
+// 幅キー: "2","2.5","3","4x2","5x2"（新垣サイズ列は無視）
+// ============================================================
+let carvingPrices = {
   silver: {
-    "1":3520,   "1.5":4400,  "2":6600,   "2.5":8800,
-    "3":12100,  "4x2":12100, "5x2":27500
+    "1-8":   {"2":57200, "2.5":52800, "3":44000, "4x2":44000, "5x2":44000},
+    "9-16":  {"2":57200, "2.5":59400, "3":59400, "4x2":59400, "5x2":59400},
+    "17-24": {"2":57200, "2.5":59400, "3":59400, "4x2":59400, "5x2":59400},
+    "25-32": {"2":66000, "2.5":66000, "3":59400, "4x2":59400, "5x2":59400},
+    "33-40": {"2":66000, "2.5":66000, "3":59400, "4x2":59400, "5x2":59400}
   },
   "10K": {
-    "1":15400,  "1.5":27500, "2":49500,  "2.5":88000,
-    "3":110000, "4x2":110000,"5x2":154000
+    "1-8":   {"2":57200, "2.5":52800, "3":44000, "4x2":44000, "5x2":44000},
+    "9-16":  {"2":57200, "2.5":59400, "3":59400, "4x2":59400, "5x2":59400},
+    "17-24": {"2":57200, "2.5":59400, "3":59400, "4x2":59400, "5x2":59400},
+    "25-32": {"2":66000, "2.5":66000, "3":59400, "4x2":59400, "5x2":59400},
+    "33-40": {"2":66000, "2.5":66000, "3":59400, "4x2":59400, "5x2":59400}
   },
   "18K": {
-    "1":25300,  "1.5":55000, "2":110000, "2.5":165000,
-    "3":220000, "4x2":220000,"5x2":297000
+    "1-8":   {"2":71500, "2.5":66000, "3":55000, "4x2":55000, "5x2":55000},
+    "9-16":  {"2":71500, "2.5":74250, "3":74250, "4x2":74250, "5x2":74250},
+    "17-24": {"2":71500, "2.5":74250, "3":74250, "4x2":74250, "5x2":74250},
+    "25-32": {"2":82500, "2.5":82500, "3":74250, "4x2":74250, "5x2":74250},
+    "33-40": {"2":82500, "2.5":82500, "3":74250, "4x2":74250, "5x2":74250}
   },
   "pt": {
-    "1":25300,  "1.5":55000, "2":110000, "2.5":165000,
-    "3":220000, "4x2":220000,"5x2":297000
+    "1-8":   {"2":71500, "2.5":66000, "3":55000, "4x2":55000, "5x2":55000},
+    "9-16":  {"2":71500, "2.5":74250, "3":74250, "4x2":74250, "5x2":74250},
+    "17-24": {"2":71500, "2.5":74250, "3":74250, "4x2":74250, "5x2":74250},
+    "25-32": {"2":82500, "2.5":82500, "3":74250, "4x2":74250, "5x2":74250},
+    "33-40": {"2":82500, "2.5":82500, "3":74250, "4x2":74250, "5x2":74250}
   }
-}));
+};
+let ringOnly = {}; // 後方互換用（未使用）
 
 // ============================================================
 // Google スプレッドシートからデータを読み込む
@@ -542,9 +559,9 @@ function parseMainSheet(table) {
     const mat = normalizeMat(vals[1]);
     if (!mat) return;
 
-    // size: "1-8号" → "1-8"、"9-16号" → "9-16" など末尾「号」を除去
+    // size: "size_1-8号"→"1-8" / "1-8号"→"1-8" / "1-8"→"1-8" すべて対応
     const rawSize = String(vals[2] || "").trim();
-    const size = rawSize.replace(/号$/, "");
+    const size = rawSize.replace(/^size_/, "").replace(/号$/, "").trim();
     if (!size) return;
 
     if (!newPrices[mat]) newPrices[mat] = {};
@@ -586,8 +603,8 @@ function parsePriceNumSheet(table) {
     });
     const mat     = normalizeMat(String(vals[1] || "").trim());
     const rawSize = String(vals[2] || "").trim();
-    // "size_1-8号" → "1-8"
-    const size    = rawSize.replace(/^size_/, "").replace(/号$/, "");
+    // "size_1-8号"→"1-8" / "1-8号"→"1-8" / "1-8"→"1-8" すべて対応
+    const size    = rawSize.replace(/^size_/, "").replace(/号$/, "").trim();
     const widthKey = toWidthKey(vals[3]);
     const pNum    = vals[5];
 
@@ -756,24 +773,26 @@ function calc() {
   document.getElementById("r-product-num").textContent = pNum ? `商品番号：${pNum}` : "";
 
   // ハワイアン彫り
+  // carvingPrices = 彫刻込み合計価格 → 彫刻料金 = 合計 - リング基本価格
   if (carving) {
-    const fullCarving = (ringOnly[mat] && ringOnly[mat][width] && ringOnly[mat][width][size])
-      ? Math.max(0, ringOnly[mat][width][size] - ringBase)
-      : 0;
+    const carvingTotal   = (carvingPrices[mat] && carvingPrices[mat][size] && carvingPrices[mat][size][width])
+      ? carvingPrices[mat][size][width] : 0;
+    const fullCarvingFee = Math.max(0, carvingTotal - ringBase); // 彫刻料金のみ
+
     let fee, label;
     if (scope === "half") {
-      fee   = fullCarving / 2;
+      fee   = Math.round(fullCarvingFee / 2);
       label = "ハワイアン彫り（半周）";
     } else if (scope === "point") {
-      fee   = fullCarving / 4;
+      fee   = Math.round(fullCarvingFee / 4);
       label = "ハワイアン彫り（ポイント）";
     } else {
-      fee   = fullCarving;
+      fee   = fullCarvingFee;
       label = "ハワイアン彫り（全周）";
     }
     total += fee;
     document.getElementById("lbl-carving").textContent = label;
-    document.getElementById("r-carving").textContent   = fee > 0 ? fmt(fee) : "込み";
+    document.getElementById("r-carving").textContent   = fmt(fee); // 彫刻料金を金額で表示
     document.getElementById("row-carving").style.display = "flex";
   } else {
     document.getElementById("row-carving").style.display = "none";
@@ -836,8 +855,10 @@ function sendInquiry() {
   const carving = scope !== "none";
 
   // 合計を再計算
-  const fullTotal      = (prices[mat] && prices[mat][width] && prices[mat][width][size]) || 0;
-  const ringBase       = (ringOnly[mat] && ringOnly[mat][width]) || 0;
+  const ringBase    = (prices[mat] && prices[mat][width] && prices[mat][width][size]) || 0;
+  const carvingTotal2 = (carvingPrices[mat] && carvingPrices[mat][size] && carvingPrices[mat][size][width])
+    ? carvingPrices[mat][size][width] : 0;
+  const fullCarving2  = Math.max(0, carvingTotal2 - ringBase);
   const fullCarvingFee = fullTotal - ringBase;
   let total = ringBase;
   if (carving) {

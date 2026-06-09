@@ -532,25 +532,30 @@ function parseMainSheet(table) {
 
 // Price_Numシートを読み込み商品番号マップを構築
 // 列構成: list(0) | material(1) | size(2) | width(3) | 大枠番号(4) | 商品番号(5)
-// Price_Numのwidth値: 1, 1.5, 2, 2.5, 3, 4×2, 5×2
 function parsePriceNumSheet(table) {
   const map = {};
-  // Price_Numのwidth値 → スプレ列名（data-val）への変換
-  const WIDTH_KEY_MAP = {
-    "1": "1", "1.5": "1.5", "2": "2", "2.5": "2.5",
-    "3": "3", "4×2": "4×2", "5×2": "5×2"
-  };
+
+  // スプレのwidth値 → ボタンdata-valへの変換
+  // gvizは整数を数値型で返すため、数値キーと文字列キーの両方を登録
+  function toWidthKey(raw) {
+    // 文字列 "4×2" / "5×2" はそのままdata-valと一致
+    if (raw === "4×2" || raw === "5×2") return raw;
+    // 数値型・文字列型どちらも parseFloat して判定
+    const n = parseFloat(raw);
+    if (isNaN(n)) return null;
+    // 1→"1", 1.5→"1.5", 2→"2", 2.5→"2.5", 3→"3"
+    return Number.isInteger(n) ? String(n) : String(n);
+  }
+
   table.rows.forEach(row => {
-    const vals = row.c.map(c => (c ? c.v : null));
+    const vals    = row.c.map(c => (c ? c.v : null));
     const mat     = normalizeMat(String(vals[1] || "").trim());
-    const rawSize = String(vals[2] || "").trim(); // "size_1-8号"
-    const size    = rawSize.replace("size_", "").replace(/号$/, ""); // "1-8"
-    const rawW    = String(vals[3] ?? "").trim();
-    // 数値の場合は整数なら整数文字列、小数なら小数文字列に正規化
-    const widthKey = WIDTH_KEY_MAP[rawW] || (typeof vals[3] === "number"
-      ? (Number.isInteger(vals[3]) ? String(vals[3]) : String(vals[3]))
-      : rawW);
-    const pNum = vals[5];
+    const rawSize = String(vals[2] || "").trim();
+    // "size_1-8号" → "1-8"
+    const size    = rawSize.replace(/^size_/, "").replace(/号$/, "");
+    const widthKey = toWidthKey(vals[3]);
+    const pNum    = vals[5];
+
     if (!mat || !size || !widthKey || !pNum) return;
     if (!map[mat]) map[mat] = {};
     if (!map[mat][size]) map[mat][size] = {};
@@ -839,8 +844,7 @@ function sendInquiry() {
 }
 
 // 初期化（スプレッドシートから読み込み → calc()）
-// 初期スコープ(full)に合わせて納期ブロックを開いておく
-document.getElementById("carving-sub").classList.add("open");
+// 初期スコープはNone（納期非表示）
 initPrices();
 </script>
 </body>

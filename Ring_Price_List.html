@@ -546,7 +546,7 @@ function parsePriceNumSheet(table) {
     return Number.isInteger(n) ? String(n) : String(n);
   }
 
-  table.rows.forEach(row => {
+  table.rows.forEach((row, rowIdx) => {
     // c.vがnullのとき c.f（フォーマット済み値）を使う
     // c.fの全角×も半角xに正規化する
     const vals = row.c.map(c => {
@@ -554,6 +554,11 @@ function parsePriceNumSheet(table) {
       const v = (c.v !== null && c.v !== undefined) ? c.v : (c.f ?? null);
       return (typeof v === "string") ? v.replace(/×/g, "x") : v;
     });
+
+    // width列(vals[3])の生データをすべてログ出力
+    const rawW = row.c[3];
+    console.log(`[Row${rowIdx}] c.v=${JSON.stringify(rawW?.v)} c.f=${JSON.stringify(rawW?.f)} → vals[3]=${JSON.stringify(vals[3])} → key=${toWidthKey(vals[3])}`);
+
     const mat     = normalizeMat(String(vals[1] || "").trim());
     const rawSize = String(vals[2] || "").trim();
     // "size_1-8号" → "1-8"
@@ -566,6 +571,9 @@ function parsePriceNumSheet(table) {
     if (!map[mat][size]) map[mat][size] = {};
     map[mat][size][widthKey] = pNum;
   });
+
+  // マップ全体をログ出力
+  console.log("=== productNumMap ===", JSON.stringify(map, null, 2));
   return map;
 }
 
@@ -730,6 +738,11 @@ function calc() {
 
   // 商品番号を取得して表示
   const pNum = (productNumMap[mat] && productNumMap[mat][size] && productNumMap[mat][size][width]) || null;
+  console.log(`[calc] mat="${mat}" size="${size}" width="${width}" → pNum=${pNum}`);
+  console.log(`[calc] map keys for mat:`, productNumMap[mat] ? Object.keys(productNumMap[mat]) : "なし");
+  if (productNumMap[mat] && productNumMap[mat][size]) {
+    console.log(`[calc] map keys for size "${size}":`, Object.keys(productNumMap[mat][size]));
+  }
   document.getElementById("r-product-num").textContent = pNum ? `商品番号：${pNum}` : "";
 
   // ハワイアン彫り

@@ -265,25 +265,44 @@ select:focus { outline: none; border-color: var(--gold); }
   <div>
     <div class="section-title">Option — オプション</div>
 
-    <!-- ハワイアン彫り（彫り範囲選択） -->
-    <div class="option-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
+    <!-- つや有（固定オプション） -->
+    <div class="option-row">
       <div>
-        <div class="option-name">ハワイアン彫り</div>
-        <div class="option-price-note">沖縄の彫金職人が直接掘ります。</div>
+        <div class="option-name">つや有</div>
+        <div class="option-price-note">¥1,100</div>
       </div>
-      <div class="radio-group" id="scope-group" style="width:100%;">
-        <button class="radio-btn active" data-val="none" onclick="setScope(this)">
-          None<br><span style="font-size:10px;color:var(--soft);font-weight:400;">なし</span>
-        </button>
-        <button class="radio-btn" data-val="full" onclick="setScope(this)">
-          Full<br><span style="font-size:10px;color:var(--soft);font-weight:400;">360°</span>
-        </button>
-        <button class="radio-btn" data-val="half" onclick="setScope(this)">
-          Half<br><span style="font-size:10px;color:var(--soft);font-weight:400;">180°</span>
-        </button>
-        <button class="radio-btn" data-val="point" onclick="setScope(this)">
-          Point<br><span style="font-size:10px;color:var(--soft);font-weight:400;">チャーム追加</span>
-        </button>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="gloss-toggle" onchange="calc()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <!-- ハワイアン彫り（トグル＋範囲選択） -->
+    <div class="option-row">
+      <div>
+        <div class="option-name">沖縄彫刻</div>
+        <div class="option-price-note">彫刻は3.0mmから可能です</div>
+      </div>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="carving-toggle" onchange="onCarvingToggle()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <!-- 範囲選択（トグルON時に表示） -->
+    <div class="accordion-sub" id="carving-scope-sub">
+      <div class="sub-row" style="flex-direction:column;align-items:flex-start;gap:8px;padding-top:4px;">
+        <span class="sub-label">彫り範囲</span>
+        <div class="radio-group" id="scope-group" style="width:100%;">
+          <button class="radio-btn active" data-val="full" onclick="setScope(this)">
+            Full<br><span style="font-size:10px;color:var(--soft);font-weight:400;">360°</span>
+          </button>
+          <button class="radio-btn" data-val="half" onclick="setScope(this)">
+            Half<br><span style="font-size:10px;color:var(--soft);font-weight:400;">180°</span>
+          </button>
+          <button class="radio-btn" data-val="point" onclick="setScope(this)">
+            Point<br><span style="font-size:10px;color:var(--soft);font-weight:400;">チャーム追加</span>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -326,7 +345,7 @@ select:focus { outline: none; border-color: var(--gold); }
     <!-- 石留め（カウンター） -->
     <div class="option-row">
       <div>
-        <div class="option-name">石留め</div>
+        <div class="option-name">ダイヤモンド1石</div>
         <div class="option-price-note">¥11,000 / 石</div>
       </div>
       <div class="counter">
@@ -356,6 +375,7 @@ select:focus { outline: none; border-color: var(--gold); }
     <div id="price-loading" style="display:none;text-align:center;padding:8px 0;font-size:12px;color:var(--soft);letter-spacing:0.05em;">価格を読み込み中…</div>
     <div id="result-rows">
       <div class="result-row"><span>基本料金（リング）<br><span id="r-base-subtitle" style="font-size:10px;color:var(--soft);font-weight:300;letter-spacing:0.04em;"></span><br><span id="r-product-num" style="font-size:10px;color:var(--soft);font-weight:300;letter-spacing:0.04em;"></span></span><span id="r-base">—</span></div>
+      <div class="result-row" id="row-gloss" style="display:none"><span>つや有</span><span id="r-gloss">¥1,100</span></div>
       <div class="result-row" id="row-carving"><span id="lbl-carving">ハワイアン彫り（全周）</span><span id="r-carving">—</span></div>
       <div class="result-row" id="row-stone"    style="display:none"><span id="lbl-stone">石留め</span><span id="r-stone">—</span></div>
       <div class="result-row" id="row-stamp"    style="display:none"><span id="lbl-stamp">刻印</span><span id="r-stamp">—</span></div>
@@ -697,9 +717,36 @@ function setMat(el) {
   updateRingColor(mat);
   calc();
 }
+// 彫刻可能な幅のdata-val一覧
+const CARVABLE_WIDTHS = ["3", "4x2", "5x2"];
+
 function setWidth(el) {
   document.querySelectorAll("#width-group .btn-opt").forEach(b => b.classList.remove("active"));
   el.classList.add("active");
+
+  const w = el.dataset.val;
+  const carvable = CARVABLE_WIDTHS.includes(w);
+  const toggle = document.getElementById("carving-toggle");
+  const toggleWrap = toggle ? toggle.closest(".toggle-wrap") : null;
+
+  if (!carvable) {
+    // 非対応幅 → トグルをOFFにして無効化
+    if (toggle && toggle.checked) {
+      toggle.checked = false;
+      onCarvingToggle();
+    }
+    if (toggleWrap) {
+      toggleWrap.style.opacity = "0.35";
+      toggleWrap.style.pointerEvents = "none";
+    }
+  } else {
+    // 対応幅 → トグルを有効化
+    if (toggleWrap) {
+      toggleWrap.style.opacity = "";
+      toggleWrap.style.pointerEvents = "";
+    }
+  }
+
   calc();
 }
 function setSize(el) {
@@ -724,22 +771,34 @@ function setScope(el) {
     counts.charm = 0;
     document.getElementById("val-charm").textContent = 0;
   }
-  // None=納期非表示、Full/Half/Point=納期表示
-  const carvingSub = document.getElementById("carving-sub");
-  if (scope === "none") {
-    carvingSub.classList.remove("open");
-    // 納期をnormalにリセット
+  calc();
+}
+function onCarvingToggle() {
+  const on = document.getElementById("carving-toggle").checked;
+  const scopeSub = document.getElementById("carving-scope-sub");
+  if (on) {
+    scopeSub.classList.add("open");
+    // デフォルトでfullを選択
+    scope = "full";
+    document.querySelectorAll("#scope-group .radio-btn").forEach(b => b.classList.remove("active"));
+    const fullBtn = document.querySelector("#scope-group .radio-btn[data-val='full']");
+    if (fullBtn) fullBtn.classList.add("active");
+    // 納期サブを表示
+    document.getElementById("carving-sub").classList.add("open");
+  } else {
+    scopeSub.classList.remove("open");
+    scope = "none";
+    // チャームリセット
+    counts.charm = 0;
+    document.getElementById("val-charm").textContent = 0;
+    document.getElementById("charm-sub").classList.remove("open");
+    // 納期リセット
     del = "normal";
     document.querySelectorAll("#delivery-group .btn-del").forEach(b => b.classList.remove("active"));
     const normalBtn = document.querySelector("#delivery-group .btn-del[data-val='normal']");
     if (normalBtn) normalBtn.classList.add("active");
-  } else {
-    carvingSub.classList.add("open");
+    document.getElementById("carving-sub").classList.remove("open");
   }
-  calc();
-}
-function onCarvingToggle() {
-  // 後方互換用（呼ばれることはないが残しておく）
   calc();
 }
 function change(key, delta) {
@@ -772,6 +831,15 @@ function calc() {
   const pNum = (productNumMap[mat] && productNumMap[mat][size] && productNumMap[mat][size][width]) || null;
   document.getElementById("r-product-num").textContent = pNum ? `商品番号：${pNum}` : "";
 
+  // つや有
+  const glossOn = document.getElementById("gloss-toggle") && document.getElementById("gloss-toggle").checked;
+  if (glossOn) {
+    total += 1100;
+    document.getElementById("row-gloss").style.display = "flex";
+  } else {
+    document.getElementById("row-gloss").style.display = "none";
+  }
+
   // ハワイアン彫り
   // carvingPrices = 彫刻料金そのもの（リング基本価格に上乗せする金額）
   if (carving) {
@@ -779,20 +847,23 @@ function calc() {
     const fullCarvingFee = (carvingPrices[mat] && carvingPrices[mat][size] && carvingPrices[mat][size][width])
       ? carvingPrices[mat][size][width] : 0;
 
+    // チャーム料金（point選択時はcarving行に統合）
+    const charmFee = scope === "point" ? counts.charm * 11000 : 0;
+
     let fee, label;
     if (scope === "half") {
       fee   = Math.round(fullCarvingFee / 2);
       label = "ハワイアン彫り（半周）";
     } else if (scope === "point") {
-      fee   = Math.round(fullCarvingFee / 4);
-      label = "ハワイアン彫り（ポイント）";
+      fee   = charmFee; // チャーム追加料金のみ
+      label = `ハワイアン彫り（チャーム追加×${counts.charm}）`;
     } else {
       fee   = fullCarvingFee;
       label = "ハワイアン彫り（全周）";
     }
     total += fee;
     document.getElementById("lbl-carving").textContent = label;
-    document.getElementById("r-carving").textContent   = fee > 0 ? fmt(fee) : "—（この幅は彫刻非対応）";
+    document.getElementById("r-carving").textContent   = fmt(fee);
     document.getElementById("row-carving").style.display = "flex";
   } else {
     document.getElementById("row-carving").style.display = "none";
@@ -818,12 +889,10 @@ function calc() {
     document.getElementById("row-stamp").style.display = "none";
   }
 
-  // チャーム追加（Point選択時は0個でも行を表示）
+  // チャーム追加（Point選択時はcarving行に統合済みなので加算しない）
   if (scope === "point") {
-    const c = counts.charm * 11000; total += c;
-    document.getElementById("lbl-charm").textContent = `チャーム追加 x${counts.charm}`;
-    document.getElementById("r-charm").textContent   = counts.charm > 0 ? fmt(c) : "¥0";
-    document.getElementById("row-charm").style.display = "flex";
+    // carving行で既に加算済みのためここでは加算しない
+    document.getElementById("row-charm").style.display = "none";
   } else if (counts.charm > 0) {
     const c = counts.charm * 11000; total += c;
     document.getElementById("lbl-charm").textContent = `チャーム追加 x${counts.charm}`;
@@ -876,6 +945,8 @@ function sendInquiry() {
   total += counts.charm * 11000;
   if (del === "7day") total += 20000;
   if (del === "3day") total += 40000;
+  const glossOn2 = document.getElementById("gloss-toggle") && document.getElementById("gloss-toggle").checked;
+  if (glossOn2) total += 1100;
 
   const matLabel = { silver:"Silver 925", "10K":"Gold K10", "18K":"Gold K18", "pt":"Pt900" }[mat];
   const body =
@@ -883,7 +954,8 @@ function sendInquiry() {
     '■ 素材：'         + matLabel + '\n' +
     '■ 幅：'           + width + 'mm\n' +
     '■ 号数：'         + size + '\n' +
-    '■ ハワイアン彫り：' + (scope === 'none' ? 'なし' : scope === 'full' ? '全周' : scope === 'half' ? '半周' : 'ポイント') + '\n' +
+    '■ つや有：'        + (glossOn2 ? 'あり（¥1,100）' : 'なし') + '\n' +
+    '■ ハワイアン彫り：' + (scope === 'none' ? 'なし' : scope === 'full' ? '全周' : scope === 'half' ? '半周' : 'ポイント（¥0）') + '\n' +
     '■ 石留め：'       + counts.stone + '石\n' +
     '■ 刻印：'         + counts.stamp + '文字\n' +
     '■ チャーム追加：'  + counts.charm + '個\n' +
@@ -900,6 +972,16 @@ function sendInquiry() {
 // 初期化（スプレッドシートから読み込み → calc()）
 // 初期スコープはNone（納期非表示）
 initPrices();
+
+// 初期幅（1.0mm）は彫刻非対応 → トグルを無効化
+(function() {
+  const toggle = document.getElementById("carving-toggle");
+  const toggleWrap = toggle ? toggle.closest(".toggle-wrap") : null;
+  if (toggleWrap) {
+    toggleWrap.style.opacity = "0.35";
+    toggleWrap.style.pointerEvents = "none";
+  }
+})();
 </script>
 </body>
 </html>

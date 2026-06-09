@@ -536,21 +536,24 @@ function parsePriceNumSheet(table) {
   const map = {};
 
   // スプレのwidth値 → ボタンdata-valへの変換
-  // gvizは整数を数値型で返すため、数値キーと文字列キーの両方を登録
   function toWidthKey(raw) {
-    // 文字列 "4x2" / "5x2" はそのままdata-valと一致
-    if (raw === "4x2" || raw === "5x2") return raw;
-    // 数値型・文字列型どちらも parseFloat して判定
-    const n = parseFloat(raw);
+    if (raw === null || raw === undefined) return null;
+    // 全角×を半角xに正規化してから比較（スプレの表示形式がどちらでも対応）
+    const s = String(raw).trim().replace(/×/g, "x");
+    if (s === "4x2" || s === "5x2") return s;
+    const n = parseFloat(s);
     if (isNaN(n)) return null;
-    // 1→"1", 1.5→"1.5", 2→"2", 2.5→"2.5", 3→"3"
     return Number.isInteger(n) ? String(n) : String(n);
   }
 
   table.rows.forEach(row => {
     // c.vがnullのとき c.f（フォーマット済み値）を使う
-    // gvizは "4x2"/"5x2" などのテキストをc.vではなくc.fで返すことがある
-    const vals    = row.c.map(c => c ? (c.v !== null && c.v !== undefined ? c.v : (c.f ?? null)) : null);
+    // c.fの全角×も半角xに正規化する
+    const vals = row.c.map(c => {
+      if (!c) return null;
+      const v = (c.v !== null && c.v !== undefined) ? c.v : (c.f ?? null);
+      return (typeof v === "string") ? v.replace(/×/g, "x") : v;
+    });
     const mat     = normalizeMat(String(vals[1] || "").trim());
     const rawSize = String(vals[2] || "").trim();
     // "size_1-8号" → "1-8"

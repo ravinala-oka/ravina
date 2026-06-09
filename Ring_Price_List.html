@@ -112,10 +112,11 @@ select:focus { outline: none; border-color: var(--gold); }
 .sub-label { font-size: 12px; color: var(--soft); }
 .radio-group { display: flex; border: 0.5px solid var(--border); border-radius: 6px; overflow: hidden; }
 .radio-btn {
-  flex: 1; padding: 6px 12px; font-size: 12px; cursor: pointer;
+  flex: 1; padding: 8px 6px; font-size: 12px; cursor: pointer;
   background: var(--white); color: var(--soft);
   border: none; border-right: 0.5px solid var(--border);
   transition: all 0.15s; white-space: nowrap; font-family: 'Noto Serif JP', serif;
+  text-align: center; line-height: 1.4;
 }
 .radio-btn:last-child { border-right: none; }
 .radio-btn:hover { background: var(--gold-pale); }
@@ -196,8 +197,8 @@ select:focus { outline: none; border-color: var(--gold); }
 
 <div class="header">
   <div class="header-label">Ring Customizer</div>
-  <h1>RAVINA</h1>
-  <p>ハワイアン彫り指輪 料金シミュレーター</p>
+  <h1>Custom Ring Price Calculator</h1>
+  <p>指輪 料金シミュレーター</p>
 </div>
 
 <div class="simulator">
@@ -264,29 +265,30 @@ select:focus { outline: none; border-color: var(--gold); }
   <div>
     <div class="section-title">Option — オプション</div>
 
-    <!-- ハワイアン彫り（トグル + アコーディオン） -->
-    <div class="option-row">
+    <!-- ハワイアン彫り（彫り範囲選択） -->
+    <div class="option-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
       <div>
         <div class="option-name">ハワイアン彫り</div>
-        <div class="option-price-note">チャーム2個＋スクロール4個 込み</div>
+        <div class="option-price-note">沖縄の彫金職人が直接掘ります。</div>
       </div>
-      <label class="toggle-wrap">
-        <input type="checkbox" id="opt-carving" onchange="onCarvingToggle()">
-        <span class="toggle-slider"></span>
-      </label>
+      <div class="radio-group" id="scope-group" style="width:100%;">
+        <button class="radio-btn" data-val="none" onclick="setScope(this)">
+          None<br><span style="font-size:10px;color:var(--soft);font-weight:400;">なし</span>
+        </button>
+        <button class="radio-btn active" data-val="full" onclick="setScope(this)">
+          Full<br><span style="font-size:10px;color:var(--soft);font-weight:400;">360°</span>
+        </button>
+        <button class="radio-btn" data-val="half" onclick="setScope(this)">
+          Half<br><span style="font-size:10px;color:var(--soft);font-weight:400;">180°</span>
+        </button>
+        <button class="radio-btn" data-val="point" onclick="setScope(this)">
+          Point<br><span style="font-size:10px;color:var(--soft);font-weight:400;">チャーム追加</span>
+        </button>
+      </div>
     </div>
 
-    <!-- ハワイアン彫りアコーディオン：彫り範囲・チャーム・納期 -->
-    <div class="accordion-sub" id="carving-sub">
-      <!-- 彫り範囲 -->
-      <div class="sub-row">
-        <span class="sub-label">彫り範囲</span>
-        <div class="radio-group" id="scope-group">
-          <button class="radio-btn active" data-val="full" onclick="setScope(this)">全周</button>
-          <button class="radio-btn" data-val="half" onclick="setScope(this)">半周（半額）</button>
-        </div>
-      </div>
-      <!-- チャーム追加 -->
+    <!-- チャーム追加（point選択時のみ表示） -->
+    <div class="accordion-sub" id="charm-sub">
       <div class="sub-row">
         <div>
           <span class="sub-label">チャーム追加</span>
@@ -298,7 +300,10 @@ select:focus { outline: none; border-color: var(--gold); }
           <button class="counter-btn" onclick="change('charm',1)">＋</button>
         </div>
       </div>
-      <!-- 納期 -->
+    </div>
+
+    <!-- 納期（None以外のスコープ選択時に表示） -->
+    <div class="accordion-sub" id="carving-sub">
       <div class="sub-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
         <span class="sub-label">納期</span>
         <div class="del-grid" id="delivery-group" style="width:100%;">
@@ -335,7 +340,7 @@ select:focus { outline: none; border-color: var(--gold); }
     <div class="option-row" style="border-bottom:none">
       <div>
         <div class="option-name">刻印</div>
-        <div class="option-price-note">¥3,000 / 文字</div>
+        <div class="option-price-note">¥200 / 文字</div>
       </div>
       <div class="counter">
         <button class="counter-btn" onclick="change('stamp',-1)">−</button>
@@ -350,7 +355,7 @@ select:focus { outline: none; border-color: var(--gold); }
     <div class="section-title">Estimate — お見積り</div>
     <div id="price-loading" style="display:none;text-align:center;padding:8px 0;font-size:12px;color:var(--soft);letter-spacing:0.05em;">価格を読み込み中…</div>
     <div id="result-rows">
-      <div class="result-row"><span>基本料金（リング）</span><span id="r-base">—</span></div>
+      <div class="result-row"><span>基本料金（リング）<br><span id="r-base-subtitle" style="font-size:10px;color:var(--soft);font-weight:300;letter-spacing:0.04em;"></span><br><span id="r-product-num" style="font-size:10px;color:var(--soft);font-weight:300;letter-spacing:0.04em;"></span></span><span id="r-base">—</span></div>
       <div class="result-row" id="row-carving"><span id="lbl-carving">ハワイアン彫り（全周）</span><span id="r-carving">—</span></div>
       <div class="result-row" id="row-stone"    style="display:none"><span id="lbl-stone">石留め</span><span id="r-stone">—</span></div>
       <div class="result-row" id="row-stamp"    style="display:none"><span id="lbl-stamp">刻印</span><span id="r-stamp">—</span></div>
@@ -376,14 +381,18 @@ select:focus { outline: none; border-color: var(--gold); }
 const SHEET_ID = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
 // スプレッドシートのシート名（タブ名）
 // ※ シート名が「シート1」などの場合はそちらに変更してください
-const MAIN_SHEET = "Ring";  // スプレのシート名
+const MAIN_SHEET  = "Ring";        // スプレのシート名
+const PNUM_SHEET  = "Price_Num";   // 商品番号シート名
+
+// 商品番号マップ: productNumMap[mat][size][width] = 商品番号
+let productNumMap = {};
 
 // スプレッドシート上のmaterial名 → HTML内部キーへのマッピング
 const MAT_MAP = {
   "silver925": "silver",
-  "K10":       "10K",
-  "Gold K18":  "18K",
-  "Platinum":  "pt"
+  "10K":       "10K",
+  "18K":       "18K",
+  "pt900":     "pt"
 };
 
 // フォールバック用デフォルト価格（スプレッドシート読み込み失敗時）
@@ -519,6 +528,25 @@ function parseMainSheet(table) {
   return { newPrices, newRingOnly };
 }
 
+// Price_Numシートを読み込み商品番号マップを構築
+// 列構成: list(0) | material(1) | size(2) | width(3) | 大枠番号(4) | 商品番号(5)
+function parsePriceNumSheet(table) {
+  const map = {};
+  table.rows.forEach(row => {
+    const vals = row.c.map(c => (c ? c.v : null));
+    const mat   = normalizeMat(String(vals[1] || "").trim());
+    const rawSize = String(vals[2] || "").trim(); // "size_1-8号"
+    const size  = rawSize.replace("size_", "").replace("号", "").replace("-", "-"); // "1-8"
+    const width = normalizeWidth(vals[3]); // "1.0"
+    const pNum  = vals[5];
+    if (!mat || !size || !width || !pNum) return;
+    if (!map[mat]) map[mat] = {};
+    if (!map[mat][size]) map[mat][size] = {};
+    map[mat][size][width] = pNum;
+  });
+  return map;
+}
+
 async function initPrices() {
   showLoadingState(true);
   try {
@@ -550,6 +578,14 @@ async function initPrices() {
         });
       });
       ringOnly = autoRingOnly;
+    }
+
+    // Price_Numシートを読み込んで商品番号マップを構築
+    try {
+      const pNumTable = await loadFromSheet(PNUM_SHEET);
+      productNumMap = parsePriceNumSheet(pNumTable);
+    } catch (e) {
+      console.warn("Price_Numシート読み込み失敗", e);
     }
 
     showLoadingState(false);
@@ -591,6 +627,7 @@ const ringColors = {
 };
 
 let mat = "silver", del = "normal", scope = "full";
+// scope: "none" | "full" | "half" | "point"
 let counts = { stone: 0, charm: 0, stamp: 0 };
 
 function updateRingColor(m) {
@@ -630,12 +667,29 @@ function setScope(el) {
   document.querySelectorAll("#scope-group .radio-btn").forEach(b => b.classList.remove("active"));
   el.classList.add("active");
   scope = el.dataset.val;
+  // point選択時のみチャーム追加を表示
+  const charmSub = document.getElementById("charm-sub");
+  charmSub.classList.toggle("open", scope === "point");
+  if (scope !== "point") {
+    counts.charm = 0;
+    document.getElementById("val-charm").textContent = 0;
+  }
+  // None=納期非表示、Full/Half/Point=納期表示
+  const carvingSub = document.getElementById("carving-sub");
+  if (scope === "none") {
+    carvingSub.classList.remove("open");
+    // 納期をnormalにリセット
+    del = "normal";
+    document.querySelectorAll("#delivery-group .btn-del").forEach(b => b.classList.remove("active"));
+    const normalBtn = document.querySelector("#delivery-group .btn-del[data-val='normal']");
+    if (normalBtn) normalBtn.classList.add("active");
+  } else {
+    carvingSub.classList.add("open");
+  }
   calc();
 }
 function onCarvingToggle() {
-  const sub = document.getElementById("carving-sub");
-  const on  = document.getElementById("opt-carving").checked;
-  sub.classList.toggle("open", on);
+  // 後方互換用（呼ばれることはないが残しておく）
   calc();
 }
 function change(key, delta) {
@@ -650,7 +704,7 @@ function calc() {
   const sizeEl  = document.querySelector("#size-group .btn-opt.active");
   const width   = widthEl ? widthEl.dataset.val : "1.0";
   const size    = sizeEl  ? sizeEl.dataset.val  : "1-8";
-  const carving = document.getElementById("opt-carving").checked;
+  const carving = scope !== "none";
 
   // スプレの価格 = リング単品価格（彫刻なし状態が正）
   const ringBase = (prices[mat] && prices[mat][width] && prices[mat][width][size]) || 0;
@@ -658,14 +712,31 @@ function calc() {
   let total = ringBase;
   document.getElementById("r-base").textContent = fmt(ringBase);
 
-  // ハワイアン彫り（スプレに彫刻費が含まれていないため別途加算）
+  // 基本料金の副題（例: Silver _ 1.0mm _ 1～8号）
+  const matLabel = { silver:"Silver", "10K":"Gold K10", "18K":"Gold K18", "pt":"Platinum" }[mat] || mat;
+  const sizeLabel = { "1-8":"1～8号","9-16":"9～16号","17-24":"17～24号","25-32":"25～32号","33-40":"33～40号" }[size] || size;
+  document.getElementById("r-base-subtitle").textContent = `${matLabel} _ ${width}mm _ ${sizeLabel}`;
+
+  // 商品番号を取得して表示
+  const pNum = (productNumMap[mat] && productNumMap[mat][size] && productNumMap[mat][size][width]) || null;
+  document.getElementById("r-product-num").textContent = pNum ? `商品番号：${pNum}` : "";
+
+  // ハワイアン彫り
   if (carving) {
-    // 彫刻料金はringOnly[mat][width]と prices の差分。なければ0（後からスプレに追加可能）
     const fullCarving = (ringOnly[mat] && ringOnly[mat][width] && ringOnly[mat][width][size])
       ? Math.max(0, ringOnly[mat][width][size] - ringBase)
       : 0;
-    const fee   = scope === "half" ? fullCarving / 2 : fullCarving;
-    const label = scope === "half" ? "ハワイアン彫り（半周）" : "ハワイアン彫り（全周）";
+    let fee, label;
+    if (scope === "half") {
+      fee   = fullCarving / 2;
+      label = "ハワイアン彫り（半周）";
+    } else if (scope === "point") {
+      fee   = fullCarving / 4;
+      label = "ハワイアン彫り（ポイント）";
+    } else {
+      fee   = fullCarving;
+      label = "ハワイアン彫り（全周）";
+    }
     total += fee;
     document.getElementById("lbl-carving").textContent = label;
     document.getElementById("r-carving").textContent   = fee > 0 ? fmt(fee) : "込み";
@@ -686,7 +757,7 @@ function calc() {
 
   // 刻印
   if (counts.stamp > 0) {
-    const s = counts.stamp * 3000; total += s;
+    const s = counts.stamp * 200; total += s;
     document.getElementById("lbl-stamp").textContent = `刻印 ×${counts.stamp}文字`;
     document.getElementById("r-stamp").textContent   = fmt(s);
     document.getElementById("row-stamp").style.display = "flex";
@@ -728,16 +799,20 @@ function sendInquiry() {
   const sizeEl  = document.querySelector("#size-group .btn-opt.active");
   const width   = widthEl ? widthEl.dataset.val : "3.0";
   const size    = sizeEl  ? sizeEl.dataset.val  : "1-8";
-  const carving = document.getElementById("opt-carving").checked;
+  const carving = scope !== "none";
 
   // 合計を再計算
   const fullTotal      = (prices[mat] && prices[mat][width] && prices[mat][width][size]) || 0;
   const ringBase       = (ringOnly[mat] && ringOnly[mat][width]) || 0;
   const fullCarvingFee = fullTotal - ringBase;
   let total = ringBase;
-  if (carving) total += scope === "half" ? fullCarvingFee / 2 : fullCarvingFee;
+  if (carving) {
+    if (scope === "half")  total += fullCarvingFee / 2;
+    else if (scope === "point") total += fullCarvingFee / 4;
+    else total += fullCarvingFee;
+  }
   total += counts.stone * 11000;
-  total += counts.stamp * 3000;
+  total += counts.stamp * 200;
   total += counts.charm * 11000;
   if (del === "7day") total += 20000;
   if (del === "3day") total += 40000;
@@ -748,7 +823,7 @@ function sendInquiry() {
     '■ 素材：'         + matLabel + '\n' +
     '■ 幅：'           + width + 'mm\n' +
     '■ 号数：'         + size + '\n' +
-    '■ ハワイアン彫り：' + (carving ? (scope === 'half' ? '半周' : '全周') : 'なし') + '\n' +
+    '■ ハワイアン彫り：' + (scope === 'none' ? 'なし' : scope === 'full' ? '全周' : scope === 'half' ? '半周' : 'ポイント') + '\n' +
     '■ 石留め：'       + counts.stone + '石\n' +
     '■ 刻印：'         + counts.stamp + '文字\n' +
     '■ チャーム追加：'  + counts.charm + '個\n' +
@@ -763,6 +838,8 @@ function sendInquiry() {
 }
 
 // 初期化（スプレッドシートから読み込み → calc()）
+// 初期スコープ(full)に合わせて納期ブロックを開いておく
+document.getElementById("carving-sub").classList.add("open");
 initPrices();
 </script>
 </body>

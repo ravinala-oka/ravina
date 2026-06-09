@@ -239,13 +239,13 @@ select:focus { outline: none; border-color: var(--gold); }
   <div>
     <div class="section-title">Width — 幅</div>
     <div class="btn-grid col4" id="width-group">
-      <button class="btn-opt active" data-val="1" onclick="setWidth(this)">1.0 mm<br><span style="font-size:10px;color:var(--soft);font-weight:400;">1</span></button>
-      <button class="btn-opt" data-val="1.5" onclick="setWidth(this)">1.5 mm<br><span style="font-size:10px;color:var(--soft);font-weight:400;">1.5</span></button>
-      <button class="btn-opt" data-val="2" onclick="setWidth(this)">2.0 mm<br><span style="font-size:10px;color:var(--soft);font-weight:400;">2</span></button>
-      <button class="btn-opt" data-val="2.5" onclick="setWidth(this)">2.5 mm<br><span style="font-size:10px;color:var(--soft);font-weight:400;">2.5</span></button>
-      <button class="btn-opt" data-val="3" onclick="setWidth(this)">3.0 mm<br><span style="font-size:10px;color:var(--soft);font-weight:400;">3</span></button>
-      <button class="btn-opt" data-val="4×2" onclick="setWidth(this)">4.0 mm<br><span style="font-size:10px;color:var(--soft);font-weight:400;">4×2</span></button>
-      <button class="btn-opt" data-val="5×2" onclick="setWidth(this)">5.0 mm<br><span style="font-size:10px;color:var(--soft);font-weight:400;">5×2</span></button>
+      <button class="btn-opt active" data-val="1.0" onclick="setWidth(this)">1.0 mm</button>
+      <button class="btn-opt" data-val="1.5" onclick="setWidth(this)">1.5 mm</button>
+      <button class="btn-opt" data-val="2.0" onclick="setWidth(this)">2.0 mm</button>
+      <button class="btn-opt" data-val="2.5" onclick="setWidth(this)">2.5 mm</button>
+      <button class="btn-opt" data-val="3.0" onclick="setWidth(this)">3.0 mm</button>
+      <button class="btn-opt" data-val="4.0" onclick="setWidth(this)">4.0 mm</button>
+      <button class="btn-opt" data-val="5.0" onclick="setWidth(this)">5.0 mm</button>
     </div>
   </div>
 
@@ -399,60 +399,60 @@ const MAT_MAP = {
 // Ring_Price シートの値と完全一致
 let prices = {
   silver: {
-    "1":   {"1-8":3520,  "9-16":3872,  "17-24":4224,  "25-32":4576,  "33-40":4928},
+    "1.0": {"1-8":3520,  "9-16":3872,  "17-24":4224,  "25-32":4576,  "33-40":4928},
     "1.5": {"1-8":4400,  "9-16":4840,  "17-24":5280,  "25-32":5720,  "33-40":6160},
-    "2":   {"1-8":6600,  "9-16":7260,  "17-24":7920,  "25-32":8580,  "33-40":9240},
+    "2.0": {"1-8":6600,  "9-16":7260,  "17-24":7920,  "25-32":8580,  "33-40":9240},
     "2.5": {"1-8":8800,  "9-16":9680,  "17-24":10560, "25-32":11440, "33-40":12320},
-    "3":   {"1-8":12100, "9-16":13310, "17-24":14520, "25-32":15730, "33-40":16940},
-    "4×2": {"1-8":12100, "9-16":13310, "17-24":14520, "25-32":15730, "33-40":16940},
-    "5×2": {"1-8":27500, "9-16":30250, "17-24":33000, "25-32":35750, "33-40":38500}
+    "3.0": {"1-8":12100, "9-16":13310, "17-24":14520, "25-32":15730, "33-40":16940},
+    "4.0": {"1-8":12100, "9-16":13310, "17-24":14520, "25-32":15730, "33-40":16940},
+    "5.0": {"1-8":27500, "9-16":30250, "17-24":33000, "25-32":35750, "33-40":38500}
   },
   "10K": {
-    "1":   {"1-8":15400, "9-16":16940, "17-24":18480, "25-32":20020, "33-40":21560},
+    "1.0": {"1-8":15400, "9-16":16940, "17-24":18480, "25-32":20020, "33-40":21560},
     "1.5": {"1-8":27500, "9-16":30250, "17-24":33000, "25-32":35750, "33-40":38500},
-    "2":   {"1-8":49500, "9-16":54450, "17-24":59400, "25-32":64350, "33-40":69300},
+    "2.0": {"1-8":49500, "9-16":54450, "17-24":59400, "25-32":64350, "33-40":69300},
     "2.5": {"1-8":88000, "9-16":96800, "17-24":105600,"25-32":114400,"33-40":123200},
-    "3":   {"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
-    "4×2": {"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
-    "5×2": {"1-8":154000,"9-16":169400,"17-24":184800,"25-32":200200,"33-40":215600}
+    "3.0": {"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
+    "4.0": {"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
+    "5.0": {"1-8":154000,"9-16":169400,"17-24":184800,"25-32":200200,"33-40":215600}
   },
   "18K": {
-    "1":   {"1-8":25300, "9-16":27830, "17-24":30360, "25-32":32890, "33-40":35420},
+    "1.0": {"1-8":25300, "9-16":27830, "17-24":30360, "25-32":32890, "33-40":35420},
     "1.5": {"1-8":55000, "9-16":60500, "17-24":66000, "25-32":71500, "33-40":77000},
-    "2":   {"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
+    "2.0": {"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
     "2.5": {"1-8":165000,"9-16":181500,"17-24":198000,"25-32":214500,"33-40":231000},
-    "3":   {"1-8":220000,"9-16":242000,"17-24":264000,"25-32":286000,"33-40":308000},
-    "4×2": {"1-8":220000,"9-16":242000,"17-24":264000,"25-32":286000,"33-40":308000},
-    "5×2": {"1-8":297000,"9-16":326700,"17-24":356400,"25-32":386100,"33-40":415800}
+    "3.0": {"1-8":220000,"9-16":242000,"17-24":264000,"25-32":286000,"33-40":308000},
+    "4.0": {"1-8":220000,"9-16":242000,"17-24":264000,"25-32":286000,"33-40":308000},
+    "5.0": {"1-8":297000,"9-16":326700,"17-24":356400,"25-32":386100,"33-40":415800}
   },
   "pt": {
-    "1":   {"1-8":25300, "9-16":27830, "17-24":30360, "25-32":32890, "33-40":35420},
+    "1.0": {"1-8":25300, "9-16":27830, "17-24":30360, "25-32":32890, "33-40":35420},
     "1.5": {"1-8":55000, "9-16":60500, "17-24":66000, "25-32":71500, "33-40":77000},
-    "2":   {"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
+    "2.0": {"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
     "2.5": {"1-8":165000,"9-16":181500,"17-24":198000,"25-32":214500,"33-40":231000},
-    "3":   {"1-8":220000,"9-16":242000,"17-24":264000,"25-32":286000,"33-40":308000},
-    "4×2": {"1-8":220000,"9-16":242000,"17-24":264000,"25-32":286000,"33-40":308000},
-    "5×2": {"1-8":297000,"9-16":326700,"17-24":356400,"25-32":386100,"33-40":415800}
+    "3.0": {"1-8":220000,"9-16":242000,"17-24":264000,"25-32":286000,"33-40":308000},
+    "4.0": {"1-8":220000,"9-16":242000,"17-24":264000,"25-32":286000,"33-40":308000},
+    "5.0": {"1-8":297000,"9-16":326700,"17-24":356400,"25-32":386100,"33-40":415800}
   }
 };
 
 // ringOnly = ハワイアン彫りなしの基本価格（Ring_Price の 1-8号価格）
 let ringOnly = JSON.parse(JSON.stringify({
   silver: {
-    "1":3520,   "1.5":4400,  "2":6600,   "2.5":8800,
-    "3":12100,  "4×2":12100, "5×2":27500
+    "1.0":3520,  "1.5":4400,  "2.0":6600,  "2.5":8800,
+    "3.0":12100, "4.0":12100, "5.0":27500
   },
   "10K": {
-    "1":15400,  "1.5":27500, "2":49500,  "2.5":88000,
-    "3":110000, "4×2":110000,"5×2":154000
+    "1.0":15400, "1.5":27500, "2.0":49500, "2.5":88000,
+    "3.0":110000,"4.0":110000,"5.0":154000
   },
   "18K": {
-    "1":25300,  "1.5":55000, "2":110000, "2.5":165000,
-    "3":220000, "4×2":220000,"5×2":297000
+    "1.0":25300, "1.5":55000, "2.0":110000,"2.5":165000,
+    "3.0":220000,"4.0":220000,"5.0":297000
   },
   "pt": {
-    "1":25300,  "1.5":55000, "2":110000, "2.5":165000,
-    "3":220000, "4×2":220000,"5×2":297000
+    "1.0":25300, "1.5":55000, "2.0":110000,"2.5":165000,
+    "3.0":220000,"4.0":220000,"5.0":297000
   }
 }));
 
@@ -493,15 +493,15 @@ function normalizeMat(rawMat) {
 function parseMainSheet(table) {
   const newPrices = {};
 
-  // width列インデックスとスプレ列名の対応（data-valと完全一致）
+  // width列インデックスと内部キーの対応
   const WIDTH_COLS = [
-    { idx: 3,  key: "1"   },
+    { idx: 3,  key: "1.0" },
     { idx: 4,  key: "1.5" },
-    { idx: 5,  key: "2"   },
+    { idx: 5,  key: "2.0" },
     { idx: 6,  key: "2.5" },
-    { idx: 7,  key: "3"   },
-    { idx: 8,  key: "4×2" },
-    { idx: 9,  key: "5×2" },
+    { idx: 7,  key: "3.0" },
+    { idx: 8,  key: "4.0" },  // 4×2 → 4.0
+    { idx: 9,  key: "5.0" },  // 5×2 → 5.0
   ];
 
   table.rows.forEach(row => {
@@ -532,25 +532,26 @@ function parseMainSheet(table) {
 
 // Price_Numシートを読み込み商品番号マップを構築
 // 列構成: list(0) | material(1) | size(2) | width(3) | 大枠番号(4) | 商品番号(5)
-// Price_Numのwidth値: 1, 1.5, 2, 2.5, 3, 4×2, 5×2
 function parsePriceNumSheet(table) {
   const map = {};
-  // Price_Numのwidth値 → スプレ列名（data-val）への変換
-  const WIDTH_KEY_MAP = {
+  // スプレのwidth値 → data-val（ボタンのdata-val）への変換テーブル
+  const W = {
     "1": "1", "1.5": "1.5", "2": "2", "2.5": "2.5",
     "3": "3", "4×2": "4×2", "5×2": "5×2"
   };
   table.rows.forEach(row => {
-    const vals = row.c.map(c => (c ? c.v : null));
+    const vals    = row.c.map(c => (c ? c.v : null));
     const mat     = normalizeMat(String(vals[1] || "").trim());
-    const rawSize = String(vals[2] || "").trim(); // "size_1-8号"
+    const rawSize = String(vals[2] || "").trim();           // "size_1-8号"
     const size    = rawSize.replace("size_", "").replace(/号$/, ""); // "1-8"
-    const rawW    = String(vals[3] ?? "").trim();
-    // 数値の場合は整数なら整数文字列、小数なら小数文字列に正規化
-    const widthKey = WIDTH_KEY_MAP[rawW] || (typeof vals[3] === "number"
+    // width は数値 or "4×2"/"5×2" などの文字列で来る
+    const rawW    = vals[3] !== null && vals[3] !== undefined ? String(vals[3]).trim() : "";
+    // 数値の場合: 1 → "1"、1.5 → "1.5" のように文字列化
+    const wStr    = (typeof vals[3] === "number")
       ? (Number.isInteger(vals[3]) ? String(vals[3]) : String(vals[3]))
-      : rawW);
-    const pNum = vals[5];
+      : rawW;
+    const widthKey = W[wStr] || wStr;
+    const pNum    = vals[5];
     if (!mat || !size || !widthKey || !pNum) return;
     if (!map[mat]) map[mat] = {};
     if (!map[mat][size]) map[mat][size] = {};
@@ -702,7 +703,7 @@ function fmt(n) { return "¥" + Math.round(n).toLocaleString("ja-JP"); }
 function calc() {
   const widthEl = document.querySelector("#width-group .btn-opt.active");
   const sizeEl  = document.querySelector("#size-group .btn-opt.active");
-  const width   = widthEl ? widthEl.dataset.val : "1";
+  const width   = widthEl ? widthEl.dataset.val : "1.0";
   const size    = sizeEl  ? sizeEl.dataset.val  : "1-8";
   const carving = scope !== "none";
 
@@ -712,11 +713,10 @@ function calc() {
   let total = ringBase;
   document.getElementById("r-base").textContent = fmt(ringBase);
 
-  // 基本料金の副題（例: Silver _ 1(1.0mm) _ 1～8号）
+  // 基本料金の副題（例: Silver _ 1.0mm _ 1～8号）
   const matLabel = { silver:"Silver", "10K":"Gold K10", "18K":"Gold K18", "pt":"Platinum" }[mat] || mat;
   const sizeLabel = { "1-8":"1～8号","9-16":"9～16号","17-24":"17～24号","25-32":"25～32号","33-40":"33～40号" }[size] || size;
-  const widthMmLabel = { "1":"1.0mm","1.5":"1.5mm","2":"2.0mm","2.5":"2.5mm","3":"3.0mm","4×2":"4.0mm(4×2)","5×2":"5.0mm(5×2)" }[width] || (width + "mm");
-  document.getElementById("r-base-subtitle").textContent = `${matLabel} _ ${widthMmLabel} _ ${sizeLabel}`;
+  document.getElementById("r-base-subtitle").textContent = `${matLabel} _ ${width}mm _ ${sizeLabel}`;
 
   // 商品番号を取得して表示
   const pNum = (productNumMap[mat] && productNumMap[mat][size] && productNumMap[mat][size][width]) || null;
@@ -798,7 +798,7 @@ function calc() {
 function sendInquiry() {
   const widthEl = document.querySelector("#width-group .btn-opt.active");
   const sizeEl  = document.querySelector("#size-group .btn-opt.active");
-  const width   = widthEl ? widthEl.dataset.val : "1";
+  const width   = widthEl ? widthEl.dataset.val : "3.0";
   const size    = sizeEl  ? sizeEl.dataset.val  : "1-8";
   const carving = scope !== "none";
 
@@ -839,8 +839,7 @@ function sendInquiry() {
 }
 
 // 初期化（スプレッドシートから読み込み → calc()）
-// 初期スコープ(full)に合わせて納期ブロックを開いておく
-document.getElementById("carving-sub").classList.add("open");
+// 初期スコープはNone（納期非表示）なので carving-sub は閉じたまま
 initPrices();
 </script>
 </body>

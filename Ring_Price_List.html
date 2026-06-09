@@ -468,8 +468,8 @@ let prices = {
 
 // ============================================================
 // 彫刻価格テーブル（スプレ「彫刻」シートと同期）
-// carvingPrices[mat][size][width] = 彫刻込み合計価格
-// 幅キー: "2","2.5","3","4x2","5x2"（新垣サイズ列は無視）
+// carvingPrices[mat][size][width] = 彫刻料金（リング基本価格に上乗せする金額）
+// 幅キー: "2","2.5","3","4x2","5x2"（幅1mm・1.5mmは彫刻非対応のため対象外）
 // ============================================================
 let carvingPrices = {
   silver: {
@@ -773,11 +773,11 @@ function calc() {
   document.getElementById("r-product-num").textContent = pNum ? `商品番号：${pNum}` : "";
 
   // ハワイアン彫り
-  // carvingPrices = 彫刻込み合計価格 → 彫刻料金 = 合計 - リング基本価格
+  // carvingPrices = 彫刻料金そのもの（リング基本価格に上乗せする金額）
   if (carving) {
-    const carvingTotal   = (carvingPrices[mat] && carvingPrices[mat][size] && carvingPrices[mat][size][width])
+    // 幅キーを探す："1"→"2"へのフォールバックはしない。carvingPricesにない幅は非対応
+    const fullCarvingFee = (carvingPrices[mat] && carvingPrices[mat][size] && carvingPrices[mat][size][width])
       ? carvingPrices[mat][size][width] : 0;
-    const fullCarvingFee = Math.max(0, carvingTotal - ringBase); // 彫刻料金のみ
 
     let fee, label;
     if (scope === "half") {
@@ -792,7 +792,7 @@ function calc() {
     }
     total += fee;
     document.getElementById("lbl-carving").textContent = label;
-    document.getElementById("r-carving").textContent   = fmt(fee); // 彫刻料金を金額で表示
+    document.getElementById("r-carving").textContent   = fee > 0 ? fmt(fee) : "—（この幅は彫刻非対応）";
     document.getElementById("row-carving").style.display = "flex";
   } else {
     document.getElementById("row-carving").style.display = "none";
@@ -818,10 +818,15 @@ function calc() {
     document.getElementById("row-stamp").style.display = "none";
   }
 
-  // チャーム追加
-  if (counts.charm > 0) {
+  // チャーム追加（Point選択時は0個でも行を表示）
+  if (scope === "point") {
     const c = counts.charm * 11000; total += c;
-    document.getElementById("lbl-charm").textContent = `チャーム追加 ×${counts.charm}`;
+    document.getElementById("lbl-charm").textContent = `チャーム追加 x${counts.charm}`;
+    document.getElementById("r-charm").textContent   = counts.charm > 0 ? fmt(c) : "¥0";
+    document.getElementById("row-charm").style.display = "flex";
+  } else if (counts.charm > 0) {
+    const c = counts.charm * 11000; total += c;
+    document.getElementById("lbl-charm").textContent = `チャーム追加 x${counts.charm}`;
     document.getElementById("r-charm").textContent   = fmt(c);
     document.getElementById("row-charm").style.display = "flex";
   } else {
@@ -856,9 +861,9 @@ function sendInquiry() {
 
   // 合計を再計算
   const ringBase    = (prices[mat] && prices[mat][width] && prices[mat][width][size]) || 0;
-  const carvingTotal2 = (carvingPrices[mat] && carvingPrices[mat][size] && carvingPrices[mat][size][width])
+  // 彫刻料金 = carvingPricesの値をそのまま使用（上乗せ方式）
+  const fullCarving2 = (carvingPrices[mat] && carvingPrices[mat][size] && carvingPrices[mat][size][width])
     ? carvingPrices[mat][size][width] : 0;
-  const fullCarving2  = Math.max(0, carvingTotal2 - ringBase);
   const fullCarvingFee = fullTotal - ringBase;
   let total = ringBase;
   if (carving) {

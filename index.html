@@ -1046,63 +1046,131 @@
 </section>
 
 <!-- CONCEPT -->
-<section id="price" style="position:relative; padding:80px 48px 80px; background:transparent;">
+<section id="price" style="position:relative; padding:80px 60px; background:transparent;">
 
-  <!-- セクションラベル＋見出し -->
-  <div style="text-align:center; margin-bottom:48px; position:relative; z-index:1;">
-    <p style="font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold); margin-bottom:10px;">Price</p>
-    <h2 style="font-family:'Cormorant Garamond',serif; font-size:clamp(28px,3.5vw,48px); font-weight:300; letter-spacing:0.06em; color:#fff; text-shadow:0 2px 24px rgba(0,0,0,0.55); margin:0;">Price List</h2>
-  </div>
+  <!--
+    構造：
+    ┌─ section（padding で上下左右に動画が見える余白）─────────────────┐
+    │  ┌─ price-frame（固定高さ・contain コンテナ）──────────────────┐ │
+    │  │  [img: object-fit:contain → 常に全体が見える・縦横比維持]   │ │
+    │  │  [overlay: inset:0 → 画像の実描画領域に追従してオーバーレイ] │ │
+    │  │    Price / Price List / ボタン（中央）                      │ │
+    │  └──────────────────────────────────────────────────────────┘ │
+    └────────────────────────────────────────────────────────────────┘
+    ※ overlay は img の上に重なるため、ボタン等は必ず画像内に収まる
+  -->
 
-  <!-- 画像＋ボタンオーバーレイ -->
-  <div style="position:relative; z-index:1; width:91%; max-width:1170px; margin:0 auto;">
+  <div id="price-frame" style="
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 80vh;
+  ">
+    <!-- 画像：containで縦横比を保ったまま枠内に収まる -->
     <img
       src="Price_image.JPEG"
       alt="RAVINA Price"
-      style="display:block; width:100%; height:auto; border-radius:2px;"
+      style="
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        object-position: center;
+        border-radius: 2px;
+      "
     />
 
-    <!-- 画像上のオーバーレイ：ボタンを中央に配置 -->
-    <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; background:rgba(20,18,14,0.38);">
+    <!-- オーバーレイ：imgと完全に同じ矩形に追従（JS で位置合わせ） -->
+    <div id="price-overlay-inner" style="
+      position: absolute;
+      background: rgba(20,18,14,0.40);
+      border-radius: 2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 40px 24px;
+      box-sizing: border-box;
+    ">
+      <!-- ラベル＋見出し -->
+      <div style="text-align:center; margin-bottom:36px;">
+        <p style="font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold); margin-bottom:10px;">Price</p>
+        <h2 style="font-family:'Cormorant Garamond',serif; font-size:clamp(24px,3vw,44px); font-weight:300; letter-spacing:0.06em; color:#fff; text-shadow:0 2px 24px rgba(0,0,0,0.6); margin:0;">Price List</h2>
+      </div>
 
-      <!-- Ring Price List -->
-      <button onclick="openPriceSheet('ring')" class="price-img-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.75;">
-          <ellipse cx="12" cy="15" rx="9" ry="3.5"/><ellipse cx="12" cy="9" rx="9" ry="3.5"/>
-          <line x1="3" y1="9" x2="3" y2="15"/><line x1="21" y1="9" x2="21" y2="15"/>
-        </svg>
-        <span><span class="price-btn-label">Wedding</span><span class="price-btn-name" data-en="Ring Price List" data-ja="指輪　価格表">Ring Price List</span></span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.6;">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-      </button>
+      <!-- ボタン群 -->
+      <div style="display:flex; flex-direction:column; gap:12px; align-items:center;">
 
-      <!-- Bangle Price List -->
-      <button onclick="openPriceSheet('bangle')" class="price-img-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.75;">
-          <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>
-        </svg>
-        <span><span class="price-btn-label">Pair</span><span class="price-btn-name" data-en="Bangle Price List" data-ja="腕輪　価格表">Bangle Price List</span></span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.6;">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-      </button>
+        <button onclick="openPriceSheet('ring')" class="price-img-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.75;">
+            <ellipse cx="12" cy="15" rx="9" ry="3.5"/><ellipse cx="12" cy="9" rx="9" ry="3.5"/>
+            <line x1="3" y1="9" x2="3" y2="15"/><line x1="21" y1="9" x2="21" y2="15"/>
+          </svg>
+          <span><span class="price-btn-label">Wedding</span><span class="price-btn-name" data-en="Ring Price List" data-ja="指輪　価格表">Ring Price List</span></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.6;"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
 
-      <!-- Ring Engraving -->
-      <button onclick="openRingSheet()" class="price-img-btn price-img-btn--gold">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.85;">
-          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-        <span><span class="price-btn-label">Order</span><span class="price-btn-name" data-en="Ring Engraving" data-ja="指輪彫刻">Ring Engraving</span></span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.75;">
-          <polyline points="9 18 15 12 9 6"/>
-        </svg>
-      </button>
+        <button onclick="openPriceSheet('bangle')" class="price-img-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.75;">
+            <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>
+          </svg>
+          <span><span class="price-btn-label">Pair</span><span class="price-btn-name" data-en="Bangle Price List" data-ja="腕輪　価格表">Bangle Price List</span></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.6;"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
 
+        <button onclick="openRingSheet()" class="price-img-btn price-img-btn--gold">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.85;">
+            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          <span><span class="price-btn-label">Order</span><span class="price-btn-name" data-en="Ring Engraving" data-ja="指輪彫刻">Ring Engraving</span></span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.75;"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+      </div>
     </div>
   </div>
 
 </section>
+
+<script>
+// Price画像のcontain実描画矩形にオーバーレイをぴったり合わせる
+(function () {
+  function fitPriceOverlay() {
+    const frame   = document.getElementById('price-frame');
+    const overlay = document.getElementById('price-overlay-inner');
+    if (!frame || !overlay) return;
+
+    const img = frame.querySelector('img');
+    const fw  = frame.offsetWidth;
+    const fh  = frame.offsetHeight;
+
+    // 画像の自然サイズ（ロード前は0になるので fallback）
+    const nw = img.naturalWidth  || 1600;
+    const nh = img.naturalHeight || 1066;
+
+    // object-fit:contain の実描画サイズを計算
+    const scale   = Math.min(fw / nw, fh / nh);
+    const rw      = nw * scale;
+    const rh      = nh * scale;
+    const left    = (fw - rw) / 2;
+    const top     = (fh - rh) / 2;
+
+    overlay.style.left   = left   + 'px';
+    overlay.style.top    = top    + 'px';
+    overlay.style.width  = rw     + 'px';
+    overlay.style.height = rh     + 'px';
+  }
+
+  // 画像ロード後 & リサイズ時に再計算
+  const img = document.querySelector('#price-frame img');
+  if (img) {
+    if (img.complete) { fitPriceOverlay(); }
+    else { img.addEventListener('load', fitPriceOverlay); }
+  }
+  window.addEventListener('resize', fitPriceOverlay);
+})();
+</script>
 
 <!-- COMPANY ─────────────────────────────────────
      上段：店舗概要（bg_RAVINA.png）

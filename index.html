@@ -1046,7 +1046,7 @@
 </section>
 
 <!-- CONCEPT -->
-<section id="price" style="position:relative; padding:80px 60px; background:transparent;">
+<section id="price" style="position:relative; padding:clamp(40px,8vh,100px) clamp(24px,8vw,100px); background:transparent;">
 
   <!--
     構造：
@@ -1064,7 +1064,6 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    height: 80vh;
   ">
     <!-- 画像：containで縦横比を保ったまま枠内に収まる -->
     <img
@@ -1137,29 +1136,36 @@
 // Price画像のcontain実描画矩形にオーバーレイをぴったり合わせる
 (function () {
   function fitPriceOverlay() {
+    const section = document.getElementById('price');
     const frame   = document.getElementById('price-frame');
     const overlay = document.getElementById('price-overlay-inner');
-    if (!frame || !overlay) return;
+    if (!section || !frame || !overlay) return;
+
+    // sectionのpadding（上下左右）を取得してframeの高さを動的に決定
+    const cs   = getComputedStyle(section);
+    const padT = parseFloat(cs.paddingTop);
+    const padB = parseFloat(cs.paddingBottom);
+    const fh   = window.innerHeight - padT - padB;
+    frame.style.height = fh + 'px';
 
     const img = frame.querySelector('img');
     const fw  = frame.offsetWidth;
-    const fh  = frame.offsetHeight;
 
     // 画像の自然サイズ（ロード前は0になるので fallback）
     const nw = img.naturalWidth  || 1600;
     const nh = img.naturalHeight || 1066;
 
     // object-fit:contain の実描画サイズを計算
-    const scale   = Math.min(fw / nw, fh / nh);
-    const rw      = nw * scale;
-    const rh      = nh * scale;
-    const left    = (fw - rw) / 2;
-    const top     = (fh - rh) / 2;
+    const scale = Math.min(fw / nw, fh / nh);
+    const rw    = nw * scale;
+    const rh    = nh * scale;
+    const left  = (fw - rw) / 2;
+    const top   = (fh - rh) / 2;
 
-    overlay.style.left   = left   + 'px';
-    overlay.style.top    = top    + 'px';
-    overlay.style.width  = rw     + 'px';
-    overlay.style.height = rh     + 'px';
+    overlay.style.left   = left + 'px';
+    overlay.style.top    = top  + 'px';
+    overlay.style.width  = rw   + 'px';
+    overlay.style.height = rh   + 'px';
   }
 
   // 画像ロード後 & リサイズ時に再計算

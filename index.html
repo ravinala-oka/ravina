@@ -1632,8 +1632,8 @@ const RS_DAYS_EN = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const RS_HOURS  = ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
 
 let rs = { year:null, month:null, day:null, dow:null, time:null, name:'', guests:'', tel:'' };
-const rsToday = new Date(); rsToday.setHours(0,0,0,0);
-let rsCalY = rsToday.getFullYear(), rsCalM = rsToday.getMonth();
+function rsGetToday(){const d=new Date();d.setHours(0,0,0,0);return d;}
+let rsCalY = rsGetToday().getFullYear(), rsCalM = rsGetToday().getMonth();
 
 function openResvSheet() {
   document.getElementById('resv-overlay').classList.add('open');
@@ -1670,9 +1670,9 @@ function rsRenderCal() {
   for (let d = 1; d <= lastDay; d++) {
     const dt  = new Date(rsCalY, rsCalM, d);
     const dow = dt.getDay();
-    const isPast = dt < rsToday;
+    const isPast = dt < rsGetToday();
     const isSel  = rs.day===d && rs.month===rsCalM && rs.year===rsCalY;
-    const isTod  = dt.getTime() === rsToday.getTime();
+    const isTod  = dt.getTime() === rsGetToday().getTime();
     let cls = 'rs-day';
     if (dow === 0) cls += ' sun';
     if (dow === 6) cls += ' sat';
@@ -1696,18 +1696,33 @@ function rsIsBooked(t) {
   });
 }
 
+function rsIsPastTime(t) {
+  // 選択日が今日でなければ常にfalse
+  const selDate = new Date(rs.year, rs.month, rs.day);
+  if (selDate.getTime() !== rsGetToday().getTime()) return false;
+  // 今日の場合：スロット開始時刻を過ぎたら受付終了
+  const now = new Date();
+  const p = t.split(':');
+  const slotMin = parseInt(p[0])*60 + parseInt(p[1]);
+  const nowMin  = now.getHours()*60 + now.getMinutes();
+  return slotMin <= nowMin;
+}
+
 function rsRenderTimes() {
   if (!rs.day) return `<p style="font-size:12px;color:#888780;text-align:center;padding:.75rem 0;font-family:'Noto Serif JP',serif;">${currentLang==='ja' ? '日付を選択してください' : 'Please select a date'}</p>`;
   let h = `<div class="rs-time-grid">`;
   RS_HOURS.forEach(t => {
-    const booked  = rsIsBooked(t);
+    const booked   = rsIsBooked(t);
+    const pastTime = rsIsPastTime(t);
     const selected = rs.time === t;
     let cls = 'rs-time-slot';
-    if (selected) cls += ' selected';
-    if (booked)   cls += ' unavail';
-    const click = (!booked && !selected) ? `onclick="rsSelTime('${t}')"` :
-                  (selected            ? `onclick="rsSelTime('${t}')"` : '');
-    const label = booked ? `${t}<br><span style="font-size:9px">×</span>` : t;
+    if (selected)            cls += ' selected';
+    else if (booked)         cls += ' unavail';
+    else if (pastTime)       cls += ' unavail';
+    const unavail = booked || pastTime;
+    const click = (!unavail || selected) ? `onclick="rsSelTime('${t}')"` : '';
+    const label = booked   ? `${t}<br><span style="font-size:9px">×</span>` :
+                  pastTime ? `${t}<br><span style="font-size:9px">受付終了</span>` : t;
     h += `<div class="${cls}" ${click}>${label}</div>`;
   });
   return h + `</div>`;
@@ -1797,7 +1812,8 @@ function rsSelDay(d, dow) {
       rsCheckBtn();
     });
 }
-function rsSelTime(t) { rs.time=t; document.getElementById('rs-times').innerHTML=rsRenderTimes(); rsCheckBtn(); }
+function rsSelTime(t) {
+  if (rsIsPastTime(t)) return; rs.time=t; document.getElementById('rs-times').innerHTML=rsRenderTimes(); rsCheckBtn(); }
 function rsCheckBtn() { const b=document.getElementById('rs-btn1'); if(b) b.disabled=!(rs.day&&rs.time); }
 function rsGoStep2() { rsSetStep(2); rsStep2(); }
 function rsGoStep3() {

@@ -198,9 +198,6 @@ select:focus { outline: none; border-color: var(--gold); }
 .btn-inquiry:hover { opacity: 0.85; }
 .note-text { font-size: 10px; color: var(--soft); text-align: center; margin-top: 8px; letter-spacing: 0.05em; line-height: 1.7; }
 
-/* リングビジュアル */
-.ring-visual { text-align: center; padding: 1.5rem 0 0.5rem; }
-.ring-visual svg { width: 100px; height: 100px; }
 
 @media (max-width: 400px) {
   .mat-grid { grid-template-columns: repeat(2,1fr); }
@@ -219,27 +216,6 @@ select:focus { outline: none; border-color: var(--gold); }
 </div>
 
 <div class="simulator">
-
-  <!-- リングビジュアル -->
-  <div class="ring-visual">
-    <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stop-color="#e8e8e8"/>
-          <stop offset="35%"  stop-color="#b8b8b8"/>
-          <stop offset="65%"  stop-color="#f4f4f4"/>
-          <stop offset="100%" stop-color="#888888"/>
-        </linearGradient>
-        <radialGradient id="shadowG" cx="50%" cy="85%" r="35%">
-          <stop offset="0%" stop-color="rgba(0,0,0,0.2)"/>
-          <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
-        </radialGradient>
-      </defs>
-      <ellipse cx="60" cy="102" rx="26" ry="5" fill="url(#shadowG)"/>
-      <circle id="ring-circle" cx="60" cy="58" r="34" stroke="url(#ringGrad)" stroke-width="13" fill="none"/>
-      <path d="M 36 42 Q 60 30 84 42" stroke="rgba(255,255,255,0.4)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    </svg>
-  </div>
 
   <!-- 素材（4列横並び） -->
   <div>

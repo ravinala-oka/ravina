@@ -1048,7 +1048,7 @@
 </section>
 
 <!-- CONCEPT -->
-<section id="price" style="position:relative; padding:clamp(40px,8vh,100px) clamp(24px,8vw,100px); background:transparent;">
+<section id="price" style="position:relative; padding:0; background:transparent;">
 
   <!--
     構造：
@@ -1084,7 +1084,6 @@
     <!-- オーバーレイ：imgと完全に同じ矩形に追従（JS で位置合わせ） -->
     <div id="price-overlay-inner" style="
       position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(20,18,14,0.40);
       border-radius: 2px;
       display: flex;
@@ -1158,15 +1157,18 @@
     const nw = img.naturalWidth  || 1600;
     const nh = img.naturalHeight || 1066;
 
-    // object-fit:contain の実描画サイズを計算（96%表示）
-    const scale = Math.min(fw / nw, fh / nh) * 0.91;
+    // 画像を110%表示（scaleを大きくして表示領域を拡大）
+    const scale = Math.min(fw / nw, fh / nh) * 1.0;
     const rw    = nw * scale;
     const rh    = nh * scale;
     const left  = (fw - rw) / 2;
     const top   = (fh - rh) / 2;
 
-    // overlay は price-frame 全体を覆うため位置設定不要
-    // overlay.style.left = overlay.style.top = overlay.style.width = overlay.style.height = '';
+    // overlayは画像の実描画領域だけに追従（動画にはかからない）
+    overlay.style.left   = left + 'px';
+    overlay.style.top    = top  + 'px';
+    overlay.style.width  = rw   + 'px';
+    overlay.style.height = rh   + 'px';
   }
 
   // 画像ロード後 & リサイズ時に再計算

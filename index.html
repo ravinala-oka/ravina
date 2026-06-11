@@ -1705,7 +1705,7 @@ function rsIsPastTime(t) {
   const p = t.split(':');
   const slotMin = parseInt(p[0])*60 + parseInt(p[1]);
   const nowMin  = now.getHours()*60 + now.getMinutes();
-  return slotMin <= nowMin;
+  return slotMin + 30 <= nowMin; // スロット開始から30分後に受付終了
 }
 
 function rsRenderTimes() {

@@ -317,5 +317,15 @@ function showError(){
   `;
 }
 
+// 今日の日付をデフォルト選択
+const _td=new Date();
+state.year=_td.getFullYear();state.month=_td.getMonth();state.day=_td.getDate();state.dow=_td.getDay();
+
 step1();
+
+// 1分ごとに時間グリッドを再描画（受付終了をリアルタイム反映）
+setInterval(()=>{
+  const timesEl=document.getElementById('times');
+  if(timesEl) timesEl.innerHTML=renderTimes();
+},60000);
 </script>

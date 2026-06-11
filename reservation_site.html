@@ -91,8 +91,8 @@ const MONTHS_JP=['1月','2月','3月','4月','5月','6月','7月','8月','9月',
 const DAYS_JP=['日','月','火','水','木','金','土'];
 const HOURS=['9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00'];
 let state={step:1,year:null,month:null,day:null,dow:null,time:null,name:'',guests:'',tel:''};
-const today=new Date();today.setHours(0,0,0,0);
-let calYear=today.getFullYear(),calMonth=today.getMonth();
+function getToday(){const d=new Date();d.setHours(0,0,0,0);return d;}
+let calYear=getToday().getFullYear(),calMonth=getToday().getMonth();
 
 function setStep(n){
   state.step=n;
@@ -118,9 +118,9 @@ function renderCal(){
   for(let d=1;d<=lastDay;d++){
     const dt=new Date(calYear,calMonth,d);
     const dow=dt.getDay();
-    const isPast=dt<today;
+    const isPast=dt<getToday();
     const isSel=state.day===d&&state.month===calMonth&&state.year===calYear;
-    const isTod=dt.getTime()===today.getTime();
+    const isTod=dt.getTime()===getToday().getTime();
     let cls='cal-day';
     if(dow===0) cls+=' sun';
     if(dow===6) cls+=' sat';
@@ -134,16 +134,16 @@ function renderCal(){
 }
 
 function isPastTime(h){
-  // 今日の日付が選択されているときのみ現在時刻との比較を行う
-  const now=new Date();
+  // 選択日が今日でなければ過去判定しない（未来の日付は常に予約可）
   const selDate=new Date(state.year,state.month,state.day);
-  const todayDate=new Date();todayDate.setHours(0,0,0,0);
+  const todayDate=getToday();
   if(selDate.getTime()!==todayDate.getTime()) return false;
-  // 時間を分単位で比較（開始から30分後に受付終了）
+  // 今日が選択されている場合：現在時刻を過ぎたスロットは受付終了
+  const now=new Date();
   const parts=h.split(':');
   const slotMin=parseInt(parts[0])*60+parseInt(parts[1]);
   const nowMin=now.getHours()*60+now.getMinutes();
-  return slotMin+30<=nowMin; // 開始時間+30分を過ぎたら受付終了
+  return slotMin<=nowMin; // スロット開始時刻を過ぎたら受付終了
 }
 
 function renderTimes(){

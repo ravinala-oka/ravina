@@ -139,11 +139,11 @@ function isPastTime(h){
   const selDate=new Date(state.year,state.month,state.day);
   const todayDate=new Date();todayDate.setHours(0,0,0,0);
   if(selDate.getTime()!==todayDate.getTime()) return false;
-  // 時間を分単位で比較（1時間前から受付終了）
+  // 時間を分単位で比較（開始から30分後に受付終了）
   const parts=h.split(':');
   const slotMin=parseInt(parts[0])*60+parseInt(parts[1]);
   const nowMin=now.getHours()*60+now.getMinutes();
-  return slotMin+30<=nowMin; // 開始から30分後に受付終了
+  return slotMin+30<=nowMin; // 開始時間+30分を過ぎたら受付終了
 }
 
 function renderTimes(){

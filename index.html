@@ -1084,7 +1084,7 @@
     <!-- オーバーレイ：imgと完全に同じ矩形に追従（JS で位置合わせ） -->
     <div id="price-overlay-inner" style="
       position: absolute;
-      background: rgba(20,18,14,0.40);
+      background: transparent;
       border-radius: 2px;
       display: flex;
       flex-direction: column;
@@ -1157,7 +1157,7 @@
     const nw = img.naturalWidth  || 1600;
     const nh = img.naturalHeight || 1066;
 
-    // object-fit:contain の実描画サイズを計算
+    // object-fit:contain の実描画サイズを計算（96%表示）
     const scale = Math.min(fw / nw, fh / nh);
     const rw    = nw * scale;
     const rh    = nh * scale;

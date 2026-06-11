@@ -37,6 +37,7 @@
 .time-slot:hover{border-color:#1a6fa8;color:#1a6fa8;background:#e6f1fb}
 .time-slot.selected{background:#1a6fa8;color:#fff;border-color:#1a6fa8;font-weight:500}
 .time-slot.unavail{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:default;border-color:var(--color-border-tertiary)}
+.time-slot.past-time{background:var(--color-background-secondary);color:var(--color-text-tertiary);cursor:not-allowed;border-color:var(--color-border-tertiary);text-decoration:line-through;opacity:0.5}
 .form-group{margin-bottom:.85rem}
 .form-group label{display:block;font-size:13px;color:var(--color-text-secondary);margin-bottom:4px;font-weight:500}
 .form-group input{width:100%;padding:9px 12px;font-size:14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);color:var(--color-text-primary)}
@@ -132,13 +133,30 @@ function renderCal(){
   return html;
 }
 
+function isPastTime(h){
+  // 今日の日付が選択されているときのみ現在時刻との比較を行う
+  const now=new Date();
+  const selDate=new Date(state.year,state.month,state.day);
+  const todayDate=new Date();todayDate.setHours(0,0,0,0);
+  if(selDate.getTime()!==todayDate.getTime()) return false;
+  // 時間を分単位で比較（1時間前から受付終了）
+  const parts=h.split(':');
+  const slotMin=parseInt(parts[0])*60+parseInt(parts[1]);
+  const nowMin=now.getHours()*60+now.getMinutes();
+  return slotMin+30<=nowMin; // 開始から30分後に受付終了
+}
+
 function renderTimes(){
   if(!state.day) return `<p style="font-size:13px;color:var(--color-text-tertiary);text-align:center;padding:1rem 0">日付を選択してください</p>`;
   let html=`<div class="time-grid">`;
   HOURS.forEach(h=>{
     const isSel=state.time===h;
-    let cls='time-slot'+(isSel?' selected':'');
-    html+=`<div class="${cls}" onclick="selTime('${h}')">${h}</div>`;
+    const isPast=isPastTime(h);
+    let cls='time-slot';
+    if(isSel) cls+=' selected';
+    else if(isPast) cls+=' past-time';
+    const onclick=(!isPast)?` onclick="selTime('${h}')"`:' onclick="return false"';
+    html+=`<div class="${cls}"${onclick}>${h}</div>`;
   });
   html+=`</div>`;
   return html;
@@ -214,6 +232,7 @@ function selDay(d,dow){
   checkBtn1();
 }
 function selTime(h){
+  if(isPastTime(h)) return; // 過去の時間は選択不可
   state.time=h;
   document.getElementById('times').innerHTML=renderTimes();
   checkBtn1();

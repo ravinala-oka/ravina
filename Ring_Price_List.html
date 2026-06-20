@@ -655,50 +655,50 @@ function resolveHeaderMap(table, requiredLabels) {
   return { headerMap, dataRows: table.rows };
 }
 
-// Price_Num_CSVシートを読み込み、商品番号マップ と 価格マップ を同時に構築する。
-// 列構成: shop(A), material(B), list(C), width(D), size(E), 商品名(F), 金額(G), ..., no.(N)
-// ヘッダー文字列で列を特定するため、並び順が変わっても自動的に追従する。
-//
-// 戻り値: { productNumMap, pricesFromCSV }
-//   productNumMap[mat][size][widthKey] = 商品番号
-//   pricesFromCSV[mat][widthKey][size] = 金額（数値）  ← prices オブジェクトと同じ構造
+// Price_Num_CSVシートを読み込み商品番号マップを構築
+// 列の位置（インデックス）に依存せず、ヘッダー文字列「list」「material」「size」
+// 「width」「no.」を直接探して値を取得する。
+// Price_Num_CSV の列構成: shop, material, list, width, size, 商品名, ..., no.
+// → シート側で列を追加・削除・並び替えしても、見出し名が同じなら自動的に追従する。
 function parsePriceNumSheet(table) {
+  // Price_Num_CSV の商品番号列ヘッダーは "no."（Price_Num の "商品番号" から変更）
   const required = ["material", "size", "width", "no."];
   const { headerMap, dataRows } = resolveHeaderMap(table, required);
 
-  const idxList       = headerMap["list"];
-  const idxMaterial   = headerMap["material"];
-  const idxSize       = headerMap["size"];
-  const idxWidth      = headerMap["width"];
-  const idxProductNum = headerMap["no."];
-  const idxAmount     = headerMap["金額"];   // G列（金額）
+  const idxList        = headerMap["list"];
+  const idxMaterial     = headerMap["material"];
+  const idxSize          = headerMap["size"];
+  const idxWidth          = headerMap["width"];
+  const idxProductNum     = headerMap["no."];
 
   if (idxMaterial === undefined || idxSize === undefined || idxWidth === undefined || idxProductNum === undefined) {
-    console.warn("Price_Num_CSVシート: 見出し（material/size/width/no.）が見つからないためスキップ", headerMap);
+    console.warn("Price_Num_CSVシート: 見出し（list/material/size/width/no.）が見つからないため読み込みをスキップしました。", headerMap);
     return null;
   }
+
+  const map = {};
 
   // スプレのwidth値 → ボタンdata-valへの変換
   function toWidthKey(raw) {
     if (raw === null || raw === undefined) return null;
+    // 全角×を半角xに正規化してから比較（スプレの表示形式がどちらでも対応）
     const s = String(raw).trim().replace(/×/g, "x");
     if (s === "4x2" || s === "5x2") return s;
     const n = parseFloat(s);
     if (isNaN(n)) return null;
-    return String(n);
+    return Number.isInteger(n) ? String(n) : String(n);
   }
 
-  const map = {};           // 商品番号マップ
-  const pricesCSV = {};     // 価格マップ（prices と同じ構造）
-
   dataRows.forEach(row => {
+    // c.vがnullのとき c.f（フォーマット済み値）を使う
+    // c.fの全角×も半角xに正規化する
     const vals = row.c.map(c => {
       if (!c) return null;
       const v = (c.v !== null && c.v !== undefined) ? c.v : (c.f ?? null);
       return (typeof v === "string") ? v.replace(/×/g, "x") : v;
     });
 
-    // list列が "Ring" 以外の行（Bangle等）を除外
+    // list列が存在する場合は "Ring" 以外の行（Bangle等）を除外
     if (idxList !== undefined) {
       const listType = String(vals[idxList] || "").trim();
       if (listType && listType !== "Ring") return;
@@ -706,73 +706,31 @@ function parsePriceNumSheet(table) {
 
     const mat      = normalizeMat(String(vals[idxMaterial] || "").trim());
     const rawSize  = String(vals[idxSize] || "").trim();
+    // "size_1-8号"→"1-8" / "1-8号"→"1-8" / "1-8"→"1-8" すべて対応
     const size     = rawSize.replace(/^size_/, "").replace(/号$/, "").trim();
     const widthKey = toWidthKey(vals[idxWidth]);
     const pNum     = vals[idxProductNum];
 
-    if (!mat || !size || !widthKey) return;
-
-    // --- 商品番号マップ ---
-    if (pNum !== null && pNum !== undefined && pNum !== "") {
-      if (!map[mat]) map[mat] = {};
-      if (!map[mat][size]) map[mat][size] = {};
-      map[mat][size][widthKey] = pNum;
-    }
-
-    // --- 価格マップ（金額列が存在する場合のみ）---
-    if (idxAmount !== undefined) {
-      const rawAmt = vals[idxAmount];
-      // 数値、または "3,300" のような文字列に対応
-      let amount = null;
-      if (typeof rawAmt === "number") {
-        amount = rawAmt;
-      } else if (rawAmt !== null && rawAmt !== undefined && rawAmt !== "") {
-        const cleaned = String(rawAmt).replace(/[¥,\s]/g, "");
-        const parsed = parseFloat(cleaned);
-        if (!isNaN(parsed)) amount = parsed;
-      }
-      if (amount !== null) {
-        if (!pricesCSV[mat]) pricesCSV[mat] = {};
-        if (!pricesCSV[mat][widthKey]) pricesCSV[mat][widthKey] = {};
-        pricesCSV[mat][widthKey][size] = amount;
-      }
-    }
+    if (!mat || !size || !widthKey || pNum === null || pNum === undefined || pNum === "") return;
+    if (!map[mat]) map[mat] = {};
+    if (!map[mat][size]) map[mat][size] = {};
+    map[mat][size][widthKey] = pNum;
   });
-
-  return { productNumMap: map, pricesFromCSV: pricesCSV };
+  return map;
 }
 
 async function initPrices() {
   showLoadingState(true);
   try {
-    // Price_Num_CSVシートを1回読み込み、価格と商品番号を両方取得する
-    const pnumTable = await loadFromSheet(PNUM_SHEET);
-    const parsed = parsePriceNumSheet(pnumTable);
+    // Ring_Priceシートを読み込む
+    const mainTable = await loadFromSheet(MAIN_SHEET);
+    const { newPrices, newRingOnly } = parseMainSheet(mainTable);
 
-    if (parsed) {
-      // --- 価格を Price_Num_CSV の G列（金額）から設定 ---
-      if (parsed.pricesFromCSV && Object.keys(parsed.pricesFromCSV).length > 0) {
-        prices = parsed.pricesFromCSV;
-        console.log("価格をPrice_Num_CSV（G列）から読み込みました");
-      } else {
-        // 金額列が空の場合は Ring_Price シートにフォールバック
-        console.warn("Price_Num_CSVの金額列が空 → Ring_Priceシートから価格を読み込みます");
-        try {
-          const mainTable = await loadFromSheet(MAIN_SHEET);
-          const { newPrices } = parseMainSheet(mainTable);
-          if (Object.keys(newPrices).length > 0) prices = newPrices;
-        } catch (e2) {
-          console.warn("Ring_Priceシート読み込み失敗 → デフォルト価格を使用", e2);
-        }
-      }
-
-      // --- 商品番号マップを更新 ---
-      if (parsed.productNumMap && Object.keys(parsed.productNumMap).length > 0) {
-        productNumMap = parsed.productNumMap;
-      }
+    if (Object.keys(newPrices).length > 0) {
+      prices = newPrices;
     }
 
-    // ringOnly: prices の 1-8 価格をそのまま使用
+    // Ring_PriceにはringOnly列がないため、prices の 1-8 価格をそのまま ringOnly に使用
     const autoRingOnly = {};
     Object.entries(prices).forEach(([m, widths]) => {
       autoRingOnly[m] = {};
@@ -781,6 +739,18 @@ async function initPrices() {
       });
     });
     ringOnly = autoRingOnly;
+
+    // Price_Num_CSVシートから商品番号を読み込み productNumMap を更新する
+    // （見出し文字列「no.」で列を特定するため、列の並び順が変わっても追従する）
+    try {
+      const pnumTable = await loadFromSheet(PNUM_SHEET);
+      const newProductNumMap = parsePriceNumSheet(pnumTable);
+      if (newProductNumMap && Object.keys(newProductNumMap).length > 0) {
+        productNumMap = newProductNumMap;
+      }
+    } catch (e) {
+      console.warn("Price_Num_CSVシート読み込み失敗 → ハードコードの商品番号を使用", e);
+    }
 
     showLoadingState(false);
     showSheetStatus("ok");

@@ -424,40 +424,40 @@ const SHEET_ID = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
 // スプレッドシートのシート名（タブ名）
 // ※ シート名が「シート1」などの場合はそちらに変更してください
 const MAIN_SHEET  = "Ring_Price";  // スプレのシート名
-const PNUM_SHEET  = "Price_Num_CSV";   // 商品番号・価格シート名
+const PNUM_SHEET  = "Price_Num";   // 商品番号シート名
 
 // 商品番号マップ: productNumMap[mat][size][width] = 商品番号
-// ★ 通常はページ読み込み時に Price_Num_CSV シートの「no.」列から動的に取得し、
-//   このオブジェクトを上書きする（parsePriceNumSheet参照）。
+// ★ 通常はページ読み込み時に Price_Num シートの「商品番号」列から動的に取得し、
+//   このオブジェクトを上書きする（loadProductNumMap参照）。
 //   これはシート読み込みに失敗した場合のみ使われるフォールバック値。
 let productNumMap = {
   "silver": {
-    "1-8":   {"1":11010101, "1.5":11010201, "2":11010301, "2.5":11010401, "3":11010501, "4x2":11010601, "5x2":11010701},
-    "9-16":  {"1":11010102, "1.5":11010202, "2":11010302, "2.5":11010402, "3":11010502, "4x2":11010602, "5x2":11010702},
-    "17-24": {"1":11010103, "1.5":11010203, "2":11010303, "2.5":11010403, "3":11010503, "4x2":11010603, "5x2":11010703},
-    "25-32": {"1":11010104, "1.5":11010204, "2":11010304, "2.5":11010404, "3":11010504, "4x2":11010604, "5x2":11010704},
-    "33-40": {"1":11010105, "1.5":11010205, "2":11010305, "2.5":11010405, "3":11010505, "4x2":11010605, "5x2":11010705}
+    "1-8":   {"1":11010101, "1.5":11010102, "2":11010103, "2.5":11010104, "3":11010105, "4x2":11010106, "5x2":11010107},
+    "9-16":  {"1":11010201, "1.5":11010202, "2":11010203, "2.5":11010204, "3":11010205, "4x2":11010206, "5x2":11010207},
+    "17-24": {"1":11010301, "1.5":11010302, "2":11010303, "2.5":11010304, "3":11010305, "4x2":11010306, "5x2":11010307},
+    "25-32": {"1":11010401, "1.5":11010402, "2":11010403, "2.5":11010404, "3":11010405, "4x2":11010406, "5x2":11010407},
+    "33-40": {"1":11010501, "1.5":11010502, "2":11010503, "2.5":11010504, "3":11010505, "4x2":11010506, "5x2":11010507}
   },
   "10K": {
-    "1-8":   {"1":11020101, "1.5":11020201, "2":11020301, "2.5":11020401, "3":11020501, "4x2":11020601, "5x2":11020701},
-    "9-16":  {"1":11020102, "1.5":11020202, "2":11020302, "2.5":11020402, "3":11020502, "4x2":11020602, "5x2":11020702},
-    "17-24": {"1":11020103, "1.5":11020203, "2":11020303, "2.5":11020403, "3":11020503, "4x2":11020603, "5x2":11020703},
-    "25-32": {"1":11020104, "1.5":11020204, "2":11020304, "2.5":11020404, "3":11020504, "4x2":11020604, "5x2":11020704},
-    "33-40": {"1":11020105, "1.5":11020205, "2":11020305, "2.5":11020405, "3":11020505, "4x2":11020605, "5x2":11020705}
+    "1-8":   {"1":11020101, "1.5":11020102, "2":11020103, "2.5":11020104, "3":11020105, "4x2":11020106, "5x2":11020107},
+    "9-16":  {"1":11020201, "1.5":11020202, "2":11020203, "2.5":11020204, "3":11020205, "4x2":11020206, "5x2":11020207},
+    "17-24": {"1":11020301, "1.5":11020302, "2":11020303, "2.5":11020304, "3":11020305, "4x2":11020306, "5x2":11020307},
+    "25-32": {"1":11020401, "1.5":11020402, "2":11020403, "2.5":11020404, "3":11020405, "4x2":11020406, "5x2":11020407},
+    "33-40": {"1":11020501, "1.5":11020502, "2":11020503, "2.5":11020504, "3":11020505, "4x2":11020506, "5x2":11020507}
   },
   "18K": {
-    "1-8":   {"1":11030101, "1.5":11030201, "2":11030301, "2.5":11030401, "3":11030501, "4x2":11030601, "5x2":11030701},
-    "9-16":  {"1":11030102, "1.5":11030202, "2":11030302, "2.5":11030402, "3":11030502, "4x2":11030602, "5x2":11030702},
-    "17-24": {"1":11030103, "1.5":11030203, "2":11030303, "2.5":11030403, "3":11030503, "4x2":11030603, "5x2":11030703},
-    "25-32": {"1":11030104, "1.5":11030204, "2":11030304, "2.5":11030404, "3":11030504, "4x2":11030604, "5x2":11030704},
-    "33-40": {"1":11030105, "1.5":11030205, "2":11030305, "2.5":11030405, "3":11030505, "4x2":11030605, "5x2":11030705}
+    "1-8":   {"1":11030101, "1.5":11030102, "2":11030103, "2.5":11030104, "3":11030105, "4x2":11030106, "5x2":11030107},
+    "9-16":  {"1":11030201, "1.5":11030202, "2":11030203, "2.5":11030204, "3":11030205, "4x2":11030206, "5x2":11030207},
+    "17-24": {"1":11030301, "1.5":11030302, "2":11030303, "2.5":11030304, "3":11030305, "4x2":11030306, "5x2":11030307},
+    "25-32": {"1":11030401, "1.5":11030402, "2":11030403, "2.5":11030404, "3":11030405, "4x2":11030406, "5x2":11030407},
+    "33-40": {"1":11030501, "1.5":11030502, "2":11030503, "2.5":11030504, "3":11030505, "4x2":11030506, "5x2":11030507}
   },
   "pt": {
-    "1-8":   {"1":11040101, "1.5":11040201, "2":11040301, "2.5":11040401, "3":11040501, "4x2":11040601, "5x2":11040701},
-    "9-16":  {"1":11040102, "1.5":11040202, "2":11040302, "2.5":11040402, "3":11040502, "4x2":11040602, "5x2":11040702},
-    "17-24": {"1":11040103, "1.5":11040203, "2":11040303, "2.5":11040403, "3":11040503, "4x2":11040603, "5x2":11040703},
-    "25-32": {"1":11040104, "1.5":11040204, "2":11040304, "2.5":11040404, "3":11040504, "4x2":11040604, "5x2":11040704},
-    "33-40": {"1":11040105, "1.5":11040205, "2":11040305, "2.5":11040405, "3":11040505, "4x2":11040605, "5x2":11040705}
+    "1-8":   {"1":11040101, "1.5":11040102, "2":11040103, "2.5":11040104, "3":11040105, "4x2":11040106, "5x2":11040107},
+    "9-16":  {"1":11040201, "1.5":11040202, "2":11040203, "2.5":11040204, "3":11040205, "4x2":11040206, "5x2":11040207},
+    "17-24": {"1":11040301, "1.5":11040302, "2":11040303, "2.5":11040304, "3":11040305, "4x2":11040306, "5x2":11040307},
+    "25-32": {"1":11040401, "1.5":11040402, "2":11040403, "2.5":11040404, "3":11040405, "4x2":11040406, "5x2":11040407},
+    "33-40": {"1":11040501, "1.5":11040502, "2":11040503, "2.5":11040504, "3":11040505, "4x2":11040506, "5x2":11040507}
   }
 };
 
@@ -553,8 +553,22 @@ let ringOnly = {}; // 後方互換用（未使用）
 async function loadFromSheet(sheetName) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
   const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const text = await res.text();
-  const json = JSON.parse(text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);/)[1]);
+  // gvizは "google.visualization.Query.setResponse({...});" 形式で返す
+  // この形式でパースを試みる
+  const m = text.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\);?\s*$/);
+  if (!m) {
+    // フォールバック：レスポンス全体をJSONとしてパース試行
+    try {
+      const json = JSON.parse(text);
+      return json.table;
+    } catch(e) {
+      throw new Error("gvizレスポンスのパースに失敗しました");
+    }
+  }
+  const json = JSON.parse(m[1]);
+  if (!json.table) throw new Error("tableが見つかりません");
   return json.table;
 }
 
@@ -574,8 +588,17 @@ function normalizeWidth(rawW) {
 }
 
 // スプレのmaterial名 → HTML内部キーに変換（未知の場合はそのまま）
+// 大文字小文字を正規化してからマッチング
 function normalizeMat(rawMat) {
-  return MAT_MAP[String(rawMat).trim()] || String(rawMat).trim();
+  const s = String(rawMat).trim();
+  // 完全一致（大文字小文字無視）
+  const lowerS = s.toLowerCase();
+  for (const [k, v] of Object.entries(MAT_MAP)) {
+    if (k.toLowerCase() === lowerS) return v;
+  }
+  // 既にHTML内部キー（silver/10K/18K/pt）の場合はそのまま返す
+  if (Object.values(MAT_MAP).includes(s)) return s;
+  return s;
 }
 
 // Ring_Priceシートを読み込み prices を構築
@@ -595,13 +618,22 @@ function parseMainSheet(table) {
     { idx: 9,  key: "5x2" },
   ];
 
-  table.rows.forEach(row => {
+  // gvizがヘッダー行をデータ行として返す場合のスキップ処理
+  // 1行目のvals[1]が既知のmaterialキーでなければヘッダー行とみなしてスキップ
+  const KNOWN_MATS = Object.keys(MAT_MAP).concat(Object.values(MAT_MAP));
+
+  table.rows.forEach((row, rowIdx) => {
     const vals = row.c.map(c => (c ? c.v : null));
     const listType = String(vals[0] || "").trim();
     if (!listType) return;
 
-    const mat = normalizeMat(vals[1]);
-    if (!mat) return;
+    // ヘッダー行スキップ：vals[1]が "material" などの文字列ならデータ行ではない
+    const rawMat1 = String(vals[1] || "").trim();
+    if (rawMat1.toLowerCase() === "material" || rawMat1 === "") return;
+
+    const mat = normalizeMat(rawMat1);
+    // MAT_MAPに存在しないmaterial値はデータ行ではないとみなしてスキップ
+    if (!KNOWN_MATS.includes(rawMat1) && !Object.values(MAT_MAP).includes(mat)) return;
 
     // size: "size_1-8号"→"1-8" / "1-8号"→"1-8" / "1-8"→"1-8" すべて対応
     const rawSize = String(vals[2] || "").trim();
@@ -655,105 +687,85 @@ function resolveHeaderMap(table, requiredLabels) {
   return { headerMap, dataRows: table.rows };
 }
 
-// Price_Num_CSVシートを読み込み、商品番号マップ と 価格マップ を同時に構築する。
-// 使用列: A=shop, B=material, C=list, D=width, E=size, F=商品名, G=金額, N=no.
-// ヘッダー名で列を特定し、見つからない場合は絶対インデックス（A=0…N=13）でフォールバック。
-//
-// 戻り値: { productNumMap, pricesFromCSV }
-//   productNumMap[mat][size][widthKey] = 商品番号（N列）
-//   pricesFromCSV[mat][widthKey][size] = 金額（G列・数値）
+// Price_Numシートを読み込み商品番号マップを構築
+// 列の位置（インデックス）に依存せず、ヘッダー文字列「list」「material」「size」
+// 「width」「商品番号」を直接探して値を取得する。
+// → シート側で列を追加・削除・並び替えしても、見出し名が同じなら自動的に追従する。
 function parsePriceNumSheet(table) {
-  // --- ヘッダー解決 ---
-  const required = ["material", "size", "width", "no."];
+  const required = ["material", "size", "width", "商品番号"];
   const { headerMap, dataRows } = resolveHeaderMap(table, required);
 
-  // ヘッダー名で取得（見つからない場合は絶対インデックスで補完）
-  const idxMaterial   = headerMap["material"]  ?? 1;   // B列
-  const idxList       = headerMap["list"]       ?? 2;   // C列
-  const idxWidth      = headerMap["width"]      ?? 3;   // D列
-  const idxSize       = headerMap["size"]       ?? 4;   // E列
-  const idxAmount     = headerMap["金額"]       ?? 6;   // G列
-  const idxProductNum = headerMap["no."]        ?? 13;  // N列
+  const idxList        = headerMap["list"];
+  const idxMaterial     = headerMap["material"];
+  const idxSize          = headerMap["size"];
+  const idxWidth          = headerMap["width"];
+  const idxProductNum     = headerMap["商品番号"];
+
+  if (idxMaterial === undefined || idxSize === undefined || idxWidth === undefined || idxProductNum === undefined) {
+    console.warn("Price_Numシート: 見出し（list/material/size/width/商品番号）が見つからないため読み込みをスキップしました。", headerMap);
+    return null;
+  }
+
+  const map = {};
 
   // スプレのwidth値 → ボタンdata-valへの変換
   function toWidthKey(raw) {
     if (raw === null || raw === undefined) return null;
+    // 全角×を半角xに正規化してから比較（スプレの表示形式がどちらでも対応）
     const s = String(raw).trim().replace(/×/g, "x");
     if (s === "4x2" || s === "5x2") return s;
     const n = parseFloat(s);
     if (isNaN(n)) return null;
-    return String(n);
+    return Number.isInteger(n) ? String(n) : String(n);
   }
 
-  const map = {};        // 商品番号マップ
-  const pricesCSV = {}; // 価格マップ（prices と同じ構造）
-
   dataRows.forEach(row => {
-    if (!row || !row.c) return;
+    // c.vがnullのとき c.f（フォーマット済み値）を使う
+    // c.fの全角×も半角xに正規化する
     const vals = row.c.map(c => {
       if (!c) return null;
       const v = (c.v !== null && c.v !== undefined) ? c.v : (c.f ?? null);
       return (typeof v === "string") ? v.replace(/×/g, "x") : v;
     });
 
-    // C列(list)が "Ring" 以外の行（Bangle等）を除外
-    const listType = String(vals[idxList] || "").trim();
-    if (listType && listType !== "Ring") return;
+    // list列が存在する場合は "Ring" 以外の行（Bangle等）を除外
+    if (idxList !== undefined) {
+      const listType = String(vals[idxList] || "").trim();
+      if (listType && listType !== "Ring") return;
+    }
 
     const mat      = normalizeMat(String(vals[idxMaterial] || "").trim());
     const rawSize  = String(vals[idxSize] || "").trim();
+    // "size_1-8号"→"1-8" / "1-8号"→"1-8" / "1-8"→"1-8" すべて対応
     const size     = rawSize.replace(/^size_/, "").replace(/号$/, "").trim();
     const widthKey = toWidthKey(vals[idxWidth]);
+    const pNum     = vals[idxProductNum];
 
-    if (!mat || !size || !widthKey) return;
-
-    // --- N列: 商品番号マップ ---
-    const pNum = vals[idxProductNum];
-    if (pNum !== null && pNum !== undefined && pNum !== "") {
-      if (!map[mat]) map[mat] = {};
-      if (!map[mat][size]) map[mat][size] = {};
-      map[mat][size][widthKey] = pNum;
-    }
-
-    // --- G列: 価格マップ ---
-    const rawAmt = vals[idxAmount];
-    let amount = null;
-    if (typeof rawAmt === "number") {
-      amount = rawAmt;
-    } else if (rawAmt !== null && rawAmt !== undefined && rawAmt !== "") {
-      const cleaned = String(rawAmt).replace(/[¥,\s]/g, "");
-      const parsed = parseFloat(cleaned);
-      if (!isNaN(parsed)) amount = parsed;
-    }
-    if (amount !== null) {
-      if (!pricesCSV[mat]) pricesCSV[mat] = {};
-      if (!pricesCSV[mat][widthKey]) pricesCSV[mat][widthKey] = {};
-      pricesCSV[mat][widthKey][size] = amount;
-    }
+    if (!mat || !size || !widthKey || pNum === null || pNum === undefined || pNum === "") return;
+    if (!map[mat]) map[mat] = {};
+    if (!map[mat][size]) map[mat][size] = {};
+    map[mat][size][widthKey] = pNum;
   });
-
-  return { productNumMap: map, pricesFromCSV: pricesCSV };
+  return map;
 }
 
 async function initPrices() {
   showLoadingState(true);
   try {
-    // Price_Num_CSV シートを1回読み込み → 価格(G列)と商品番号(N列)を同時取得
-    const pnumTable = await loadFromSheet(PNUM_SHEET);
-    const parsed = parsePriceNumSheet(pnumTable);
+    // Ring_Priceシートを読み込む
+    const mainTable = await loadFromSheet(MAIN_SHEET);
+    console.log("[RAVINA] Ring_Price rows:", mainTable.rows?.length, "cols:", mainTable.cols?.length);
+    const { newPrices, newRingOnly } = parseMainSheet(mainTable);
+    console.log("[RAVINA] parseMainSheet result keys:", Object.keys(newPrices));
 
-    if (parsed) {
-      // G列（金額）→ prices に反映
-      if (parsed.pricesFromCSV && Object.keys(parsed.pricesFromCSV).length > 0) {
-        prices = parsed.pricesFromCSV;
-      }
-      // N列（no.）→ productNumMap に反映
-      if (parsed.productNumMap && Object.keys(parsed.productNumMap).length > 0) {
-        productNumMap = parsed.productNumMap;
-      }
+    if (Object.keys(newPrices).length > 0) {
+      prices = newPrices;
+      console.log("[RAVINA] prices updated from sheet");
+    } else {
+      console.warn("[RAVINA] parseMainSheet returned empty → using fallback prices");
     }
 
-    // ringOnly: 1-8号の価格をそのまま参照
+    // Ring_PriceにはringOnly列がないため、prices の 1-8 価格をそのまま ringOnly に使用
     const autoRingOnly = {};
     Object.entries(prices).forEach(([m, widths]) => {
       autoRingOnly[m] = {};
@@ -763,10 +775,27 @@ async function initPrices() {
     });
     ringOnly = autoRingOnly;
 
+    // Price_Numシートから商品番号を読み込み productNumMap を更新する
+    // （見出し文字列「商品番号」で列を特定するため、列の並び順が変わっても追従する）
+    try {
+      const pnumTable = await loadFromSheet(PNUM_SHEET);
+      console.log("[RAVINA] Price_Num rows:", pnumTable.rows?.length);
+      const newProductNumMap = parsePriceNumSheet(pnumTable);
+      console.log("[RAVINA] parsePriceNumSheet result keys:", newProductNumMap ? Object.keys(newProductNumMap) : "null");
+      if (newProductNumMap && Object.keys(newProductNumMap).length > 0) {
+        productNumMap = newProductNumMap;
+        console.log("[RAVINA] productNumMap updated from sheet");
+      } else {
+        console.warn("[RAVINA] parsePriceNumSheet returned empty → using hardcoded productNumMap");
+      }
+    } catch (e) {
+      console.warn("Price_Numシート読み込み失敗 → ハードコードの商品番号を使用", e);
+    }
+
     showLoadingState(false);
     showSheetStatus("ok");
   } catch (e) {
-    console.warn("Price_Num_CSVシート読み込み失敗 → デフォルト価格を使用", e);
+    console.warn("スプレッドシート読み込み失敗 → デフォルト価格を使用", e);
     showLoadingState(false);
     showSheetStatus("error");
   }

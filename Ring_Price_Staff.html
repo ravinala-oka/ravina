@@ -64,6 +64,8 @@ html, body {
   transition: all 0.15s;
 }
 .btn-reset:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-pale); }
+.btn-bangle { border-color: #7c3aed; color: #7c3aed; }
+.btn-bangle:hover { border-color: #7c3aed; color: #ffffff; background: #7c3aed; }
 
 /* スクロールエリア */
 #scroll-area {
@@ -246,10 +248,13 @@ html, body {
   <!-- トップバー -->
   <div class="topbar">
     <div>
-      <div class="topbar-title">RAVINA — Staff Tool</div>
+      <div class="topbar-title">RAVINA — Ring Price</div>
       <div class="topbar-sub">指輪 料金シミュレーター</div>
     </div>
-    <button class="btn-reset" onclick="resetAll()">リセット</button>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button class="btn-reset" onclick="resetAll()">リセット</button>
+      <button class="btn-reset btn-bangle" onclick="location.href='Bangle_Price_Staff.html'">Bangle</button>
+    </div>
   </div>
 
   <!-- スクロールエリア -->

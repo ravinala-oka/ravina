@@ -67,9 +67,15 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
 .width-silhouette {
   display: block; width: 40px; height: 20px; margin: 0 auto 4px;
 }
-.width-silhouette rect { fill: var(--border); transition: fill 0.15s; rx: 2; }
+.width-silhouette rect,
+.width-silhouette circle,
+.width-silhouette ellipse { fill: var(--border); transition: fill 0.15s; }
 .btn-opt:hover .width-silhouette rect,
-.btn-opt.active .width-silhouette rect { fill: var(--gold); opacity: 0.65; }
+.btn-opt:hover .width-silhouette circle,
+.btn-opt:hover .width-silhouette ellipse,
+.btn-opt.active .width-silhouette rect,
+.btn-opt.active .width-silhouette circle,
+.btn-opt.active .width-silhouette ellipse { fill: var(--gold); opacity: 0.65; }
 
 /* cm入力ウィジェット */
 .cm-wrap {
@@ -195,25 +201,25 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
     <div class="section-title">Width — 幅</div>
     <div id="width-group-silver" class="btn-grid col7-wrap">
       <button class="btn-opt active" data-val="2" onclick="setWidth(this,'silver')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="14" y="4" width="12" height="12" rx="2"/></svg>2 mm
+        <svg class="width-silhouette" viewBox="0 0 40 20"><circle cx="20" cy="10" r="7"/></svg>2 mm
       </button>
       <button class="btn-opt" data-val="2.5" onclick="setWidth(this,'silver')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="13" y="3" width="14" height="14" rx="2"/></svg>2.5 mm
+        <svg class="width-silhouette" viewBox="0 0 40 20"><circle cx="20" cy="10" r="8.5"/></svg>2.5 mm
       </button>
       <button class="btn-opt" data-val="3" onclick="setWidth(this,'silver')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="12" y="3" width="16" height="14" rx="2"/></svg>3 mm
+        <svg class="width-silhouette" viewBox="0 0 40 20"><circle cx="20" cy="10" r="9.5"/></svg>3 mm
       </button>
       <button class="btn-opt" data-val="4x2" onclick="setWidth(this,'silver')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="9" y="3" width="22" height="8" rx="2"/><rect x="9" y="13" width="22" height="4" rx="1" style="opacity:0.4"/></svg>4×2
+        <svg class="width-silhouette" viewBox="0 0 40 20"><ellipse cx="20" cy="10" rx="17" ry="7"/></svg>4×2
       </button>
       <button class="btn-opt" data-val="5x2" onclick="setWidth(this,'silver')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="7" y="3" width="26" height="8" rx="2"/><rect x="7" y="13" width="26" height="4" rx="1" style="opacity:0.4"/></svg>5×2
+        <svg class="width-silhouette" viewBox="0 0 40 20"><ellipse cx="20" cy="10" rx="19" ry="6"/></svg>5×2
       </button>
       <button class="btn-opt" data-val="6x2" onclick="setWidth(this,'silver')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="5" y="2" width="30" height="9" rx="2"/><rect x="5" y="13" width="30" height="4" rx="1" style="opacity:0.4"/></svg>6×2
+        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="4" y="6" width="32" height="8" rx="1"/></svg>6×2
       </button>
       <button class="btn-opt" data-val="10x2" onclick="setWidth(this,'silver')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="2" y="2" width="36" height="9" rx="2"/><rect x="2" y="13" width="36" height="4" rx="1" style="opacity:0.4"/></svg>10×2
+        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="1" y="6" width="38" height="8" rx="1"/></svg>10×2
       </button>
     </div>
     <!-- Silver説明バナー -->
@@ -224,19 +230,19 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
     <!-- Gold / Pt用（5種） -->
     <div id="width-group-gold" class="btn-grid col5" style="display:none;">
       <button class="btn-opt active" data-val="2" onclick="setWidth(this,'gold')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="14" y="4" width="12" height="12" rx="2"/></svg>2 mm
+        <svg class="width-silhouette" viewBox="0 0 40 20"><circle cx="20" cy="10" r="7"/></svg>2 mm
       </button>
       <button class="btn-opt" data-val="2.5" onclick="setWidth(this,'gold')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="13" y="3" width="14" height="14" rx="2"/></svg>2.5 mm
+        <svg class="width-silhouette" viewBox="0 0 40 20"><circle cx="20" cy="10" r="8.5"/></svg>2.5 mm
       </button>
       <button class="btn-opt" data-val="3" onclick="setWidth(this,'gold')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="12" y="3" width="16" height="14" rx="2"/></svg>3 mm
+        <svg class="width-silhouette" viewBox="0 0 40 20"><circle cx="20" cy="10" r="9.5"/></svg>3 mm
       </button>
       <button class="btn-opt" data-val="4x2" onclick="setWidth(this,'gold')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="9" y="3" width="22" height="8" rx="2"/><rect x="9" y="13" width="22" height="4" rx="1" style="opacity:0.4"/></svg>4×2
+        <svg class="width-silhouette" viewBox="0 0 40 20"><ellipse cx="20" cy="10" rx="17" ry="7"/></svg>4×2
       </button>
       <button class="btn-opt" data-val="5x2" onclick="setWidth(this,'gold')">
-        <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="7" y="3" width="26" height="8" rx="2"/><rect x="7" y="13" width="26" height="4" rx="1" style="opacity:0.4"/></svg>5×2
+        <svg class="width-silhouette" viewBox="0 0 40 20"><ellipse cx="20" cy="10" rx="19" ry="6"/></svg>5×2
       </button>
     </div>
   </div>
@@ -263,7 +269,7 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
   <div>
     <div class="section-title">Option — オプション</div>
 
-    <div class="option-row">
+    <div class="option-row" style="border-bottom:none;">
       <div>
         <div class="option-name">ダイヤモンド石留め</div>
         <div class="option-price-note">¥11,000 / 石</div>
@@ -275,17 +281,6 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
       </div>
     </div>
 
-    <div class="option-row" style="border-bottom:none;">
-      <div>
-        <div class="option-name">刻印</div>
-        <div class="option-price-note">¥200 / 文字</div>
-      </div>
-      <div class="counter">
-        <button class="counter-btn" onclick="change('stamp',-1)">−</button>
-        <div class="counter-val" id="val-stamp">0</div>
-        <button class="counter-btn" onclick="change('stamp',1)">＋</button>
-      </div>
-    </div>
   </div>
 
   <!-- 結果カード -->
@@ -303,9 +298,6 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
       </div>
       <div class="result-row" id="row-stone" style="display:none;">
         <span id="lbl-stone">石留め</span><span id="r-stone">—</span>
-      </div>
-      <div class="result-row" id="row-stamp" style="display:none;">
-        <span id="lbl-stamp">刻印</span><span id="r-stamp">—</span>
       </div>
       <div class="result-row total">
         <span>合計（税込）</span><span id="r-total">—</span>
@@ -385,12 +377,26 @@ let bPriceCm = {
 };
 
 // 商品番号マップ（Price_Numシートから動的更新）
-// bProductNum[mat][width] = 商品番号文字列
+// Silver: bProductNum.silver[width] = 番号
+// Gold/Pt: bProductNum[mat][width][cm文字列] = 番号
+// Price_Numシートのno.size: 10cm=07, 11cm=08, ..., 20cm=17
 let bProductNum = {
   silver: { "2":"12010306", "2.5":"12010406", "3":"12010506", "4x2":"12010606", "5x2":"12010706", "6x2":"12010806", "10x2":"12010906" },
-  "10K":  { "2":"12020300", "2.5":"12020400", "3":"12020500" },
-  "18K":  { "2":"12030300", "2.5":"12030400", "3":"12030500" },
-  "pt":   { "2":"12040300", "2.5":"12040400", "3":"12040500" }
+  "10K": {
+    "2":   {"10":"12020307","11":"12020308","12":"12020309","13":"12020310","14":"12020311","15":"12020312","16":"12020313","17":"12020314","18":"12020315","19":"12020316","20":"12020317"},
+    "2.5": {"10":"12020407","11":"12020408","12":"12020409","13":"12020410","14":"12020411","15":"12020412","16":"12020413","17":"12020414","18":"12020415","19":"12020416","20":"12020417"},
+    "3":   {"10":"12020507","11":"12020508","12":"12020509","13":"12020510","14":"12020511","15":"12020512","16":"12020513","17":"12020514","18":"12020515","19":"12020516","20":"12020517"}
+  },
+  "18K": {
+    "2":   {"10":"12030307","11":"12030308","12":"12030309","13":"12030310","14":"12030311","15":"12030312","16":"12030313","17":"12030314","18":"12030315","19":"12030316","20":"12030317"},
+    "2.5": {"10":"12030407","11":"12030408","12":"12030409","13":"12030410","14":"12030411","15":"12030412","16":"12030413","17":"12030414","18":"12030415","19":"12030416","20":"12030417"},
+    "3":   {"10":"12030507","11":"12030508","12":"12030509","13":"12030510","14":"12030511","15":"12030512","16":"12030513","17":"12030514","18":"12030515","19":"12030516","20":"12030517"}
+  },
+  "pt": {
+    "2":   {"10":"12040307","11":"12040308","12":"12040309","13":"12040310","14":"12040311","15":"12040312","16":"12040313","17":"12040314","18":"12040315","19":"12040316","20":"12040317"},
+    "2.5": {"10":"12040407","11":"12040408","12":"12040409","13":"12040410","14":"12040411","15":"12040412","16":"12040413","17":"12040414","18":"12040415","19":"12040416","20":"12040417"},
+    "3":   {"10":"12040507","11":"12040508","12":"12040509","13":"12040510","14":"12040511","15":"12040512","16":"12040513","17":"12040514","18":"12040515","19":"12040516","20":"12040517"}
+  }
 };
 
 // ============================================================
@@ -594,7 +600,7 @@ function showStatus(state) {
 // ============================================================
 let mat   = "silver";
 let cmVal = 15;
-let counts = { stone: 0, stamp: 0 };
+let counts = { stone: 0 };
 
 function setMat(el) {
   document.querySelectorAll("#material-group .btn-opt").forEach(b => b.classList.remove("active"));
@@ -670,8 +676,8 @@ function calc() {
     // 単価表示
     const unitDisp = unit > 0 ? `（1cm ＝ ${fmt(unit)}）` : "";
     document.getElementById("cm-unit-price").textContent = unitDisp;
-    prodNum = bProductNum[mat] && bProductNum[mat][width]
-      ? "商品番号：" + bProductNum[mat][width] : "";
+    const cmMap = bProductNum[mat] && bProductNum[mat][width];
+    prodNum = cmMap && cmMap[cmKey] ? "商品番号：" + cmMap[cmKey] : "";
   }
 
   let total = basePrice;
@@ -687,13 +693,6 @@ function calc() {
     document.getElementById("row-stone").style.display   = "";
   } else { document.getElementById("row-stone").style.display = "none"; }
 
-  // 刻印
-  if (counts.stamp > 0) {
-    const s = counts.stamp * 200; total += s;
-    document.getElementById("lbl-stamp").textContent   = `刻印 ×${counts.stamp}文字`;
-    document.getElementById("r-stamp").textContent     = fmt(s);
-    document.getElementById("row-stamp").style.display = "";
-  } else { document.getElementById("row-stamp").style.display = "none"; }
 
   document.getElementById("r-total").textContent = fmt(total);
 }
@@ -713,7 +712,7 @@ function sendInquiry() {
     const unit    = (bPriceUnit[mat] || {})[width] || 0;
     basePrice = cmTable[cmKey] || (unit * cmVal) || 0;
   }
-  total = basePrice + counts.stone * 11000 + counts.stamp * 200;
+  total = basePrice + counts.stone * 11000;
 
   const matLabel = mat === "silver" ? "Silver 925"
                  : mat === "10K"    ? "Gold K10"
@@ -726,7 +725,6 @@ function sendInquiry() {
     `■ 素材　：${matLabel}`,
     `■ 幅　　：${width}mm ${sizeStr}`,
     `■ 石留め：${counts.stone}石`,
-    `■ 刻印　：${counts.stamp}文字`,
     `■ 概算金額：${fmt(total)}`,
     "",
     "---",

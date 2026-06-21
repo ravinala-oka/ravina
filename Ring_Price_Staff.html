@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RAVINA — Staff Price Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Noto+Serif+JP:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #c9a84c;
+  --gold-pale: #fdf8ee;
+  --dark: #1a1a18;
+  --soft: #8a8a7e;
+  --border: #e0dbd0;
+  --bg: #f7f4ef;
+  --white: #ffffff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Noto Serif JP', serif;
+  background: var(--bg);
+  color: var(--dark);
+  font-size: 13px;
+}
+
+/* ─── レイアウト: 上部スクロール + 下部固定 ─── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--white);
+}
+
+/* トップバー */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 0.5px solid var(--border);
+  background: var(--white);
+  flex-shrink: 0;
+}
+.topbar-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px; font-weight: 400; letter-spacing: 0.1em; color: var(--dark);
+}
+.topbar-sub { font-size: 10px; color: var(--soft); letter-spacing: 0.08em; }
+.btn-reset {
+  font-size: 11px; padding: 5px 12px;
+  border: 0.5px solid var(--border); border-radius: 20px;
+  background: var(--white); color: var(--soft); cursor: pointer;
+  font-family: 'Noto Serif JP', serif; letter-spacing: 0.05em;
+  transition: all 0.15s;
+}
+.btn-reset:hover { border-color: var(--gold); color: var(--gold); }
+
+/* スクロールエリア */
+#scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 12px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* セクション共通 */
+.sec { display: flex; flex-direction: column; gap: 5px; }
+.sec-label {
+  font-size: 9px; letter-spacing: 0.25em; color: var(--gold);
+  text-transform: uppercase; font-family: 'Cormorant Garamond', serif;
+}
+
+/* ── 素材: 横1行 4ボタン ── */
+.mat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+.btn-mat {
+  border: 0.5px solid var(--border); background: var(--white);
+  border-radius: 6px; padding: 6px 3px 5px;
+  font-size: 11px; line-height: 1.3; cursor: pointer;
+  text-align: center; font-family: 'Noto Serif JP', serif;
+  transition: all 0.15s; color: var(--dark);
+}
+.btn-mat span { display: block; font-size: 9px; color: var(--soft); margin-top: 1px; }
+.btn-mat:hover, .btn-mat.active {
+  background: var(--gold-pale); border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+/* ── 幅: 横1行 7ボタン ── */
+.width-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.btn-w {
+  border: 0.5px solid var(--border); background: var(--white);
+  border-radius: 6px; padding: 5px 2px 4px;
+  font-size: 9px; cursor: pointer; text-align: center;
+  font-family: 'Noto Serif JP', serif; color: var(--dark);
+  transition: all 0.15s; line-height: 1.3;
+}
+.btn-w svg { display: block; width: 22px; height: 16px; margin: 0 auto 2px; }
+.btn-w ellipse { fill: #d0cdc5; transition: fill 0.15s; }
+.btn-w:hover ellipse, .btn-w.active ellipse { fill: var(--gold); opacity: 0.6; }
+.btn-w:hover, .btn-w.active {
+  background: var(--gold-pale); border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+/* ── 号数: 横1行 5ボタン ── */
+.size-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.btn-s {
+  border: 0.5px solid var(--border); background: var(--white);
+  border-radius: 6px; padding: 7px 2px;
+  font-size: 10px; cursor: pointer; text-align: center;
+  font-family: 'Noto Serif JP', serif; color: var(--dark);
+  transition: all 0.15s;
+}
+.btn-s:hover, .btn-s.active {
+  background: var(--gold-pale); border-color: var(--gold);
+  box-shadow: inset 0 0 0 1px var(--gold);
+}
+
+/* ── オプション行 ── */
+.opts { display: flex; flex-direction: column; gap: 0; }
+.opt-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 0; border-bottom: 0.5px solid var(--border);
+}
+.opt-row:last-child { border-bottom: none; }
+.opt-name { font-size: 12px; }
+.opt-note { font-size: 9px; color: var(--soft); margin-top: 1px; }
+
+/* トグル */
+.toggle-wrap { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle-wrap input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--border); border-radius: 20px; cursor: pointer; transition: background 0.2s;
+}
+.toggle-slider:before {
+  content: ""; position: absolute; width: 14px; height: 14px;
+  background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s;
+}
+.toggle-wrap input:checked + .toggle-slider { background: var(--gold); }
+.toggle-wrap input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+/* アコーディオン */
+.accordion-sub {
+  overflow: hidden; transition: max-height 0.25s ease, opacity 0.2s ease;
+  max-height: 0; opacity: 0;
+}
+.accordion-sub.open { max-height: 200px; opacity: 1; }
+
+/* 彫り範囲ラジオ */
+.sub-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 5px 0 5px 10px; border-bottom: 0.5px solid var(--border);
+}
+.sub-row:last-child { border-bottom: none; }
+.sub-label { font-size: 11px; color: var(--soft); }
+.radio-group { display: flex; border: 0.5px solid var(--border); border-radius: 5px; overflow: hidden; }
+.radio-btn {
+  flex: 1; padding: 5px 6px; font-size: 11px; cursor: pointer;
+  background: var(--white); color: var(--soft); border: none;
+  border-right: 0.5px solid var(--border); transition: all 0.15s;
+  white-space: nowrap; font-family: 'Noto Serif JP', serif; text-align: center;
+}
+.radio-btn:last-child { border-right: none; }
+.radio-btn.active { background: var(--gold-pale); color: var(--dark); font-weight: 500; }
+
+/* カウンター */
+.counter { display: flex; align-items: center; }
+.counter-btn {
+  width: 26px; height: 26px; border: 0.5px solid var(--border);
+  background: var(--white); color: var(--dark); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: background 0.1s;
+}
+.counter-btn:first-child { border-radius: 5px 0 0 5px; }
+.counter-btn:last-child  { border-radius: 0 5px 5px 0; }
+.counter-btn:hover { background: var(--gold-pale); }
+.counter-val {
+  width: 30px; height: 26px; text-align: center; font-size: 13px; font-weight: 500;
+  border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border);
+  border-left: none; border-right: none; background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* 納期 3ボタン */
+.del-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; padding: 5px 0 3px 10px; }
+.btn-del {
+  border: 0.5px solid var(--border); background: var(--white);
+  border-radius: 6px; padding: 6px 3px; font-size: 10px; cursor: pointer;
+  text-align: center; font-family: 'Noto Serif JP', serif; color: var(--dark);
+  line-height: 1.4; transition: all 0.15s;
+}
+.btn-del.active { background: var(--gold-pale); border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+.btn-del .del-note { font-size: 9px; color: var(--soft); display: block; }
+
+/* ── 固定フッター: 結果 ── */
+#footer {
+  flex-shrink: 0;
+  border-top: 0.5px solid var(--border);
+  background: var(--white);
+  padding: 8px 12px 10px;
+}
+
+/* 結果行 */
+.res-rows { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+.res-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11px; color: var(--soft);
+}
+.res-row.total {
+  font-size: 17px; color: var(--dark);
+  font-family: 'Cormorant Garamond', serif;
+  letter-spacing: 0.03em; margin-top: 3px;
+  padding-top: 5px; border-top: 0.5px solid var(--border);
+}
+.res-row.total span:last-child { color: var(--gold); font-size: 21px; }
+
+/* 商品番号 */
+#r-product-num {
+  font-size: 10px; color: var(--soft); letter-spacing: 0.04em;
+}
+
+/* ローディング */
+#price-loading { display:none; text-align:center; font-size:10px; color:var(--soft); padding:4px 0; }
+#sheet-status  { display:none; font-size:9px; text-align:center; margin-top:3px; letter-spacing:0.04em; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- トップバー -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">RAVINA — Staff Tool</div>
+      <div class="topbar-sub">指輪 料金シミュレーター</div>
+    </div>
+    <button class="btn-reset" onclick="resetAll()">リセット</button>
+  </div>
+
+  <!-- スクロールエリア -->
+  <div id="scroll-area">
+
+    <!-- 素材 -->
+    <div class="sec">
+      <div class="sec-label">Material — 素材</div>
+      <div class="mat-row" id="material-group">
+        <button class="btn-mat active" data-val="silver" onclick="setMat(this)">Silver<span>SV925</span></button>
+        <button class="btn-mat" data-val="10K"    onclick="setMat(this)">Gold K10<span>K10</span></button>
+        <button class="btn-mat" data-val="18K"    onclick="setMat(this)">Gold K18<span>K18</span></button>
+        <button class="btn-mat" data-val="pt"     onclick="setMat(this)">Platinum<span>Pt900</span></button>
+      </div>
+    </div>
+
+    <!-- 幅 -->
+    <div class="sec">
+      <div class="sec-label">Width — 幅</div>
+      <div class="width-row" id="width-group">
+        <button class="btn-w active" data-val="1" onclick="setWidth(this)">
+          <svg viewBox="0 0 22 16"><ellipse cx="11" cy="8" rx="4" ry="4"/></svg>1.0
+        </button>
+        <button class="btn-w" data-val="1.5" onclick="setWidth(this)">
+          <svg viewBox="0 0 22 16"><ellipse cx="11" cy="8" rx="6" ry="6"/></svg>1.5
+        </button>
+        <button class="btn-w" data-val="2" onclick="setWidth(this)">
+          <svg viewBox="0 0 22 16"><ellipse cx="11" cy="8" rx="7" ry="7"/></svg>2.0
+        </button>
+        <button class="btn-w" data-val="2.5" onclick="setWidth(this)">
+          <svg viewBox="-1 -1 24 18"><ellipse cx="11" cy="8" rx="9" ry="9"/></svg>2.5
+        </button>
+        <button class="btn-w" data-val="3" onclick="setWidth(this)">
+          <svg viewBox="-2 -2 26 20"><ellipse cx="11" cy="8" rx="11" ry="11"/></svg>3.0
+        </button>
+        <button class="btn-w" data-val="4x2" onclick="setWidth(this)">
+          <svg viewBox="-1 0 24 16"><ellipse cx="11" cy="8" rx="11" ry="6"/></svg>4.0
+        </button>
+        <button class="btn-w" data-val="5x2" onclick="setWidth(this)">
+          <svg viewBox="-1 0 24 16"><ellipse cx="11" cy="8" rx="11" ry="6"/></svg>5.0
+        </button>
+      </div>
+    </div>
+
+    <!-- 号数 -->
+    <div class="sec">
+      <div class="sec-label">Ring Size — 号数</div>
+      <div class="size-row" id="size-group">
+        <button class="btn-s active" data-val="1-8"   onclick="setSize(this)">1〜8号</button>
+        <button class="btn-s"        data-val="9-16"  onclick="setSize(this)">9〜16号</button>
+        <button class="btn-s"        data-val="17-24" onclick="setSize(this)">17〜24号</button>
+        <button class="btn-s"        data-val="25-32" onclick="setSize(this)">25〜32号</button>
+        <button class="btn-s"        data-val="33-40" onclick="setSize(this)">33〜40号</button>
+      </div>
+    </div>
+
+    <!-- オプション -->
+    <div class="sec">
+      <div class="sec-label">Option — オプション</div>
+      <div class="opts">
+
+        <!-- つや有 -->
+        <div class="opt-row">
+          <div><div class="opt-name">つや有</div><div class="opt-note">¥1,100</div></div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="gloss-toggle" onchange="calc()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- 沖縄彫刻 -->
+        <div class="opt-row">
+          <div><div class="opt-name">沖縄彫刻</div><div class="opt-note">3.0mm以上</div></div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="carving-toggle" onchange="onCarvingToggle()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="accordion-sub" id="carving-scope-sub">
+          <div class="sub-row" style="flex-direction:column;align-items:flex-start;gap:5px;padding-top:3px;">
+            <span class="sub-label">彫り範囲</span>
+            <div class="radio-group" id="scope-group" style="width:100%;">
+              <button class="radio-btn active" data-val="full"  onclick="setScope(this)">Full 360°</button>
+              <button class="radio-btn"        data-val="half"  onclick="setScope(this)">Half 180°</button>
+              <button class="radio-btn"        data-val="point" onclick="setScope(this)">Point チャーム</button>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-sub" id="charm-sub">
+          <div class="sub-row">
+            <div><span class="sub-label">チャーム追加</span><div style="font-size:9px;color:var(--soft);">¥11,000 / 個</div></div>
+            <div class="counter">
+              <button class="counter-btn" onclick="change('charm',-1)">−</button>
+              <div class="counter-val" id="val-charm">0</div>
+              <button class="counter-btn" onclick="change('charm',1)">＋</button>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-sub" id="carving-sub">
+          <div class="sub-row" style="flex-direction:column;align-items:flex-start;gap:5px;">
+            <span class="sub-label">納期</span>
+            <div class="del-row" id="delivery-group" style="width:100%;padding:0;">
+              <button class="btn-del active" data-val="normal" onclick="setDel(this)">通常納品<span class="del-note">約3週間</span></button>
+              <button class="btn-del"        data-val="7day"   onclick="setDel(this)">7日後<span class="del-note">+¥20,000</span></button>
+              <button class="btn-del"        data-val="3day"   onclick="setDel(this)">3日後<span class="del-note">+¥40,000</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ダイヤモンド -->
+        <div class="opt-row">
+          <div><div class="opt-name">ダイヤモンド1石</div><div class="opt-note">¥11,000 / 石</div></div>
+          <div class="counter">
+            <button class="counter-btn" onclick="change('stone',-1)">−</button>
+            <div class="counter-val" id="val-stone">0</div>
+            <button class="counter-btn" onclick="change('stone',1)">＋</button>
+          </div>
+        </div>
+
+        <!-- 刻印 -->
+        <div class="opt-row" style="border-bottom:none">
+          <div><div class="opt-name">刻印</div><div class="opt-note">¥200 / 文字</div></div>
+          <div class="counter">
+            <button class="counter-btn" onclick="change('stamp',-1)">−</button>
+            <div class="counter-val" id="val-stamp">0</div>
+            <button class="counter-btn" onclick="change('stamp',1)">＋</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /scroll-area -->
+
+  <!-- 固定フッター: 結果 -->
+  <div id="footer">
+    <div id="price-loading">価格を読み込み中…</div>
+    <div id="result-rows" class="res-rows">
+      <div class="res-row">
+        <span>基本料金<span id="r-base-subtitle" style="margin-left:5px;font-size:9px;color:var(--soft);"></span></span>
+        <span id="r-base">—</span>
+      </div>
+      <div id="r-product-num-row" class="res-row" style="display:none">
+        <span id="r-product-num" style="font-size:10px;color:var(--soft);"></span><span></span>
+      </div>
+      <div class="res-row" id="row-gloss"    style="display:none"><span>つや有</span><span id="r-gloss">¥1,100</span></div>
+      <div class="res-row" id="row-carving"  style="display:none"><span id="lbl-carving">沖縄彫刻（全周）</span><span id="r-carving">—</span></div>
+      <div class="res-row" id="row-stone"    style="display:none"><span id="lbl-stone">ダイヤモンド</span><span id="r-stone">—</span></div>
+      <div class="res-row" id="row-stamp"    style="display:none"><span id="lbl-stamp">刻印</span><span id="r-stamp">—</span></div>
+      <div class="res-row" id="row-charm"    style="display:none"><span id="lbl-charm">チャーム</span><span id="r-charm">—</span></div>
+      <div class="res-row" id="row-delivery" style="display:none"><span id="lbl-del">—</span><span id="r-delivery">—</span></div>
+      <div class="res-row total"><span>合計（税込）</span><span id="r-total">—</span></div>
+    </div>
+    <div id="sheet-status"></div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ============================================================
+// Google スプレッドシート連携
+// ============================================================
+const SHEET_ID   = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
+const MAIN_SHEET = "Ring_Price";
+const PNUM_SHEET = "Price_Num";
+const SHEET_GIDS = { "Ring_Price": "0", "Price_Num": "1469569588" };
+
+const MAT_MAP = { "silver925":"silver","10K":"10K","18K":"18K","pt900":"pt" };
+
+let productNumMap = {
+  "silver":{
+    "1-8":  {"1":11010101,"1.5":11010102,"2":11010103,"2.5":11010104,"3":11010105,"4x2":11010106,"5x2":11010107},
+    "9-16": {"1":11010201,"1.5":11010202,"2":11010203,"2.5":11010204,"3":11010205,"4x2":11010206,"5x2":11010207},
+    "17-24":{"1":11010301,"1.5":11010302,"2":11010303,"2.5":11010304,"3":11010305,"4x2":11010306,"5x2":11010307},
+    "25-32":{"1":11010401,"1.5":11010402,"2":11010403,"2.5":11010404,"3":11010405,"4x2":11010406,"5x2":11010407},
+    "33-40":{"1":11010501,"1.5":11010502,"2":11010503,"2.5":11010504,"3":11010505,"4x2":11010506,"5x2":11010507}
+  },
+  "10K":{
+    "1-8":  {"1":11020101,"1.5":11020102,"2":11020103,"2.5":11020104,"3":11020105,"4x2":11020106,"5x2":11020107},
+    "9-16": {"1":11020201,"1.5":11020202,"2":11020203,"2.5":11020204,"3":11020205,"4x2":11020206,"5x2":11020207},
+    "17-24":{"1":11020301,"1.5":11020302,"2":11020303,"2.5":11020304,"3":11020305,"4x2":11020306,"5x2":11020307},
+    "25-32":{"1":11020401,"1.5":11020402,"2":11020403,"2.5":11020404,"3":11020405,"4x2":11020406,"5x2":11020407},
+    "33-40":{"1":11020501,"1.5":11020502,"2":11020503,"2.5":11020504,"3":11020505,"4x2":11020506,"5x2":11020507}
+  },
+  "18K":{
+    "1-8":  {"1":11030101,"1.5":11030102,"2":11030103,"2.5":11030104,"3":11030105,"4x2":11030106,"5x2":11030107},
+    "9-16": {"1":11030201,"1.5":11030202,"2":11030203,"2.5":11030204,"3":11030205,"4x2":11030206,"5x2":11030207},
+    "17-24":{"1":11030301,"1.5":11030302,"2":11030303,"2.5":11030304,"3":11030305,"4x2":11030306,"5x2":11030307},
+    "25-32":{"1":11030401,"1.5":11030402,"2":11030403,"2.5":11030404,"3":11030405,"4x2":11030406,"5x2":11030407},
+    "33-40":{"1":11030501,"1.5":11030502,"2":11030503,"2.5":11030504,"3":11030505,"4x2":11030506,"5x2":11030507}
+  },
+  "pt":{
+    "1-8":  {"1":11040101,"1.5":11040102,"2":11040103,"2.5":11040104,"3":11040105,"4x2":11040106,"5x2":11040107},
+    "9-16": {"1":11040201,"1.5":11040202,"2":11040203,"2.5":11040204,"3":11040205,"4x2":11040206,"5x2":11040207},
+    "17-24":{"1":11040301,"1.5":11040302,"2":11040303,"2.5":11040304,"3":11040305,"4x2":11040306,"5x2":11040307},
+    "25-32":{"1":11040401,"1.5":11040402,"2":11040403,"2.5":11040404,"3":11040405,"4x2":11040406,"5x2":11040407},
+    "33-40":{"1":11040501,"1.5":11040502,"2":11040503,"2.5":11040504,"3":11040505,"4x2":11040506,"5x2":11040507}
+  }
+};
+
+let prices = {
+  silver:{
+    "1":  {"1-8":3300,"9-16":3800,"17-24":4300,"25-32":4800,"33-40":5300},
+    "1.5":{"1-8":4400,"9-16":4900,"17-24":5400,"25-32":5900,"33-40":6400},
+    "2":  {"1-8":6600,"9-16":7100,"17-24":7600,"25-32":8100,"33-40":8600},
+    "2.5":{"1-8":8800,"9-16":9800,"17-24":10800,"25-32":11800,"33-40":12800},
+    "3":  {"1-8":12100,"9-16":13100,"17-24":14100,"25-32":15100,"33-40":16100},
+    "4x2":{"1-8":12100,"9-16":13100,"17-24":14100,"25-32":15100,"33-40":16100},
+    "5x2":{"1-8":15950,"9-16":17450,"17-24":18950,"25-32":20450,"33-40":21950}
+  },
+  "10K":{
+    "1":  {"1-8":14850,"9-16":16500,"17-24":18150,"25-32":19800,"33-40":21450},
+    "1.5":{"1-8":24200,"9-16":26950,"17-24":29700,"25-32":32450,"33-40":35200},
+    "2":  {"1-8":46200,"9-16":51150,"17-24":56100,"25-32":61050,"33-40":66000},
+    "2.5":{"1-8":82500,"9-16":90750,"17-24":99000,"25-32":107250,"33-40":115500},
+    "3":  {"1-8":107800,"9-16":118800,"17-24":129800,"25-32":140800,"33-40":151800},
+    "4x2":{"1-8":107800,"9-16":118800,"17-24":129800,"25-32":140800,"33-40":151800},
+    "5x2":{"1-8":154000,"9-16":169400,"17-24":184800,"25-32":200200,"33-40":215600}
+  },
+  "18K":{
+    "1":  {"1-8":33000,"9-16":36300,"17-24":39600,"25-32":42900,"33-40":46200},
+    "1.5":{"1-8":66000,"9-16":72600,"17-24":79200,"25-32":85800,"33-40":92400},
+    "2":  {"1-8":132000,"9-16":145200,"17-24":158400,"25-32":171600,"33-40":184800},
+    "2.5":{"1-8":198000,"9-16":217800,"17-24":237600,"25-32":257400,"33-40":277200},
+    "3":  {"1-8":264000,"9-16":290400,"17-24":316800,"25-32":343200,"33-40":369600},
+    "4x2":{"1-8":264000,"9-16":290400,"17-24":316800,"25-32":343200,"33-40":369600},
+    "5x2":{"1-8":330000,"9-16":363000,"17-24":396000,"25-32":429000,"33-40":462000}
+  },
+  "pt":{
+    "1":  {"1-8":26400,"9-16":29150,"17-24":31900,"25-32":34650,"33-40":37400},
+    "1.5":{"1-8":51700,"9-16":57200,"17-24":62700,"25-32":68200,"33-40":73700},
+    "2":  {"1-8":105600,"9-16":116600,"17-24":127600,"25-32":138600,"33-40":149600},
+    "2.5":{"1-8":154000,"9-16":169400,"17-24":184800,"25-32":200200,"33-40":215600},
+    "3":  {"1-8":209000,"9-16":229900,"17-24":250800,"25-32":271700,"33-40":292600},
+    "4x2":{"1-8":209000,"9-16":229900,"17-24":250800,"25-32":271700,"33-40":292600},
+    "5x2":{"1-8":253000,"9-16":278300,"17-24":303600,"25-32":328900,"33-40":354200}
+  }
+};
+
+let carvingPrices = {
+  silver:{
+    "1-8":  {"2":57200,"2.5":52800,"3":44000,"4x2":44000,"5x2":44000},
+    "9-16": {"2":57200,"2.5":59400,"3":59400,"4x2":59400,"5x2":59400},
+    "17-24":{"2":57200,"2.5":59400,"3":59400,"4x2":59400,"5x2":59400},
+    "25-32":{"2":66000,"2.5":66000,"3":59400,"4x2":59400,"5x2":59400},
+    "33-40":{"2":66000,"2.5":66000,"3":59400,"4x2":59400,"5x2":59400}
+  },
+  "10K":{
+    "1-8":  {"2":57200,"2.5":52800,"3":44000,"4x2":44000,"5x2":44000},
+    "9-16": {"2":57200,"2.5":59400,"3":59400,"4x2":59400,"5x2":59400},
+    "17-24":{"2":57200,"2.5":59400,"3":59400,"4x2":59400,"5x2":59400},
+    "25-32":{"2":66000,"2.5":66000,"3":59400,"4x2":59400,"5x2":59400},
+    "33-40":{"2":66000,"2.5":66000,"3":59400,"4x2":59400,"5x2":59400}
+  },
+  "18K":{
+    "1-8":  {"2":71500,"2.5":66000,"3":55000,"4x2":55000,"5x2":55000},
+    "9-16": {"2":71500,"2.5":74250,"3":74250,"4x2":74250,"5x2":74250},
+    "17-24":{"2":71500,"2.5":74250,"3":74250,"4x2":74250,"5x2":74250},
+    "25-32":{"2":82500,"2.5":82500,"3":74250,"4x2":74250,"5x2":74250},
+    "33-40":{"2":82500,"2.5":82500,"3":74250,"4x2":74250,"5x2":74250}
+  },
+  "pt":{
+    "1-8":  {"2":71500,"2.5":66000,"3":55000,"4x2":55000,"5x2":55000},
+    "9-16": {"2":71500,"2.5":74250,"3":74250,"4x2":74250,"5x2":74250},
+    "17-24":{"2":71500,"2.5":74250,"3":74250,"4x2":74250,"5x2":74250},
+    "25-32":{"2":82500,"2.5":82500,"3":74250,"4x2":74250,"5x2":74250},
+    "33-40":{"2":82500,"2.5":82500,"3":74250,"4x2":74250,"5x2":74250}
+  }
+};
+
+// ─── State ───
+let mat = "silver", del = "normal", scope = "none";
+let counts = { stone:0, charm:0, stamp:0 };
+const CARVABLE_WIDTHS = ["3","4x2","5x2"];
+
+// ─── UI helpers ───
+function fmt(n){ return "¥" + Math.round(n).toLocaleString("ja-JP"); }
+
+function setMat(el){
+  document.querySelectorAll("#material-group .btn-mat").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active"); mat = el.dataset.val; calc();
+}
+function setWidth(el){
+  document.querySelectorAll("#width-group .btn-w").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");
+  const w = el.dataset.val;
+  const carvable = CARVABLE_WIDTHS.includes(w);
+  const toggle = document.getElementById("carving-toggle");
+  const wrap = toggle ? toggle.closest(".toggle-wrap") : null;
+  if(!carvable){
+    if(toggle && toggle.checked){ toggle.checked=false; onCarvingToggle(); }
+    if(wrap){ wrap.style.opacity="0.35"; wrap.style.pointerEvents="none"; }
+  } else {
+    if(wrap){ wrap.style.opacity=""; wrap.style.pointerEvents=""; }
+  }
+  calc();
+}
+function setSize(el){
+  document.querySelectorAll("#size-group .btn-s").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active"); calc();
+}
+function setDel(el){
+  document.querySelectorAll("#delivery-group .btn-del").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active"); del = el.dataset.val; calc();
+}
+function setScope(el){
+  document.querySelectorAll("#scope-group .radio-btn").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active"); scope = el.dataset.val;
+  document.getElementById("charm-sub").classList.toggle("open", scope==="point");
+  if(scope!=="point"){ counts.charm=0; document.getElementById("val-charm").textContent=0; }
+  calc();
+}
+function onCarvingToggle(){
+  const on = document.getElementById("carving-toggle").checked;
+  const scopeSub = document.getElementById("carving-scope-sub");
+  if(on){
+    scopeSub.classList.add("open");
+    scope = "full";
+    document.querySelectorAll("#scope-group .radio-btn").forEach(b=>b.classList.remove("active"));
+    const fullBtn = document.querySelector("#scope-group .radio-btn[data-val='full']");
+    if(fullBtn) fullBtn.classList.add("active");
+    document.getElementById("carving-sub").classList.add("open");
+  } else {
+    scopeSub.classList.remove("open");
+    scope = "none";
+    counts.charm = 0;
+    document.getElementById("val-charm").textContent = 0;
+    document.getElementById("charm-sub").classList.remove("open");
+    del = "normal";
+    document.querySelectorAll("#delivery-group .btn-del").forEach(b=>b.classList.remove("active"));
+    const norm = document.querySelector("#delivery-group .btn-del[data-val='normal']");
+    if(norm) norm.classList.add("active");
+    document.getElementById("carving-sub").classList.remove("open");
+  }
+  calc();
+}
+function change(key, delta){
+  counts[key] = Math.max(0, counts[key]+delta);
+  document.getElementById("val-"+key).textContent = counts[key];
+  calc();
+}
+
+function resetAll(){
+  // 素材
+  document.querySelectorAll("#material-group .btn-mat").forEach((b,i)=>{ b.classList.toggle("active",i===0); });
+  mat = "silver";
+  // 幅
+  document.querySelectorAll("#width-group .btn-w").forEach((b,i)=>{ b.classList.toggle("active",i===0); });
+  // 号数
+  document.querySelectorAll("#size-group .btn-s").forEach((b,i)=>{ b.classList.toggle("active",i===0); });
+  // グロス
+  document.getElementById("gloss-toggle").checked = false;
+  // 彫刻リセット
+  const carvingToggle = document.getElementById("carving-toggle");
+  if(carvingToggle.checked){ carvingToggle.checked=false; onCarvingToggle(); }
+  else { onCarvingToggle(); } // ensure sub closed
+  // カウンター
+  counts = {stone:0,charm:0,stamp:0};
+  ["stone","charm","stamp"].forEach(k=>{ document.getElementById("val-"+k).textContent=0; });
+  // 幅トグル無効化（1.0mm初期）
+  const tw = carvingToggle.closest(".toggle-wrap");
+  if(tw){ tw.style.opacity="0.35"; tw.style.pointerEvents="none"; }
+  calc();
+}
+
+// ─── 計算 ───
+function calc(){
+  const widthEl = document.querySelector("#width-group .btn-w.active");
+  const sizeEl  = document.querySelector("#size-group .btn-s.active");
+  const width   = widthEl ? widthEl.dataset.val : "1";
+  const size    = sizeEl  ? sizeEl.dataset.val  : "1-8";
+  const carving = scope !== "none";
+
+  const ringBase = (prices[mat]&&prices[mat][width]&&prices[mat][width][size]) || 0;
+  let total = ringBase;
+
+  // サブタイトル
+  const matLabel = {silver:"Silver",  "10K":"K10","18K":"K18","pt":"Pt900"}[mat]||mat;
+  const wLabel   = {  "1":"1.0mm","1.5":"1.5mm","2":"2.0mm","2.5":"2.5mm",
+                      "3":"3.0mm","4x2":"4.0mm","5x2":"5.0mm"}[width]||(width+"mm");
+  document.getElementById("r-base-subtitle").textContent = matLabel+" "+wLabel;
+  document.getElementById("r-base").textContent = ringBase ? fmt(ringBase) : "—";
+
+  // 商品番号
+  const pNum = (productNumMap[mat]&&productNumMap[mat][size]&&productNumMap[mat][size][width])||null;
+  if(pNum){
+    document.getElementById("r-product-num").textContent = "商品番号："+pNum;
+    document.getElementById("r-product-num-row").style.display="flex";
+  } else {
+    document.getElementById("r-product-num-row").style.display="none";
+  }
+
+  // つや有
+  const glossOn = document.getElementById("gloss-toggle").checked;
+  if(glossOn){ total+=1100; document.getElementById("row-gloss").style.display="flex"; }
+  else { document.getElementById("row-gloss").style.display="none"; }
+
+  // 彫刻
+  if(carving){
+    const fullFee = (carvingPrices[mat]&&carvingPrices[mat][size]&&carvingPrices[mat][size][width])
+      ? carvingPrices[mat][size][width] : 0;
+    let fee, label;
+    if(scope==="half"){
+      fee = Math.round(fullFee/2); label = "沖縄彫刻（半周）";
+    } else if(scope==="point"){
+      fee = counts.charm*11000; label = `沖縄彫刻（チャーム×${counts.charm}）`;
+    } else {
+      fee = fullFee; label = "沖縄彫刻（全周）";
+    }
+    total += fee;
+    document.getElementById("lbl-carving").textContent = label;
+    document.getElementById("r-carving").textContent   = fmt(fee);
+    document.getElementById("row-carving").style.display = "flex";
+  } else {
+    document.getElementById("row-carving").style.display = "none";
+  }
+
+  // 石留め
+  if(counts.stone>0){
+    const s=counts.stone*11000; total+=s;
+    document.getElementById("lbl-stone").textContent = `ダイヤモンド×${counts.stone}`;
+    document.getElementById("r-stone").textContent   = fmt(s);
+    document.getElementById("row-stone").style.display="flex";
+  } else { document.getElementById("row-stone").style.display="none"; }
+
+  // 刻印
+  if(counts.stamp>0){
+    const s=counts.stamp*200; total+=s;
+    document.getElementById("lbl-stamp").textContent = `刻印×${counts.stamp}文字`;
+    document.getElementById("r-stamp").textContent   = fmt(s);
+    document.getElementById("row-stamp").style.display="flex";
+  } else { document.getElementById("row-stamp").style.display="none"; }
+
+  // チャーム（point以外）
+  if(scope==="point"){
+    document.getElementById("row-charm").style.display="none";
+  } else if(counts.charm>0){
+    const c=counts.charm*11000; total+=c;
+    document.getElementById("lbl-charm").textContent=`チャーム×${counts.charm}`;
+    document.getElementById("r-charm").textContent=fmt(c);
+    document.getElementById("row-charm").style.display="flex";
+  } else { document.getElementById("row-charm").style.display="none"; }
+
+  // 納期
+  if(del==="7day"){
+    document.getElementById("row-delivery").style.display="flex";
+    document.getElementById("lbl-del").textContent="速納（7日後）";
+    document.getElementById("r-delivery").textContent="+¥20,000";
+    total+=20000;
+  } else if(del==="3day"){
+    document.getElementById("row-delivery").style.display="flex";
+    document.getElementById("lbl-del").textContent="速納（3日後）";
+    document.getElementById("r-delivery").textContent="+¥40,000";
+    total+=40000;
+  } else {
+    document.getElementById("row-delivery").style.display="none";
+  }
+
+  document.getElementById("r-total").textContent = total ? fmt(total) : "—";
+}
+
+// ─── CSV / スプレッドシート ───
+async function loadCSV(sheetName){
+  const gid = SHEET_GIDS[sheetName]??"0";
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(`HTTP ${res.status}`);
+  return parseCSV(await res.text());
+}
+function parseCSV(text){
+  const rows=[]; let cur="",inQ=false,row=[];
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(inQ){ if(ch==='"'&&text[i+1]==='"'){cur+='"';i++;} else if(ch==='"')inQ=false; else cur+=ch; }
+    else { if(ch==='"'){inQ=true;} else if(ch===','){row.push(cur.trim());cur="";} else if(ch==='\n'){row.push(cur.trim());if(row.some(c=>c!==""))rows.push(row);row=[];cur="";} else if(ch!=='\r')cur+=ch; }
+  }
+  if(cur!==""||row.length>0){row.push(cur.trim());if(row.some(c=>c!==""))rows.push(row);}
+  return rows;
+}
+function toNum(v){ if(!v&&v!==0)return 0; return Number(String(v).replace(/[^0-9.-]/g,""))||0; }
+function normalizeMat(rawMat){
+  const s=String(rawMat).trim();
+  const lc=s.toLowerCase();
+  for(const[k,v] of Object.entries(MAT_MAP)){ if(k.toLowerCase()===lc)return v; }
+  if(Object.values(MAT_MAP).includes(s))return s;
+  return s;
+}
+function parseMainSheet(rows){
+  const np={};
+  if(!rows||rows.length<2)return{newPrices:np};
+  const hdr=rows[0].map(h=>String(h).trim().toLowerCase());
+  const idxMat=hdr.indexOf("material"), idxSize=hdr.indexOf("size"), idxList=hdr.indexOf("list");
+  const WDEF=[{n:"1",k:"1"},{n:"1.5",k:"1.5"},{n:"2",k:"2"},{n:"2.5",k:"2.5"},{n:"3",k:"3"},{n:"4x2",k:"4x2"},{n:"5x2",k:"5x2"}];
+  const WC=WDEF.map(d=>({idx:hdr.indexOf(d.n.toLowerCase()),key:d.k})).filter(d=>d.idx>=0);
+  if(idxMat<0||idxSize<0)return{newPrices:np};
+  for(let i=1;i<rows.length;i++){
+    const v=rows[i]; if(!v||!v.length)continue;
+    if(idxList>=0){const lt=String(v[idxList]||"").trim();if(lt&&lt!=="Ring")continue;}
+    const mat=normalizeMat(String(v[idxMat]||"").trim());
+    if(!Object.values(MAT_MAP).includes(mat))continue;
+    const size=String(v[idxSize]||"").trim().replace(/^size_/,"").replace(/号$/,"").trim();
+    if(!size)continue;
+    if(!np[mat])np[mat]={};
+    WC.forEach(({idx,key})=>{ const p=toNum(v[idx]); if(p){if(!np[mat][key])np[mat][key]={};np[mat][key][size]=p;} });
+  }
+  return{newPrices:np};
+}
+function parsePriceNumSheet(rows){
+  if(!rows||rows.length<2)return null;
+  const hdr=rows[0].map(h=>String(h).trim());
+  const hdrl=hdr.map(h=>h.toLowerCase());
+  const im=hdrl.indexOf("material"),is=hdrl.indexOf("size"),iw=hdrl.indexOf("width"),il=hdrl.indexOf("list");
+  const ipn=hdr.indexOf("商品番号");
+  if(im<0||is<0||iw<0||ipn<0)return null;
+  const toWKey=r=>{ const s=String(r).trim().replace(/×/g,"x"); if(s==="4x2"||s==="5x2")return s; const n=parseFloat(s); return isNaN(n)?null:String(n); };
+  const map={};
+  for(let i=1;i<rows.length;i++){
+    const v=rows[i]; if(!v||!v.length)continue;
+    if(il>=0){const lt=String(v[il]||"").trim();if(lt&&lt!=="Ring")continue;}
+    const mt=normalizeMat(String(v[im]||"").trim());
+    const sz=String(v[is]||"").trim().replace(/^size_/,"").replace(/号$/,"").trim();
+    const wk=toWKey(String(v[iw]||"").replace(/×/g,"x"));
+    const pn=v[ipn];
+    if(!mt||!sz||!wk||pn===null||pn===undefined||pn==="")continue;
+    if(!Object.values(MAT_MAP).includes(mt))continue;
+    if(!map[mt])map[mt]={};
+    if(!map[mt][sz])map[mt][sz]={};
+    map[mt][sz][wk]=pn;
+  }
+  return map;
+}
+async function initPrices(){
+  document.getElementById("price-loading").style.display="block";
+  try{
+    const mainRows=await loadCSV(MAIN_SHEET);
+    const{newPrices}=parseMainSheet(mainRows);
+    if(Object.keys(newPrices).length>0)prices=newPrices;
+    try{
+      const pnumRows=await loadCSV(PNUM_SHEET);
+      const npm=parsePriceNumSheet(pnumRows);
+      if(npm&&Object.keys(npm).length>0)productNumMap=npm;
+    }catch(e){}
+    document.getElementById("price-loading").style.display="none";
+    showStatus("ok");
+  }catch(e){
+    document.getElementById("price-loading").style.display="none";
+    showStatus("error");
+  }
+  calc();
+}
+function showStatus(st){
+  const el=document.getElementById("sheet-status");
+  if(st==="ok"){el.textContent="✓ 最新価格";el.style.color="#6a9a6a";}
+  else{el.textContent="⚠ オフライン価格";el.style.color="#c07a4a";}
+  el.style.display="block";
+}
+
+// ─── 初期化 ───
+initPrices();
+// 1.0mm初期 → 彫刻トグル無効
+(function(){
+  const t=document.getElementById("carving-toggle");
+  const w=t?t.closest(".toggle-wrap"):null;
+  if(w){w.style.opacity="0.35";w.style.pointerEvents="none";}
+})();
+</script>
+</body>
+</html>

@@ -381,7 +381,7 @@ select:focus { outline: none; border-color: var(--gold); }
     <div class="option-row" style="border-bottom:none">
       <div>
         <div class="option-name">刻印</div>
-        <div class="option-price-note">¥200 / 文字</div>
+        <div class="option-price-note">¥220 / 文字</div>
       </div>
       <div class="counter">
         <button class="counter-btn" onclick="change('stamp',-1)">−</button>
@@ -1001,7 +1001,7 @@ function calc() {
 
   // 刻印
   if (counts.stamp > 0) {
-    const s = counts.stamp * 200; total += s;
+    const s = counts.stamp * 220; total += s;
     document.getElementById("lbl-stamp").textContent = `刻印 ×${counts.stamp}文字`;
     document.getElementById("r-stamp").textContent   = fmt(s);
     document.getElementById("row-stamp").style.display = "flex";

@@ -283,7 +283,7 @@ html, body {
         <div style="display:flex;align-items:center;gap:8px;">
           <div class="cm-stepper">
             <button class="cm-btn" onclick="changeCm(-1)">－</button>
-            <div class="cm-val" id="cm-display">15</div>
+            <div class="cm-val" id="cm-display">10</div>
             <button class="cm-btn" onclick="changeCm(+1)">＋</button>
           </div>
           <span class="cm-unit">cm</span>
@@ -396,7 +396,7 @@ let bProductNum = {
 // UI 状態
 // ============================================================
 let mat   = "silver";
-let cmVal = 15;
+let cmVal = 10;
 let counts = { stone: 0 };
 
 function setMat(el){
@@ -447,8 +447,8 @@ function resetAll(){
   document.querySelectorAll("#width-group-gold .btn-w").forEach(b=>b.classList.remove("active"));
   document.querySelector("#width-group-gold .btn-w").classList.add("active");
   // cm
-  cmVal = 15;
-  document.getElementById("cm-display").textContent = 15;
+  cmVal = 10;
+  document.getElementById("cm-display").textContent = 10;
   // カウンター
   counts = { stone:0 };
   document.getElementById("val-stone").textContent = 0;

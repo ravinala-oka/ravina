@@ -330,7 +330,7 @@
 
   <div class="footer-note">
     ボタンを押すと打刻時刻がスプレッドシートに記録されます<br>
-    <a href="https://docs.google.com/spreadsheets/d/1HC8U8OVd_Id2LxvcWYdce1K_aOOfmp19CoA7Cq5E6i4/edit?gid=1091157565" target="_blank">シートを開く →</a>
+    <a href="https://docs.google.com/spreadsheets/d/1bjfm2SdUCYWlzmsvrDgISA4PXeBKdQMbx1SnQEPx3xc" target="_blank">シートを開く →</a>
   </div>
 </div>
 
@@ -348,10 +348,10 @@
 // ────────────────────────────────────────────────────────────
 
 // ★ ここにGASデプロイURLを貼る
-const GAS_URL = "https://script.google.com/macros/s/AKfycby_VQDeA4YZUc4P96PxnJ4UhVCuvciy7os1ZHVHbW8q2W68DIU4VrqznoEO_faS2CP1nw/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwCnzRSp06RAF-bJf8v9s8PM7WvpjWbjSVA5-auUFEfo2Jh-N89Wazwt9uYDT-HHtnElA/exec";
 
 // ★ パスワード（変更可）
-const PASSWORD = "260305";
+const PASSWORD = "Ravi0305ni";
 
 const STAFF = [
   { name: "島尻望鈴",  initials: "島尻" },
@@ -469,6 +469,37 @@ function renderStaffList() {
 }
 
 // ────────────────────────────────────────────────────────────
+// JSONP通信ヘルパー（CORS回避）
+// ────────────────────────────────────────────────────────────
+function callGAS(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = "gasCallback_" + Date.now();
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      reject(new Error("timeout"));
+    }, 15000);
+
+    window[cbName] = function(data) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+      resolve(data);
+    };
+
+    const qs = new URLSearchParams({ ...params, callback: cbName });
+    const script = document.createElement("script");
+    script.src = GAS_URL + "?" + qs.toString();
+    script.onerror = () => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      reject(new Error("script load error"));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+// ────────────────────────────────────────────────────────────
 // 打刻送信
 // ────────────────────────────────────────────────────────────
 async function stamp(name, type) {
@@ -477,9 +508,7 @@ async function stamp(name, type) {
   const timeStr = now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
 
   try {
-    const params = new URLSearchParams({ action: "stamp", name, type, time: timeStr });
-    const res = await fetch(GAS_URL + "?" + params.toString());
-    const json = await res.json();
+    const json = await callGAS({ action: "stamp", name, type, time: timeStr });
 
     if (json.status === "ok") {
       if (type === "出勤") {
@@ -495,20 +524,7 @@ async function stamp(name, type) {
       showToast("エラー: " + (json.message || "不明"), "error");
     }
   } catch(e) {
-    // GAS URLが未設定の場合はローカルで動作確認できるようにする
-    if (GAS_URL === "YOUR_GAS_WEBAPP_URL_HERE") {
-      if (type === "出勤") {
-        staffState[name].clockIn = timeStr;
-        staffState[name].status = "出勤中";
-      } else {
-        staffState[name].clockOut = timeStr;
-        staffState[name].status = "退勤済";
-      }
-      renderStaffList();
-      showToast(`[テスト] ${name} — ${type} ${timeStr}`, "success");
-    } else {
-      showToast("通信エラー。再度お試しください", "error");
-    }
+    showToast("通信エラー。再度お試しください", "error");
   } finally {
     showLoading(false);
   }
@@ -518,10 +534,8 @@ async function stamp(name, type) {
 // 今日の状態をGASから取得
 // ────────────────────────────────────────────────────────────
 async function loadTodayStatus() {
-  if (GAS_URL === "YOUR_GAS_WEBAPP_URL_HERE") return;
   try {
-    const res = await fetch(GAS_URL + "?action=getToday");
-    const json = await res.json();
+    const json = await callGAS({ action: "getToday" });
     if (json.status === "ok" && json.data) {
       json.data.forEach(row => {
         if (staffState[row.name] !== undefined) {

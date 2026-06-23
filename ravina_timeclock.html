@@ -2,572 +2,272 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAVINA 打刻システム</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RAVINA 打刻</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: #0d0d0d; color: #f0ede8;
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  padding: 2rem 1rem;
+}
+.logo   { font-size: 11px; letter-spacing: 0.4em; color: #b8a48a; margin-bottom: 0.5rem; }
+.title  { font-size: 20px; font-weight: 300; letter-spacing: 0.1em; margin-bottom: 0.25rem; }
+.clock  { font-size: 12px; color: #666; letter-spacing: 0.05em; margin-bottom: 2rem; }
 
-  body {
-    font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
-    background: #0d0d0d;
-    color: #f0ede8;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+.card {
+  width: 100%; max-width: 400px;
+  background: #141414; border: 0.5px solid #2a2a2a; border-radius: 12px;
+  padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 14px;
+}
+.avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #1e1e1e; border: 0.5px solid #333;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; color: #b8a48a; flex-shrink: 0;
+}
+.avatar.in  { background: #0d1f16; border-color: #3a7a55; color: #5aba7e; }
+.avatar.out { background: #1f140d; border-color: #7a553a; color: #ba7e5a; }
 
-  /* ── パスワード画面 ── */
-  #lock-screen {
-    position: fixed;
-    inset: 0;
-    background: #0d0d0d;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    gap: 2rem;
-    padding: 2rem;
-  }
-  #lock-screen.hidden { display: none; }
+.info  { flex: 1; }
+.name  { font-size: 15px; font-weight: 400; }
+.times { font-size: 11px; color: #555; margin-top: 3px; }
+.times .ci { color: #5aba7e; }
+.times .co { color: #ba7e5a; }
 
-  .lock-logo {
-    font-size: 13px;
-    letter-spacing: 0.35em;
-    color: #b8a48a;
-    text-transform: uppercase;
-  }
-  .lock-title {
-    font-size: 22px;
-    font-weight: 300;
-    letter-spacing: 0.1em;
-    color: #f0ede8;
-  }
-  .lock-sub {
-    font-size: 12px;
-    color: #888;
-    letter-spacing: 0.05em;
-    margin-top: -1.2rem;
-  }
+.btns { display: flex; gap: 6px; flex-shrink: 0; }
+.btn {
+  padding: 8px 14px; border-radius: 8px; border: 0.5px solid #3a3a3a;
+  background: transparent; color: #f0ede8; font-size: 12px;
+  letter-spacing: 0.08em; cursor: pointer; transition: all 0.15s;
+  font-family: inherit;
+}
+.btn-in  { border-color: #3a7a55; color: #5aba7e; }
+.btn-in:hover  { background: #0d1f16; }
+.btn-out { border-color: #7a553a; color: #ba7e5a; }
+.btn-out:hover { background: #1f140d; }
+.btn:disabled  { opacity: 0.25; cursor: not-allowed; }
 
-  .pw-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-    max-width: 320px;
-  }
-  .pw-wrap input {
-    background: #1a1a1a;
-    border: 0.5px solid #444;
-    border-radius: 8px;
-    color: #f0ede8;
-    font-size: 16px;
-    padding: 14px 16px;
-    outline: none;
-    letter-spacing: 0.1em;
-    width: 100%;
-    text-align: center;
-  }
-  .pw-wrap input::placeholder { color: #555; letter-spacing: 0.05em; }
-  .pw-wrap input:focus { border-color: #b8a48a; }
+#toast {
+  position: fixed; bottom: 2rem; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: #1e1e1e; border: 0.5px solid #444;
+  border-radius: 10px; padding: 12px 20px;
+  font-size: 13px; opacity: 0; transition: all 0.25s;
+  pointer-events: none; white-space: nowrap; z-index: 100;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.ok  { border-color: #3a7a55; color: #5aba7e; }
+#toast.err { border-color: #7a3a3a; color: #ba5a5a; }
 
-  .btn-unlock {
-    background: #b8a48a;
-    border: none;
-    border-radius: 8px;
-    color: #0d0d0d;
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.15em;
-    padding: 14px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
-  .btn-unlock:hover { opacity: 0.85; }
-  .pw-error {
-    font-size: 12px;
-    color: #e06060;
-    text-align: center;
-    min-height: 16px;
-  }
-
-  /* ── メイン画面 ── */
-  #app { width: 100%; max-width: 480px; padding: 0 0 3rem; }
-  #app.hidden { display: none; }
-
-  .app-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2.5rem 1.5rem 1.5rem;
-    gap: 4px;
-    border-bottom: 0.5px solid #2a2a2a;
-  }
-  .app-logo {
-    font-size: 11px;
-    letter-spacing: 0.4em;
-    color: #b8a48a;
-    text-transform: uppercase;
-  }
-  .app-title {
-    font-size: 18px;
-    font-weight: 300;
-    letter-spacing: 0.08em;
-    color: #f0ede8;
-  }
-  .app-date {
-    font-size: 12px;
-    color: #888;
-    margin-top: 4px;
-    letter-spacing: 0.05em;
-  }
-
-  /* ── スタッフカード ── */
-  .staff-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1px;
-    background: #1a1a1a;
-    border-top: 0.5px solid #2a2a2a;
-  }
-
-  .staff-card {
-    background: #0d0d0d;
-    padding: 1rem 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    transition: background 0.15s;
-    position: relative;
-  }
-  .staff-card:active { background: #151515; }
-
-  .staff-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: #1e1e1e;
-    border: 0.5px solid #333;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    color: #b8a48a;
-    flex-shrink: 0;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-  }
-  .staff-avatar.working {
-    border-color: #4a9e6a;
-    background: #0f2a1a;
-    color: #5aba7e;
-  }
-
-  .staff-info { flex: 1; min-width: 0; }
-  .staff-name {
-    font-size: 15px;
-    font-weight: 400;
-    color: #f0ede8;
-    letter-spacing: 0.03em;
-  }
-  .staff-time {
-    font-size: 12px;
-    color: #666;
-    margin-top: 3px;
-    letter-spacing: 0.03em;
-  }
-  .staff-time span { color: #888; }
-
-  .staff-badge {
-    font-size: 11px;
-    letter-spacing: 0.05em;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-weight: 400;
-    flex-shrink: 0;
-  }
-  .badge-working {
-    background: #0f2a1a;
-    color: #5aba7e;
-    border: 0.5px solid #2a6a42;
-  }
-  .badge-off {
-    background: #1a1a1a;
-    color: #666;
-    border: 0.5px solid #333;
-  }
-
-  .stamp-btn {
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 0.5px solid #444;
-    background: transparent;
-    color: #f0ede8;
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .stamp-btn.clock-in {
-    border-color: #4a9e6a;
-    color: #5aba7e;
-  }
-  .stamp-btn.clock-in:hover { background: #0f2a1a; }
-  .stamp-btn.clock-out {
-    border-color: #9e6a4a;
-    color: #ba7e5a;
-  }
-  .stamp-btn.clock-out:hover { background: #2a1a0f; }
-  .stamp-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-
-  /* ── トースト ── */
-  #toast {
-    position: fixed;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: #1e1e1e;
-    border: 0.5px solid #444;
-    border-radius: 10px;
-    color: #f0ede8;
-    font-size: 13px;
-    letter-spacing: 0.05em;
-    padding: 12px 20px;
-    opacity: 0;
-    transition: all 0.3s;
-    pointer-events: none;
-    white-space: nowrap;
-    z-index: 200;
-  }
-  #toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-  #toast.success { border-color: #4a9e6a; color: #5aba7e; }
-  #toast.error { border-color: #9e4a4a; color: #ba5a5a; }
-
-  /* ── フッター ── */
-  .footer-note {
-    text-align: center;
-    font-size: 11px;
-    color: #444;
-    margin-top: 2rem;
-    letter-spacing: 0.05em;
-    padding: 0 1.5rem;
-    line-height: 1.8;
-  }
-  .footer-note a {
-    color: #b8a48a;
-    text-decoration: none;
-  }
-
-  /* ── ローディング ── */
-  .loading-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(13,13,13,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-  }
-  .loading-overlay.hidden { display: none; }
-  .spinner {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #333;
-    border-top-color: #b8a48a;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .section-label {
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    color: #555;
-    text-transform: uppercase;
-    padding: 1.25rem 1.25rem 0.6rem;
-  }
+.loading {
+  position: fixed; inset: 0; background: rgba(13,13,13,0.7);
+  display: flex; align-items: center; justify-content: center; z-index: 50;
+}
+.loading.hidden { display: none; }
+.spinner {
+  width: 24px; height: 24px; border: 2px solid #2a2a2a;
+  border-top-color: #b8a48a; border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<!-- ─── パスワード画面 ─── -->
-<div id="lock-screen">
-  <div class="lock-logo">RAVINA Staff</div>
-  <div style="text-align:center; display:flex; flex-direction:column; gap:8px;">
-    <div class="lock-title">打刻システム</div>
-    <div class="lock-sub">スタッフ専用 — パスワードを入力してください</div>
-  </div>
-  <div class="pw-wrap">
-    <input type="password" id="pw-input" placeholder="パスワード" autocomplete="current-password">
-    <button class="btn-unlock" onclick="checkPassword()">ログイン</button>
-    <div class="pw-error" id="pw-error"></div>
-  </div>
-  <div style="font-size:11px; color:#444; letter-spacing:0.05em;">© RAVINA Okinawa</div>
-</div>
+<div class="logo">RAVINA Staff</div>
+<div class="title">打刻システム</div>
+<div class="clock" id="clock"></div>
 
-<!-- ─── メイン打刻画面 ─── -->
-<div id="app" class="hidden">
-  <div class="app-header">
-    <div class="app-logo">RAVINA Staff</div>
-    <div class="app-title">打刻システム</div>
-    <div class="app-date" id="current-datetime"></div>
+<div class="card" id="card-島尻望鈴">
+  <div class="avatar" id="av-島尻望鈴">島尻</div>
+  <div class="info">
+    <div class="name">島尻望鈴</div>
+    <div class="times" id="times-島尻望鈴">未打刻</div>
   </div>
-
-  <div class="section-label">スタッフ</div>
-  <div class="staff-list" id="staff-list">
-    <!-- JS で生成 -->
-  </div>
-
-  <div class="footer-note">
-    ボタンを押すと打刻時刻がスプレッドシートに記録されます<br>
-    <a href="https://docs.google.com/spreadsheets/d/1bjfm2SdUCYWlzmsvrDgISA4PXeBKdQMbx1SnQEPx3xc" target="_blank">シートを開く →</a>
+  <div class="btns">
+    <button class="btn btn-in"  id="btn-in-島尻望鈴"  onclick="stamp('島尻望鈴','出勤')">出勤</button>
+    <button class="btn btn-out" id="btn-out-島尻望鈴" onclick="stamp('島尻望鈴','退勤')" disabled>退勤</button>
   </div>
 </div>
 
-<!-- ─── ローディング ─── -->
-<div class="loading-overlay hidden" id="loading">
-  <div class="spinner"></div>
+<div class="card" id="card-田崎ゆめ乃" style="margin-top:8px;">
+  <div class="avatar" id="av-田崎ゆめ乃">田崎</div>
+  <div class="info">
+    <div class="name">田崎ゆめ乃</div>
+    <div class="times" id="times-田崎ゆめ乃">未打刻</div>
+  </div>
+  <div class="btns">
+    <button class="btn btn-in"  id="btn-in-田崎ゆめ乃"  onclick="stamp('田崎ゆめ乃','出勤')">出勤</button>
+    <button class="btn btn-out" id="btn-out-田崎ゆめ乃" onclick="stamp('田崎ゆめ乃','退勤')" disabled>退勤</button>
+  </div>
 </div>
 
-<!-- ─── トースト ─── -->
+<div class="card" id="card-末次友理" style="margin-top:8px;">
+  <div class="avatar" id="av-末次友理">末次</div>
+  <div class="info">
+    <div class="name">末次友理</div>
+    <div class="times" id="times-末次友理">未打刻</div>
+  </div>
+  <div class="btns">
+    <button class="btn btn-in"  id="btn-in-末次友理"  onclick="stamp('末次友理','出勤')">出勤</button>
+    <button class="btn btn-out" id="btn-out-末次友理" onclick="stamp('末次友理','退勤')" disabled>退勤</button>
+  </div>
+</div>
+
+<div class="card" id="card-當山和乃" style="margin-top:8px;">
+  <div class="avatar" id="av-當山和乃">當山</div>
+  <div class="info">
+    <div class="name">當山和乃</div>
+    <div class="times" id="times-當山和乃">未打刻</div>
+  </div>
+  <div class="btns">
+    <button class="btn btn-in"  id="btn-in-當山和乃"  onclick="stamp('當山和乃','出勤')">出勤</button>
+    <button class="btn btn-out" id="btn-out-當山和乃" onclick="stamp('當山和乃','退勤')" disabled>退勤</button>
+  </div>
+</div>
+
+<div class="card" id="card-又吉夏奈" style="margin-top:8px;">
+  <div class="avatar" id="av-又吉夏奈">又吉</div>
+  <div class="info">
+    <div class="name">又吉夏奈</div>
+    <div class="times" id="times-又吉夏奈">未打刻</div>
+  </div>
+  <div class="btns">
+    <button class="btn btn-in"  id="btn-in-又吉夏奈"  onclick="stamp('又吉夏奈','出勤')">出勤</button>
+    <button class="btn btn-out" id="btn-out-又吉夏奈" onclick="stamp('又吉夏奈','退勤')" disabled>退勤</button>
+  </div>
+</div>
+
+<div class="card" id="card-遠本優花" style="margin-top:8px;">
+  <div class="avatar" id="av-遠本優花">遠本</div>
+  <div class="info">
+    <div class="name">遠本優花</div>
+    <div class="times" id="times-遠本優花">未打刻</div>
+  </div>
+  <div class="btns">
+    <button class="btn btn-in"  id="btn-in-遠本優花"  onclick="stamp('遠本優花','出勤')">出勤</button>
+    <button class="btn btn-out" id="btn-out-遠本優花" onclick="stamp('遠本優花','退勤')" disabled>退勤</button>
+  </div>
+</div>
+
+<div class="loading hidden" id="loading"><div class="spinner"></div></div>
 <div id="toast"></div>
 
 <script>
-// ────────────────────────────────────────────────────────────
-// 設定
-// ────────────────────────────────────────────────────────────
+// ★ GASデプロイURLをここに貼る
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzNJdYQolzEMqPZJaAPGnW9bQGsuLygD0b1IUebdTWAQe6HeiyzUTcxWjnV246HukS2bg/exec";
 
-// ★ ここにGASデプロイURLを貼る
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwCnzRSp06RAF-bJf8v9s8PM7WvpjWbjSVA5-auUFEfo2Jh-N89Wazwt9uYDT-HHtnElA/exec";
-
-// ★ パスワード（変更可）
-const PASSWORD = "Ravi0305ni";
-
-const STAFF = [
-  { name: "島尻望鈴",  initials: "島尻" },
-  { name: "田崎ゆめ乃", initials: "田崎" },
-  { name: "末次友理",  initials: "末次" },
-  { name: "當山和乃",  initials: "當山" },
-  { name: "又吉夏奈",  initials: "又吉" },
-  { name: "遠本優花",  initials: "遠本" },
-];
-
-// ローカル状態（ページリロードで初期化 — 実際の状態はGASから取得）
-let staffState = {};  // { "島尻望鈴": { status: "出勤中"|"", clockIn: "9:24", clockOut: "" } }
-
-// ────────────────────────────────────────────────────────────
-// パスワード
-// ────────────────────────────────────────────────────────────
-function checkPassword() {
-  const val = document.getElementById("pw-input").value;
-  if (val === PASSWORD) {
-    localStorage.setItem("ravina_auth", btoa(PASSWORD + "_" + new Date().toDateString()));
-    unlockApp();
-  } else {
-    document.getElementById("pw-error").textContent = "パスワードが正しくありません";
-    document.getElementById("pw-input").value = "";
-    document.getElementById("pw-input").focus();
-  }
-}
-
-document.getElementById("pw-input").addEventListener("keydown", e => {
-  if (e.key === "Enter") checkPassword();
-  document.getElementById("pw-error").textContent = "";
+// 各スタッフの状態
+const state = {};
+["島尻望鈴","田崎ゆめ乃","末次友理","當山和乃","又吉夏奈","遠本優花"].forEach(n => {
+  state[n] = { clockIn: "", clockOut: "" };
 });
 
-function checkAutoLogin() {
-  const stored = localStorage.getItem("ravina_auth");
-  if (!stored) return;
-  try {
-    const decoded = atob(stored);
-    const today = new Date().toDateString();
-    if (decoded === PASSWORD + "_" + today) {
-      unlockApp();
-    } else {
-      localStorage.removeItem("ravina_auth");
-    }
-  } catch(e) {
-    localStorage.removeItem("ravina_auth");
-  }
-}
-
-function unlockApp() {
-  document.getElementById("lock-screen").classList.add("hidden");
-  document.getElementById("app").classList.remove("hidden");
-  initApp();
-}
-
-// ────────────────────────────────────────────────────────────
-// アプリ初期化
-// ────────────────────────────────────────────────────────────
-function initApp() {
-  updateClock();
-  setInterval(updateClock, 1000);
-  STAFF.forEach(s => {
-    staffState[s.name] = { status: "", clockIn: "", clockOut: "" };
-  });
-  renderStaffList();
-  loadTodayStatus();
-}
-
+// 時計
 function updateClock() {
   const now = new Date();
-  const opts = { year: "numeric", month: "long", day: "numeric", weekday: "short",
-                 hour: "2-digit", minute: "2-digit", second: "2-digit" };
-  document.getElementById("current-datetime").textContent =
-    now.toLocaleString("ja-JP", opts);
+  document.getElementById("clock").textContent =
+    now.toLocaleString("ja-JP", { year:"numeric", month:"long", day:"numeric",
+      weekday:"short", hour:"2-digit", minute:"2-digit", second:"2-digit" });
 }
+setInterval(updateClock, 1000);
+updateClock();
 
-// ────────────────────────────────────────────────────────────
-// スタッフリスト描画
-// ────────────────────────────────────────────────────────────
-function renderStaffList() {
-  const list = document.getElementById("staff-list");
-  list.innerHTML = "";
-  STAFF.forEach(s => {
-    const state = staffState[s.name];
-    const isWorking = state.status === "出勤中";
-    const card = document.createElement("div");
-    card.className = "staff-card";
-    card.id = "card-" + s.name;
+// 画面更新
+function updateCard(name) {
+  const s  = state[name];
+  const av = document.getElementById("av-" + name);
+  const tm = document.getElementById("times-" + name);
+  const bi = document.getElementById("btn-in-"  + name);
+  const bo = document.getElementById("btn-out-" + name);
 
-    let timeText = "";
-    if (state.clockIn)  timeText += `出勤 <span>${state.clockIn}</span>`;
-    if (state.clockOut) timeText += `　退勤 <span>${state.clockOut}</span>`;
-    if (!timeText && !isWorking) timeText = "未打刻";
+  let timeTxt = "";
+  if (s.clockIn)  timeTxt += `<span class="ci">出勤 ${s.clockIn}</span>`;
+  if (s.clockOut) timeTxt += ` <span class="co">退勤 ${s.clockOut}</span>`;
+  tm.innerHTML = timeTxt || "未打刻";
 
-    let btnHTML = "";
-    if (!state.clockIn) {
-      btnHTML = `<button class="stamp-btn clock-in" onclick="stamp('${s.name}','出勤')">出勤</button>`;
-    } else if (!state.clockOut) {
-      btnHTML = `<button class="stamp-btn clock-out" onclick="stamp('${s.name}','退勤')">退勤</button>`;
-    } else {
-      btnHTML = `<button class="stamp-btn" disabled>完了</button>`;
-    }
-
-    card.innerHTML = `
-      <div class="staff-avatar ${isWorking ? 'working' : ''}">${s.initials}</div>
-      <div class="staff-info">
-        <div class="staff-name">${s.name}</div>
-        <div class="staff-time">${timeText}</div>
-      </div>
-      <span class="staff-badge ${isWorking ? 'badge-working' : 'badge-off'}">${isWorking ? '出勤中' : (state.clockOut ? '退勤済' : '未出勤')}</span>
-      ${btnHTML}
-    `;
-    list.appendChild(card);
-  });
-}
-
-// ────────────────────────────────────────────────────────────
-// JSONP通信ヘルパー（CORS回避）
-// ────────────────────────────────────────────────────────────
-function callGAS(params) {
-  return new Promise((resolve, reject) => {
-    const cbName = "gasCallback_" + Date.now();
-    const timeout = setTimeout(() => {
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-      reject(new Error("timeout"));
-    }, 15000);
-
-    window[cbName] = function(data) {
-      clearTimeout(timeout);
-      delete window[cbName];
-      if (script.parentNode) script.parentNode.removeChild(script);
-      resolve(data);
-    };
-
-    const qs = new URLSearchParams({ ...params, callback: cbName });
-    const script = document.createElement("script");
-    script.src = GAS_URL + "?" + qs.toString();
-    script.onerror = () => {
-      clearTimeout(timeout);
-      delete window[cbName];
-      reject(new Error("script load error"));
-    };
-    document.head.appendChild(script);
-  });
-}
-
-// ────────────────────────────────────────────────────────────
-// 打刻送信
-// ────────────────────────────────────────────────────────────
-async function stamp(name, type) {
-  showLoading(true);
-  const now = new Date();
-  const timeStr = now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
-
-  try {
-    const json = await callGAS({ action: "stamp", name, type, time: timeStr });
-
-    if (json.status === "ok") {
-      if (type === "出勤") {
-        staffState[name].clockIn = timeStr;
-        staffState[name].status = "出勤中";
-      } else {
-        staffState[name].clockOut = timeStr;
-        staffState[name].status = "退勤済";
-      }
-      renderStaffList();
-      showToast(`${name} — ${type} ${timeStr}`, "success");
-    } else {
-      showToast("エラー: " + (json.message || "不明"), "error");
-    }
-  } catch(e) {
-    showToast("通信エラー。再度お試しください", "error");
-  } finally {
-    showLoading(false);
+  if (!s.clockIn) {
+    av.className = "avatar";
+    bi.disabled = false;
+    bo.disabled = true;
+  } else if (!s.clockOut) {
+    av.className = "avatar in";
+    bi.disabled = true;
+    bo.disabled = false;
+  } else {
+    av.className = "avatar out";
+    bi.disabled = true;
+    bo.disabled = true;
   }
 }
 
-// ────────────────────────────────────────────────────────────
-// 今日の状態をGASから取得
-// ────────────────────────────────────────────────────────────
-async function loadTodayStatus() {
+// 打刻送信
+async function stamp(name, type) {
+  document.getElementById("loading").classList.remove("hidden");
+  const now = new Date();
+  const t   = now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
+
   try {
-    const json = await callGAS({ action: "getToday" });
-    if (json.status === "ok" && json.data) {
-      json.data.forEach(row => {
-        if (staffState[row.name] !== undefined) {
-          staffState[row.name].clockIn  = row.clockIn  || "";
-          staffState[row.name].clockOut = row.clockOut || "";
-          staffState[row.name].status   = row.clockIn && !row.clockOut ? "出勤中" : (row.clockOut ? "退勤済" : "");
-        }
-      });
-      renderStaffList();
+    const res = await callGAS({ action:"stamp", name, type, time:t });
+    if (res.status === "ok") {
+      if (type === "出勤") state[name].clockIn  = t;
+      else                  state[name].clockOut = t;
+      updateCard(name);
+      toast(name + " — " + type + " " + t, "ok");
+    } else {
+      toast("エラー: " + (res.message || "不明"), "err");
     }
-  } catch(e) { /* サイレント失敗 */ }
+  } catch(e) {
+    toast("通信エラー。再度お試しください", "err");
+  }
+  document.getElementById("loading").classList.add("hidden");
 }
 
-// ────────────────────────────────────────────────────────────
-// UI ヘルパー
-// ────────────────────────────────────────────────────────────
-function showLoading(on) {
-  document.getElementById("loading").classList.toggle("hidden", !on);
+// JSONP通信
+function callGAS(params) {
+  return new Promise((resolve, reject) => {
+    const cb  = "cb_" + Date.now();
+    const scr = document.createElement("script");
+    const tmr = setTimeout(() => {
+      cleanup(); reject(new Error("timeout"));
+    }, 15000);
+    const cleanup = () => {
+      delete window[cb];
+      if (scr.parentNode) scr.parentNode.removeChild(scr);
+      clearTimeout(tmr);
+    };
+    window[cb] = data => { cleanup(); resolve(data); };
+    scr.onerror = () => { cleanup(); reject(new Error("load error")); };
+    scr.src = GAS_URL + "?" + new URLSearchParams({ ...params, callback: cb });
+    document.head.appendChild(scr);
+  });
 }
 
-function showToast(msg, type = "") {
+// トースト
+function toast(msg, type) {
   const el = document.getElementById("toast");
   el.textContent = msg;
   el.className = "show " + type;
-  clearTimeout(el._timer);
-  el._timer = setTimeout(() => { el.className = ""; }, 3000);
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ""; }, 3500);
 }
 
-// ────────────────────────────────────────────────────────────
-// 起動
-// ────────────────────────────────────────────────────────────
-checkAutoLogin();
+// 起動時に今日の状態を取得
+(async () => {
+  try {
+    const res = await callGAS({ action:"getToday" });
+    if (res.status === "ok" && res.data) {
+      res.data.forEach(row => {
+        if (!state[row.name]) return;
+        if (/^\d{1,2}:\d{2}$/.test(row.clockIn  || "")) state[row.name].clockIn  = row.clockIn;
+        if (/^\d{1,2}:\d{2}$/.test(row.clockOut || "")) state[row.name].clockOut = row.clockOut;
+        updateCard(row.name);
+      });
+    }
+  } catch(e) { /* サイレント失敗 */ }
+})();
 </script>
 </body>
 </html>

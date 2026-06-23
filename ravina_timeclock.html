@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RAVINA 打刻システム</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+    background: #0d0d0d;
+    color: #f0ede8;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── パスワード画面 ── */
+  #lock-screen {
+    position: fixed;
+    inset: 0;
+    background: #0d0d0d;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    gap: 2rem;
+    padding: 2rem;
+  }
+  #lock-screen.hidden { display: none; }
+
+  .lock-logo {
+    font-size: 13px;
+    letter-spacing: 0.35em;
+    color: #b8a48a;
+    text-transform: uppercase;
+  }
+  .lock-title {
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: #f0ede8;
+  }
+  .lock-sub {
+    font-size: 12px;
+    color: #888;
+    letter-spacing: 0.05em;
+    margin-top: -1.2rem;
+  }
+
+  .pw-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .pw-wrap input {
+    background: #1a1a1a;
+    border: 0.5px solid #444;
+    border-radius: 8px;
+    color: #f0ede8;
+    font-size: 16px;
+    padding: 14px 16px;
+    outline: none;
+    letter-spacing: 0.1em;
+    width: 100%;
+    text-align: center;
+  }
+  .pw-wrap input::placeholder { color: #555; letter-spacing: 0.05em; }
+  .pw-wrap input:focus { border-color: #b8a48a; }
+
+  .btn-unlock {
+    background: #b8a48a;
+    border: none;
+    border-radius: 8px;
+    color: #0d0d0d;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    padding: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .btn-unlock:hover { opacity: 0.85; }
+  .pw-error {
+    font-size: 12px;
+    color: #e06060;
+    text-align: center;
+    min-height: 16px;
+  }
+
+  /* ── メイン画面 ── */
+  #app { width: 100%; max-width: 480px; padding: 0 0 3rem; }
+  #app.hidden { display: none; }
+
+  .app-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2.5rem 1.5rem 1.5rem;
+    gap: 4px;
+    border-bottom: 0.5px solid #2a2a2a;
+  }
+  .app-logo {
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    color: #b8a48a;
+    text-transform: uppercase;
+  }
+  .app-title {
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    color: #f0ede8;
+  }
+  .app-date {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── スタッフカード ── */
+  .staff-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: #1a1a1a;
+    border-top: 0.5px solid #2a2a2a;
+  }
+
+  .staff-card {
+    background: #0d0d0d;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .staff-card:active { background: #151515; }
+
+  .staff-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #1e1e1e;
+    border: 0.5px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #b8a48a;
+    flex-shrink: 0;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+  }
+  .staff-avatar.working {
+    border-color: #4a9e6a;
+    background: #0f2a1a;
+    color: #5aba7e;
+  }
+
+  .staff-info { flex: 1; min-width: 0; }
+  .staff-name {
+    font-size: 15px;
+    font-weight: 400;
+    color: #f0ede8;
+    letter-spacing: 0.03em;
+  }
+  .staff-time {
+    font-size: 12px;
+    color: #666;
+    margin-top: 3px;
+    letter-spacing: 0.03em;
+  }
+  .staff-time span { color: #888; }
+
+  .staff-badge {
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 400;
+    flex-shrink: 0;
+  }
+  .badge-working {
+    background: #0f2a1a;
+    color: #5aba7e;
+    border: 0.5px solid #2a6a42;
+  }
+  .badge-off {
+    background: #1a1a1a;
+    color: #666;
+    border: 0.5px solid #333;
+  }
+
+  .stamp-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 0.5px solid #444;
+    background: transparent;
+    color: #f0ede8;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .stamp-btn.clock-in {
+    border-color: #4a9e6a;
+    color: #5aba7e;
+  }
+  .stamp-btn.clock-in:hover { background: #0f2a1a; }
+  .stamp-btn.clock-out {
+    border-color: #9e6a4a;
+    color: #ba7e5a;
+  }
+  .stamp-btn.clock-out:hover { background: #2a1a0f; }
+  .stamp-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  /* ── トースト ── */
+  #toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e1e1e;
+    border: 0.5px solid #444;
+    border-radius: 10px;
+    color: #f0ede8;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    padding: 12px 20px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 200;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  #toast.success { border-color: #4a9e6a; color: #5aba7e; }
+  #toast.error { border-color: #9e4a4a; color: #ba5a5a; }
+
+  /* ── フッター ── */
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: #444;
+    margin-top: 2rem;
+    letter-spacing: 0.05em;
+    padding: 0 1.5rem;
+    line-height: 1.8;
+  }
+  .footer-note a {
+    color: #b8a48a;
+    text-decoration: none;
+  }
+
+  /* ── ローディング ── */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13,13,13,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  .loading-overlay.hidden { display: none; }
+  .spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #333;
+    border-top-color: #b8a48a;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .section-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: #555;
+    text-transform: uppercase;
+    padding: 1.25rem 1.25rem 0.6rem;
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── パスワード画面 ─── -->
+<div id="lock-screen">
+  <div class="lock-logo">RAVINA Staff</div>
+  <div style="text-align:center; display:flex; flex-direction:column; gap:8px;">
+    <div class="lock-title">打刻システム</div>
+    <div class="lock-sub">スタッフ専用 — パスワードを入力してください</div>
+  </div>
+  <div class="pw-wrap">
+    <input type="password" id="pw-input" placeholder="パスワード" autocomplete="current-password">
+    <button class="btn-unlock" onclick="checkPassword()">ログイン</button>
+    <div class="pw-error" id="pw-error"></div>
+  </div>
+  <div style="font-size:11px; color:#444; letter-spacing:0.05em;">© RAVINA Okinawa</div>
+</div>
+
+<!-- ─── メイン打刻画面 ─── -->
+<div id="app" class="hidden">
+  <div class="app-header">
+    <div class="app-logo">RAVINA Staff</div>
+    <div class="app-title">打刻システム</div>
+    <div class="app-date" id="current-datetime"></div>
+  </div>
+
+  <div class="section-label">スタッフ</div>
+  <div class="staff-list" id="staff-list">
+    <!-- JS で生成 -->
+  </div>
+
+  <div class="footer-note">
+    ボタンを押すと打刻時刻がスプレッドシートに記録されます<br>
+    <a href="https://docs.google.com/spreadsheets/d/1HC8U8OVd_Id2LxvcWYdce1K_aOOfmp19CoA7Cq5E6i4/edit?gid=1091157565" target="_blank">シートを開く →</a>
+  </div>
+</div>
+
+<!-- ─── ローディング ─── -->
+<div class="loading-overlay hidden" id="loading">
+  <div class="spinner"></div>
+</div>
+
+<!-- ─── トースト ─── -->
+<div id="toast"></div>
+
+<script>
+// ────────────────────────────────────────────────────────────
+// 設定
+// ────────────────────────────────────────────────────────────
+
+// ★ ここにGASデプロイURLを貼る
+const GAS_URL = "https://ravinala-oka.github.io/ravina/Ring_Price_Staff.html";
+
+// ★ パスワード（変更可）
+const PASSWORD = "260305";
+
+const STAFF = [
+  { name: "島尻望鈴",  initials: "島尻" },
+  { name: "田崎ゆめ乃", initials: "田崎" },
+  { name: "末次友理",  initials: "末次" },
+  { name: "當山和乃",  initials: "當山" },
+  { name: "又吉夏奈",  initials: "又吉" },
+  { name: "遠本優花",  initials: "遠本" },
+];
+
+// ローカル状態（ページリロードで初期化 — 実際の状態はGASから取得）
+let staffState = {};  // { "島尻望鈴": { status: "出勤中"|"", clockIn: "9:24", clockOut: "" } }
+
+// ────────────────────────────────────────────────────────────
+// パスワード
+// ────────────────────────────────────────────────────────────
+function checkPassword() {
+  const val = document.getElementById("pw-input").value;
+  if (val === PASSWORD) {
+    localStorage.setItem("ravina_auth", btoa(PASSWORD + "_" + new Date().toDateString()));
+    unlockApp();
+  } else {
+    document.getElementById("pw-error").textContent = "パスワードが正しくありません";
+    document.getElementById("pw-input").value = "";
+    document.getElementById("pw-input").focus();
+  }
+}
+
+document.getElementById("pw-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") checkPassword();
+  document.getElementById("pw-error").textContent = "";
+});
+
+function checkAutoLogin() {
+  const stored = localStorage.getItem("ravina_auth");
+  if (!stored) return;
+  try {
+    const decoded = atob(stored);
+    const today = new Date().toDateString();
+    if (decoded === PASSWORD + "_" + today) {
+      unlockApp();
+    } else {
+      localStorage.removeItem("ravina_auth");
+    }
+  } catch(e) {
+    localStorage.removeItem("ravina_auth");
+  }
+}
+
+function unlockApp() {
+  document.getElementById("lock-screen").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  initApp();
+}
+
+// ────────────────────────────────────────────────────────────
+// アプリ初期化
+// ────────────────────────────────────────────────────────────
+function initApp() {
+  updateClock();
+  setInterval(updateClock, 1000);
+  STAFF.forEach(s => {
+    staffState[s.name] = { status: "", clockIn: "", clockOut: "" };
+  });
+  renderStaffList();
+  loadTodayStatus();
+}
+
+function updateClock() {
+  const now = new Date();
+  const opts = { year: "numeric", month: "long", day: "numeric", weekday: "short",
+                 hour: "2-digit", minute: "2-digit", second: "2-digit" };
+  document.getElementById("current-datetime").textContent =
+    now.toLocaleString("ja-JP", opts);
+}
+
+// ────────────────────────────────────────────────────────────
+// スタッフリスト描画
+// ────────────────────────────────────────────────────────────
+function renderStaffList() {
+  const list = document.getElementById("staff-list");
+  list.innerHTML = "";
+  STAFF.forEach(s => {
+    const state = staffState[s.name];
+    const isWorking = state.status === "出勤中";
+    const card = document.createElement("div");
+    card.className = "staff-card";
+    card.id = "card-" + s.name;
+
+    let timeText = "";
+    if (state.clockIn)  timeText += `出勤 <span>${state.clockIn}</span>`;
+    if (state.clockOut) timeText += `　退勤 <span>${state.clockOut}</span>`;
+    if (!timeText && !isWorking) timeText = "未打刻";
+
+    let btnHTML = "";
+    if (!state.clockIn) {
+      btnHTML = `<button class="stamp-btn clock-in" onclick="stamp('${s.name}','出勤')">出勤</button>`;
+    } else if (!state.clockOut) {
+      btnHTML = `<button class="stamp-btn clock-out" onclick="stamp('${s.name}','退勤')">退勤</button>`;
+    } else {
+      btnHTML = `<button class="stamp-btn" disabled>完了</button>`;
+    }
+
+    card.innerHTML = `
+      <div class="staff-avatar ${isWorking ? 'working' : ''}">${s.initials}</div>
+      <div class="staff-info">
+        <div class="staff-name">${s.name}</div>
+        <div class="staff-time">${timeText}</div>
+      </div>
+      <span class="staff-badge ${isWorking ? 'badge-working' : 'badge-off'}">${isWorking ? '出勤中' : (state.clockOut ? '退勤済' : '未出勤')}</span>
+      ${btnHTML}
+    `;
+    list.appendChild(card);
+  });
+}
+
+// ────────────────────────────────────────────────────────────
+// 打刻送信
+// ────────────────────────────────────────────────────────────
+async function stamp(name, type) {
+  showLoading(true);
+  const now = new Date();
+  const timeStr = now.getHours().toString().padStart(2,"0") + ":" + now.getMinutes().toString().padStart(2,"0");
+
+  try {
+    const params = new URLSearchParams({ action: "stamp", name, type, time: timeStr });
+    const res = await fetch(GAS_URL + "?" + params.toString());
+    const json = await res.json();
+
+    if (json.status === "ok") {
+      if (type === "出勤") {
+        staffState[name].clockIn = timeStr;
+        staffState[name].status = "出勤中";
+      } else {
+        staffState[name].clockOut = timeStr;
+        staffState[name].status = "退勤済";
+      }
+      renderStaffList();
+      showToast(`${name} — ${type} ${timeStr}`, "success");
+    } else {
+      showToast("エラー: " + (json.message || "不明"), "error");
+    }
+  } catch(e) {
+    // GAS URLが未設定の場合はローカルで動作確認できるようにする
+    if (GAS_URL === "YOUR_GAS_WEBAPP_URL_HERE") {
+      if (type === "出勤") {
+        staffState[name].clockIn = timeStr;
+        staffState[name].status = "出勤中";
+      } else {
+        staffState[name].clockOut = timeStr;
+        staffState[name].status = "退勤済";
+      }
+      renderStaffList();
+      showToast(`[テスト] ${name} — ${type} ${timeStr}`, "success");
+    } else {
+      showToast("通信エラー。再度お試しください", "error");
+    }
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ────────────────────────────────────────────────────────────
+// 今日の状態をGASから取得
+// ────────────────────────────────────────────────────────────
+async function loadTodayStatus() {
+  if (GAS_URL === "YOUR_GAS_WEBAPP_URL_HERE") return;
+  try {
+    const res = await fetch(GAS_URL + "?action=getToday");
+    const json = await res.json();
+    if (json.status === "ok" && json.data) {
+      json.data.forEach(row => {
+        if (staffState[row.name] !== undefined) {
+          staffState[row.name].clockIn  = row.clockIn  || "";
+          staffState[row.name].clockOut = row.clockOut || "";
+          staffState[row.name].status   = row.clockIn && !row.clockOut ? "出勤中" : (row.clockOut ? "退勤済" : "");
+        }
+      });
+      renderStaffList();
+    }
+  } catch(e) { /* サイレント失敗 */ }
+}
+
+// ────────────────────────────────────────────────────────────
+// UI ヘルパー
+// ────────────────────────────────────────────────────────────
+function showLoading(on) {
+  document.getElementById("loading").classList.toggle("hidden", !on);
+}
+
+function showToast(msg, type = "") {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "show " + type;
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => { el.className = ""; }, 3000);
+}
+
+// ────────────────────────────────────────────────────────────
+// 起動
+// ────────────────────────────────────────────────────────────
+checkAutoLogin();
+</script>
+</body>
+</html>

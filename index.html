@@ -170,8 +170,6 @@
       background: transparent;
     }
 
-    .hero-overlay { display: none; }
-
     .hero-content {
       position: relative;
       z-index: 10;
@@ -213,20 +211,6 @@
       margin-bottom: 12px;
       word-break: keep-all;
       overflow-wrap: anywhere;
-    }
-
-    .hero-reservation {
-      font-size: 13px;
-      letter-spacing: 0.06em;
-      color: rgba(245,240,234,0.85);
-      margin-bottom: 40px;
-    }
-
-    .hero-reservation a {
-      color: #fff;
-      font-weight: 500;
-      text-decoration: underline;
-      text-underline-offset: 3px;
     }
 
     .hero-buttons {
@@ -399,9 +383,6 @@
       border-radius: 2px;
       display: block;
     }
-
-    /* 右カラム：テキスト */
-    .company-info {}
 
     /* 見出し：元デザインの .about-heading スタイルを踏襲 */
     .company-title {
@@ -1006,7 +987,7 @@
   <ul class="nav-links">
     <li><a href="#" class="active">Home</a></li>
     <li><a href="#price">Price</a></li>
-    <li><a href="#company">Shop</a></li>
+    <li><a href="#company" onclick="switchTab('shop')">Shop</a></li>
     <li><a href="#access">Access</a></li>
   </ul>
   <div class="lang-toggle">
@@ -1018,7 +999,6 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-overlay"></div>
   <div class="hero-content">
     <h1 class="hero-title">RAVINA</h1>
     <p class="hero-subtitle">jewelry workshop studio</p>
@@ -1221,14 +1201,9 @@
             <td data-en="Accessories &amp; jewelry sales · experience services" data-ja="アクセサリー＆ジュエリー販売・体験サービス">Accessories &amp; jewelry sales · experience services</td>
           </tr>
           <tr>
-            <th data-en="Postal Code" data-ja="郵便番号">Postal Code</th>
-            <td class="col-sep">:</td>
-            <td>〒904-0115</td>
-          </tr>
-          <tr>
             <th data-en="Address" data-ja="住所">Address</th>
             <td class="col-sep">:</td>
-            <td data-en="9-46 Mihama, Chatan-cho, Nakagami-gun, Okinawa, Distortion Seaside Bldg. 3F" data-ja="沖縄県中頭郡北谷町美浜９−４６ ディストーションシーサイドビル ３F">9-46 Mihama, Chatan-cho, Nakagami-gun, Okinawa, Distortion Seaside Bldg. 3F</td>
+            <td data-en="〒904-0115 9-46 Mihama, Chatan-cho,<br>Nakagami-gun, Okinawa,<br>Distortion Seaside Bldg. 3F" data-ja="〒904-0115 沖縄県中頭郡北谷町美浜９−４６<br>ディストーションシーサイドビル ３F">〒904-0115 9-46 Mihama, Chatan-cho,<br>Nakagami-gun, Okinawa,<br>Distortion Seaside Bldg. 3F</td>
           </tr>
           <tr>
             <th data-en="Reservations" data-ja="お客様予約">Reservations</th>
@@ -1321,7 +1296,7 @@
     <ul class="footer-links">
       <li><a href="#">Home</a></li>
       <li><a href="#price">Price</a></li>
-      <li><a href="#company">Shop</a></li>
+      <li><a href="#company" onclick="switchTab('shop')">Shop</a></li>
       <li><a href="#access">Access</a></li>
     </ul>
   </div>
@@ -1905,7 +1880,8 @@ function switchTab(tab) {
 </script>
 
 <script>
-// ── 背景動画：ランダム順再生（PC・スマホ対応）──
+// ── 予約送信 ──
+function rsSubmit() {
   const ds = rs.year+'年'+(rs.month+1)+'月'+rs.day+'日('+RS_DAYS[rs.dow]+') '+rs.time+'〜';
   document.getElementById('rs-main').innerHTML = `
     <div style="text-align:center;padding:2.5rem 1rem;color:#5a5a52;font-size:13px;font-family:'Noto Serif JP',serif;">

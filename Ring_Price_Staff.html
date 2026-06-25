@@ -415,14 +415,17 @@ html, body {
 
 <script>
 // ============================================================
-// Google スプレッドシート連携
+// Google スプレッドシート連携 — Price_Num シートのみ使用
 // ============================================================
-const SHEET_ID   = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
-const MAIN_SHEET = "Ring_Price";
-const PNUM_SHEET = "Price_Num";
-const SHEET_GIDS = { "Ring_Price": "0", "Price_Num": "1469569588" };
+const SHEET_ID = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
+const PNUM_GID = "1469569588";
 
-const MAT_MAP = { "silver925":"silver","10K":"10K","18K":"18K","pt900":"pt" };
+const MAT_MAP = {
+  "silver925":"silver","silver":"silver",
+  "10k":"10K","10K":"10K",
+  "18k":"18K","18K":"18K",
+  "pt900":"pt","pt":"pt","platinum":"pt"
+};
 
 let productNumMap = {
   "silver":{
@@ -717,12 +720,15 @@ function calc(){
 }
 
 // ─── CSV / スプレッドシート ───
-async function loadCSV(sheetName){
-  const gid = SHEET_GIDS[sheetName]??"0";
+async function loadCSV(gid){
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
+  console.log("[RAVINA] fetch:", url);
   const res = await fetch(url);
+  console.log("[RAVINA] status:", res.status);
   if(!res.ok) throw new Error(`HTTP ${res.status}`);
-  return parseCSV(await res.text());
+  const text = await res.text();
+  console.log("[RAVINA] CSV先頭300字:", text.slice(0,300));
+  return parseCSV(text);
 }
 function parseCSV(text){
   const rows=[]; let cur="",inQ=false,row=[];
@@ -742,64 +748,77 @@ function normalizeMat(rawMat){
   if(Object.values(MAT_MAP).includes(s))return s;
   return s;
 }
-function parseMainSheet(rows){
-  const np={};
-  if(!rows||rows.length<2)return{newPrices:np};
-  const hdr=rows[0].map(h=>String(h).trim().toLowerCase());
-  const idxMat=hdr.indexOf("material"), idxSize=hdr.indexOf("size"), idxList=hdr.indexOf("list");
-  const WDEF=[{n:"1",k:"1"},{n:"1.5",k:"1.5"},{n:"2",k:"2"},{n:"2.5",k:"2.5"},{n:"3",k:"3"},{n:"4x2",k:"4x2"},{n:"5x2",k:"5x2"}];
-  const WC=WDEF.map(d=>({idx:hdr.indexOf(d.n.toLowerCase()),key:d.k})).filter(d=>d.idx>=0);
-  if(idxMat<0||idxSize<0)return{newPrices:np};
-  for(let i=1;i<rows.length;i++){
-    const v=rows[i]; if(!v||!v.length)continue;
-    if(idxList>=0){const lt=String(v[idxList]||"").trim();if(lt&&lt!=="Ring")continue;}
-    const mat=normalizeMat(String(v[idxMat]||"").trim());
-    if(!Object.values(MAT_MAP).includes(mat))continue;
-    const size=String(v[idxSize]||"").trim().replace(/^size_/,"").replace(/号$/,"").trim();
-    if(!size)continue;
-    if(!np[mat])np[mat]={};
-    WC.forEach(({idx,key})=>{ const p=toNum(v[idx]); if(p){if(!np[mat][key])np[mat][key]={};np[mat][key][size]=p;} });
-  }
-  return{newPrices:np};
-}
 function parsePriceNumSheet(rows){
-  if(!rows||rows.length<2)return null;
-  const hdr=rows[0].map(h=>String(h).trim());
-  const hdrl=hdr.map(h=>h.toLowerCase());
-  const im=hdrl.indexOf("material"),is=hdrl.indexOf("size"),iw=hdrl.indexOf("width"),il=hdrl.indexOf("list");
-  const ipn=hdr.indexOf("商品番号");
-  if(im<0||is<0||iw<0||ipn<0)return null;
-  const toWKey=r=>{ const s=String(r).trim().replace(/×/g,"x"); if(s==="4x2"||s==="5x2")return s; const n=parseFloat(s); return isNaN(n)?null:String(n); };
-  const map={};
-  for(let i=1;i<rows.length;i++){
-    const v=rows[i]; if(!v||!v.length)continue;
-    if(il>=0){const lt=String(v[il]||"").trim();if(lt&&lt!=="Ring")continue;}
-    const mt=normalizeMat(String(v[im]||"").trim());
-    const sz=String(v[is]||"").trim().replace(/^size_/,"").replace(/号$/,"").trim();
-    const wk=toWKey(String(v[iw]||"").replace(/×/g,"x"));
-    const pn=v[ipn];
-    if(!mt||!sz||!wk||pn===null||pn===undefined||pn==="")continue;
-    if(!Object.values(MAT_MAP).includes(mt))continue;
-    if(!map[mt])map[mt]={};
-    if(!map[mt][sz])map[mt][sz]={};
-    map[mt][sz][wk]=pn;
+  if(!rows||rows.length<2){ console.log("[RAVINA] rows空"); return null; }
+  const hdr  = rows[0].map(h=>String(h).trim());
+  const hdrl = hdr.map(h=>h.toLowerCase());
+  console.log("[RAVINA] ヘッダー:", hdr);
+
+  const im  = hdrl.indexOf("material");
+  const is_ = hdrl.indexOf("size");
+  const iw  = hdrl.indexOf("width");
+  const il  = hdrl.indexOf("list");
+  const ipn = hdr.findIndex(h => h==="商品番号" || h.toLowerCase()==="no.");
+  const ipr = hdr.findIndex(h => /^(price|金額|料金)$/i.test(h));
+  console.log("[RAVINA] 列インデックス material="+im+" size="+is_+" width="+iw+" list="+il+" 商品番号="+ipn+" price="+ipr);
+
+  if(im<0||is_<0||iw<0){ console.log("[RAVINA] 必須列なし→終了"); return null; }
+
+  const toWKey = r => {
+    const s = String(r).trim().replace(/×/g,"x").replace(/mm$/i,"");
+    if(s==="4x2"||s==="5x2") return s;
+    const n = parseFloat(s);
+    return isNaN(n) ? null : String(n);
+  };
+  const toSzKey = r => String(r).trim().replace(/^size_/i,"").replace(/号$/,"").trim();
+
+  const pnumMap={}, newPrices={};
+  let priceCount=0;
+
+  for(let i=1; i<rows.length; i++){
+    const v = rows[i];
+    if(!v||!v.length) continue;
+    if(il>=0){ const lt=String(v[il]||"").trim(); if(lt && lt.toLowerCase()!=="ring") continue; }
+
+    const mt = normalizeMat(String(v[im]||"").trim());
+    if(!Object.values(MAT_MAP).includes(mt)) continue;
+
+    const sz = toSzKey(v[is_]);
+    const wk = toWKey(String(v[iw]||"").replace(/×/g,"x"));
+    if(!sz||!wk) continue;
+
+    if(ipn>=0 && v[ipn]!=null && v[ipn]!==""){
+      if(!pnumMap[mt])     pnumMap[mt]={};
+      if(!pnumMap[mt][sz]) pnumMap[mt][sz]={};
+      pnumMap[mt][sz][wk] = v[ipn];
+    }
+    if(ipr>=0 && v[ipr]!=null && v[ipr]!==""){
+      const p = toNum(v[ipr]);
+      if(p>0){
+        if(!newPrices[mt])     newPrices[mt]={};
+        if(!newPrices[mt][wk]) newPrices[mt][wk]={};
+        newPrices[mt][wk][sz] = p;
+        priceCount++;
+      }
+    }
   }
-  return map;
+  console.log("[RAVINA] 価格件数:", priceCount, "silver/1/9-16:", newPrices?.silver?.["1"]?.["9-16"]);
+  return { pnumMap, newPrices };
 }
+
 async function initPrices(){
   document.getElementById("price-loading").style.display="block";
   try{
-    const mainRows=await loadCSV(MAIN_SHEET);
-    const{newPrices}=parseMainSheet(mainRows);
-    if(Object.keys(newPrices).length>0)prices=newPrices;
-    try{
-      const pnumRows=await loadCSV(PNUM_SHEET);
-      const npm=parsePriceNumSheet(pnumRows);
-      if(npm&&Object.keys(npm).length>0)productNumMap=npm;
-    }catch(e){}
+    const rows   = await loadCSV(PNUM_GID);
+    const result = parsePriceNumSheet(rows);
+    if(result){
+      if(Object.keys(result.newPrices).length>0){ prices=result.newPrices; console.log("[RAVINA] prices更新OK"); }
+      if(Object.keys(result.pnumMap).length>0)   productNumMap=result.pnumMap;
+    }
     document.getElementById("price-loading").style.display="none";
     showStatus("ok");
   }catch(e){
+    console.error("[RAVINA] initPricesエラー:", e);
     document.getElementById("price-loading").style.display="none";
     showStatus("error");
   }

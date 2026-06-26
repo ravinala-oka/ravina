@@ -490,13 +490,12 @@ let productNumMap = {
   }
 };
 
-// CSV取得（/gviz/tq = 認証不要・公開スプレ向け）
+// CSV取得（export形式）
 async function loadPriceNumCSV() {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${PNUM_GID}`;
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${PNUM_GID}`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`CSV取得失敗 HTTP ${res.status}`);
   const text = await res.text();
-  // HTMLが返ってきた場合 = スプレが非公開 or 共有設定が不足
   if (text.trim().startsWith("<!")) {
     throw new Error("スプレッドシートが非公開です。共有設定を「リンクを知っている全員が閲覧可能」にしてください。");
   }
@@ -543,11 +542,16 @@ function normalizeMat(rawMat) {
 }
 
 // サイズ文字列を正規化
+// スプレの値: "1-20号","20号~","1-8号","9-16号","17-24号","25-32号","33-40号"
 function normalizeSize(rawSize) {
-  let size = String(rawSize).trim().replace(/^size_/, "").replace(/号$/, "").trim();
-  if (/^20[号〜~]/.test(rawSize) || rawSize === "20~" || rawSize === "20号~") return "20+";
-  if (/^1[-~]20/.test(size)) return "1-20";
-  return size;
+  const s = String(rawSize).trim();
+  // 20号以上パターン
+  if (/^20[号〜~]/.test(s) || s === "20~" || s === "20号~" || s === "20+") return "20+";
+  // 「号」と「~」を除去して数値範囲だけ残す
+  const clean = s.replace(/号[〜~]?$/,"").replace(/[〜~]$/,"").replace(/号/g,"").trim();
+  // 1-20 パターン
+  if (/^1[-~]20/.test(clean) || clean === "1-20") return "1-20";
+  return clean;
 }
 
 // 幅文字列 → data-val キーに変換

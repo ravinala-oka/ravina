@@ -426,10 +426,10 @@ const SHEET_ID = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
 const PNUM_GID = "1469569588";
 
 const MAT_MAP = {
-  "silver925":"silver","silver":"silver","Silver":"silver",
-  "10k":"10K","10K":"10K","K10":"10K","k10":"10K","Gold K10":"10K","gold k10":"10K",
-  "18k":"18K","18K":"18K","K18":"18K","k18":"18K","Gold K18":"18K","gold k18":"18K",
-  "pt900":"pt","pt":"pt","Pt900":"pt","PT900":"pt","platinum":"pt","Platinum":"pt"
+  "silver925":"silver","silver":"silver","Silver":"silver","SV925":"silver","sv925":"silver",
+  "10k":"10K","10K":"10K","K10":"10K","k10":"10K","Gold K10":"10K","gold k10":"10K","gold10k":"10K","Gold10K":"10K",
+  "18k":"18K","18K":"18K","K18":"18K","k18":"18K","Gold K18":"18K","gold k18":"18K","gold18k":"18K","Gold18K":"18K",
+  "pt900":"pt","pt":"pt","Pt900":"pt","PT900":"pt","platinum":"pt","Platinum":"pt","Pt":"pt","PT":"pt","pt900":"pt","Pt900":"pt"
 };
 
 let productNameMap = {};
@@ -770,10 +770,23 @@ function parseCSV(text){
 }
 function toNum(v){ if(!v&&v!==0)return 0; return Number(String(v).replace(/[^0-9.-]/g,""))||0; }
 function normalizeMat(rawMat){
-  const s=String(rawMat).trim();
-  const lc=s.toLowerCase();
-  for(const[k,v] of Object.entries(MAT_MAP)){ if(k.toLowerCase()===lc)return v; }
-  if(Object.values(MAT_MAP).includes(s))return s;
+  const s = String(rawMat).trim();
+  if(!s) return s;
+  const lc = s.toLowerCase().replace(/\s+/g,"");
+
+  // 完全一致（大文字小文字・スペース無視）
+  for(const[k,v] of Object.entries(MAT_MAP)){
+    if(k.toLowerCase().replace(/\s+/g,"") === lc) return v;
+  }
+  // すでにMAP値と一致
+  if(Object.values(MAT_MAP).includes(s)) return s;
+
+  // 部分一致フォールバック
+  if(lc.includes("silver") || lc.includes("sv")) return "silver";
+  if(lc.includes("k10") || lc.includes("10k")) return "10K";
+  if(lc.includes("k18") || lc.includes("18k")) return "18K";
+  if(lc.includes("pt") || lc.includes("platinum")) return "pt";
+
   return s;
 }
 function parsePriceNumSheet(rows){
@@ -784,6 +797,11 @@ function parsePriceNumSheet(rows){
   // 2行目〜 = データ行
   const hdr = rows[0].map(h => String(h).trim());
   console.log("[RAVINA] ヘッダー:", hdr);
+  console.log("[RAVINA] 総行数(ヘッダー含む):", rows.length);
+  // データ行のサンプル（最初の5行）
+  for(let dbg=1; dbg<=Math.min(5,rows.length-1); dbg++){
+    console.log(`[RAVINA] row${dbg}:`, rows[dbg]);
+  }
 
   const col = name => hdr.findIndex(h => h === name);
   const colRe = re => hdr.findIndex(h => re.test(h));
@@ -805,32 +823,48 @@ function parsePriceNumSheet(rows){
     const n = parseFloat(s);
     return isNaN(n) ? null : String(n);
   };
-  // size値 → キー変換（"1-20号" → "1-20"、"20号〜" → "20up"）
+  // size値 → キー変換
+  // "1-8号" → "1-8"、"1〜8号" → "1-8"、"20号〜" → "20up"、"20号以上" → "20up"
   const toSzKey = r => {
     let s = String(r).trim();
-    if(/20[号号]?[~〜]/.test(s) || /20[~〜]/.test(s)) return "20up";
-    return s.replace(/[号号]/g,"").replace(/[~〜]/g,"").replace(/\s/g,"").trim();
+    // "20号〜"系 → "20up"
+    if(/20[号号]?[~〜上]/.test(s) || /20[~〜]/.test(s)) return "20up";
+    // 〜 を - に統一、号・スペース除去
+    s = s.replace(/[〜~]/g,"-").replace(/[号号]/g,"").replace(/\s/g,"").trim();
+    // "1-20" → そのまま
+    return s || null;
   };
 
   const pnumMap={}, newPrices={}, productNameMap={};
   let priceCount=0;
+  let skippedList=0, skippedMat=0, skippedKey=0;
 
   for(let i=1; i<rows.length; i++){
     const v = rows[i];
     if(!v||!v.length) continue;
 
-    // list列が "Ring" でない行はスキップ
+    // list列が存在し、値が空でなく "Ring" でも "ring" でもない行はスキップ
+    // ※ list列が存在しない(il<0)か、値が空("")の場合はスキップしない
     if(il>=0){
       const lt = String(v[il]||"").trim();
-      if(lt && lt.toLowerCase()!=="ring") continue;
+      if(lt !== "" && lt.toLowerCase()!=="ring"){
+        skippedList++;
+        continue;
+      }
     }
 
-    const mt = normalizeMat(String(v[im]||"").trim());
-    if(!Object.values(MAT_MAP).includes(mt)) continue;
+    const rawMat = String(v[im]||"").trim();
+    const mt = normalizeMat(rawMat);
+    if(!Object.values(MAT_MAP).includes(mt)){
+      if(rawMat) skippedMat++;
+      continue;
+    }
 
-    const wk = toWKey(String(v[iw]||""));
-    const sz = toSzKey(String(v[is_]||""));
-    if(!wk||!sz) continue;
+    const rawW = String(v[iw]||"").trim();
+    const rawS = String(v[is_]||"").trim();
+    const wk = toWKey(rawW);
+    const sz = toSzKey(rawS);
+    if(!wk||!sz){ skippedKey++; continue; }
 
     // 商品番号（スプレッドシートの値をそのまま使用）
     if(ipn>=0 && v[ipn]!=null && String(v[ipn]).trim()!==""){
@@ -857,7 +891,18 @@ function parsePriceNumSheet(rows){
       }
     }
   }
-  console.log("[RAVINA] 価格件数:", priceCount, "| silver/1/1-20 price:", newPrices?.silver?.["1"]?.["1-20"], "| 商品番号:", pnumMap?.silver?.["1-20"]?.["1"], "| 商品名:", productNameMap?.silver?.["1"]?.["1-20"]);
+  console.log("[RAVINA] 価格件数:", priceCount,
+    "| スキップ(list):", skippedList,
+    "| スキップ(material):", skippedMat,
+    "| スキップ(key):", skippedKey);
+  console.log("[RAVINA] silver/1/1-20 price:", newPrices?.silver?.["1"]?.["1-20"]);
+  console.log("[RAVINA] 10K/1/1-8 price:", newPrices?.["10K"]?.["1"]?.["1-8"]);
+  console.log("[RAVINA] 18K/1/1-8 price:", newPrices?.["18K"]?.["1"]?.["1-8"]);
+  console.log("[RAVINA] pt/1/1-8 price:", newPrices?.["pt"]?.["1"]?.["1-8"]);
+  console.log("[RAVINA] pnumMap keys:", Object.keys(pnumMap));
+  console.log("[RAVINA] productNameMap keys:", Object.keys(productNameMap));
+  console.log("[RAVINA] 10K pnumMap sample:", pnumMap?.["10K"]?.["1-8"]?.["1"]);
+  console.log("[RAVINA] 10K productName sample:", productNameMap?.["10K"]?.["1"]?.["1-8"]);
   return { pnumMap, newPrices, productNameMap };
 }
 
@@ -867,9 +912,12 @@ async function initPrices(){
     const rows   = await loadCSV(PNUM_GID);
     const result = parsePriceNumSheet(rows);
     if(result){
-      if(Object.keys(result.newPrices).length>0)     { prices=result.newPrices;           console.log("[RAVINA] prices更新OK"); }
-      if(Object.keys(result.pnumMap).length>0)        productNumMap=result.pnumMap;
-      if(result.productNameMap && Object.keys(result.productNameMap).length>0) productNameMap=result.productNameMap;
+      if(Object.keys(result.newPrices).length>0)     { prices=result.newPrices;           console.log("[RAVINA] prices更新OK:", Object.keys(result.newPrices)); }
+      else { console.warn("[RAVINA] prices空 → フォールバック価格を使用"); }
+      if(Object.keys(result.pnumMap).length>0)        { productNumMap=result.pnumMap; console.log("[RAVINA] pnumMap更新OK:", Object.keys(result.pnumMap)); }
+      else { console.warn("[RAVINA] pnumMap空"); }
+      if(result.productNameMap && Object.keys(result.productNameMap).length>0) { productNameMap=result.productNameMap; console.log("[RAVINA] productNameMap更新OK:", Object.keys(result.productNameMap)); }
+      else { console.warn("[RAVINA] productNameMap空"); }
     }
     document.getElementById("price-loading").style.display="none";
     showStatus("ok");

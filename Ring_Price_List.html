@@ -47,7 +47,6 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
 }
 .btn-grid { display: grid; gap: 8px; }
-.btn-grid.col3 { grid-template-columns: repeat(3, 1fr); }
 .btn-grid.col4 { grid-template-columns: repeat(4, 1fr); }
 .btn-opt {
   border: 0.5px solid var(--border); background: var(--white);
@@ -80,15 +79,6 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
 }
 
 /* 幅・号数 */
-.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.field-label { font-size: 12px; color: var(--soft); margin-bottom: 5px; display: block; letter-spacing: 0.06em; }
-select {
-  width: 100%; padding: 9px 10px; font-size: 14px;
-  border: 0.5px solid var(--border); border-radius: 6px;
-  background: var(--white); color: var(--dark);
-  font-family: 'Noto Serif JP', serif; appearance: auto;
-}
-select:focus { outline: none; border-color: var(--gold); }
 
 /* オプション行 */
 .option-row {
@@ -198,7 +188,6 @@ select:focus { outline: none; border-color: var(--gold); }
 .btn-inquiry:hover { opacity: 0.85; }
 .note-text { font-size: 10px; color: var(--soft); text-align: center; margin-top: 8px; letter-spacing: 0.05em; line-height: 1.7; }
 
-
 @media (max-width: 400px) {
   .mat-grid { grid-template-columns: repeat(2,1fr); }
   .btn-grid.col4 { grid-template-columns: repeat(2,1fr); }
@@ -216,7 +205,6 @@ select:focus { outline: none; border-color: var(--gold); }
 
 <div class="simulator">
 
-  <!-- 素材（4列横並び） -->
   <div>
     <div class="section-title">Material — 素材</div>
     <div class="mat-grid" id="material-group">
@@ -227,42 +215,33 @@ select:focus { outline: none; border-color: var(--gold); }
     </div>
   </div>
 
-  <!-- 幅 -->
   <div>
     <div class="section-title">Width — 幅</div>
     <div class="btn-grid col4" id="width-group">
-      <!-- ry=14 固定（縦=基準）、rx = ry × (幅/高さ) で比例 -->
-      <!-- 1×1:   rx=14, ry=14 (正円) -->
       <button class="btn-opt active" data-val="1" onclick="setWidth(this)">
         <svg class="width-silhouette" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="20" rx="7" ry="7"/></svg>
         1.0 mm
       </button>
-      <!-- 1.5×1.5: rx=10.5, ry=10.5 (正円) -->
       <button class="btn-opt" data-val="1.5" onclick="setWidth(this)">
         <svg class="width-silhouette" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="20" rx="10.5" ry="10.5"/></svg>
         1.5 mm
       </button>
-      <!-- 2×2: rx=14, ry=14 (正円) -->
       <button class="btn-opt" data-val="2" onclick="setWidth(this)">
         <svg class="width-silhouette" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="20" rx="14" ry="14"/></svg>
         2.0 mm
       </button>
-      <!-- 2.5×2.5: rx=17.5, ry=17.5 (正円) — clampのためviewBox拡張 -->
       <button class="btn-opt" data-val="2.5" onclick="setWidth(this)">
         <svg class="width-silhouette" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="20" rx="17.5" ry="17.5"/></svg>
         2.5 mm
       </button>
-      <!-- 3×3: rx=21, ry=21 — viewBox拡張でクリップ回避 -->
       <button class="btn-opt" data-val="3" onclick="setWidth(this)">
         <svg class="width-silhouette" viewBox="-2 -2 44 44" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="20" rx="21" ry="21"/></svg>
         3.0 mm
       </button>
-      <!-- 4×2: rx=28, ry=14 (横2倍楕円) -->
       <button class="btn-opt" data-val="4x2" onclick="setWidth(this)">
         <svg class="width-silhouette" viewBox="-2 0 44 40" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="20" rx="21" ry="10.5"/></svg>
         4.0 mm
       </button>
-      <!-- 5×2: 4×2と同形状 -->
       <button class="btn-opt" data-val="5x2" onclick="setWidth(this)">
         <svg class="width-silhouette" viewBox="-2 0 44 40" xmlns="http://www.w3.org/2000/svg"><ellipse cx="20" cy="20" rx="21" ry="10.5"/></svg>
         5.0 mm
@@ -270,17 +249,14 @@ select:focus { outline: none; border-color: var(--gold); }
     </div>
   </div>
 
-  <!-- 号数 -->
   <div>
     <div class="section-title">Ring Size — 号数</div>
     <div class="btn-grid" id="size-group" style="grid-template-columns:repeat(2,1fr)"></div>
   </div>
 
-  <!-- オプション -->
   <div>
     <div class="section-title">Option — オプション</div>
 
-    <!-- つや有（固定オプション） -->
     <div class="option-row">
       <div>
         <div class="option-name">つや有</div>
@@ -292,7 +268,6 @@ select:focus { outline: none; border-color: var(--gold); }
       </label>
     </div>
 
-    <!-- ハワイアン彫り（トグル＋範囲選択） -->
     <div class="option-row">
       <div>
         <div class="option-name">オーダー彫刻</div>
@@ -303,7 +278,6 @@ select:focus { outline: none; border-color: var(--gold); }
         <span class="toggle-slider"></span>
       </label>
     </div>
-    <!-- 範囲選択（トグルON時に表示） -->
     <div class="accordion-sub" id="carving-scope-sub">
       <div class="sub-row" style="flex-direction:column;align-items:flex-start;gap:8px;padding-top:4px;">
         <span class="sub-label">彫り範囲</span>
@@ -321,7 +295,6 @@ select:focus { outline: none; border-color: var(--gold); }
       </div>
     </div>
 
-    <!-- チャーム追加（point選択時のみ表示） -->
     <div class="accordion-sub" id="charm-sub">
       <div class="sub-row">
         <div>
@@ -336,7 +309,6 @@ select:focus { outline: none; border-color: var(--gold); }
       </div>
     </div>
 
-    <!-- 納期（None以外のスコープ選択時に表示） -->
     <div class="accordion-sub" id="carving-sub">
       <div class="sub-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
         <span class="sub-label">納期</span>
@@ -357,7 +329,6 @@ select:focus { outline: none; border-color: var(--gold); }
       </div>
     </div>
 
-    <!-- 石留め（カウンター） -->
     <div class="option-row">
       <div>
         <div class="option-name">ダイヤモンド1石</div>
@@ -370,7 +341,6 @@ select:focus { outline: none; border-color: var(--gold); }
       </div>
     </div>
 
-    <!-- 刻印（カウンター） -->
     <div class="option-row" style="border-bottom:none">
       <div>
         <div class="option-name">刻印</div>
@@ -384,7 +354,6 @@ select:focus { outline: none; border-color: var(--gold); }
     </div>
   </div>
 
-  <!-- 結果カード -->
   <div class="result-card">
     <div class="section-title">Estimate — お見積り</div>
     <div id="price-loading" style="display:none;text-align:center;padding:8px 0;font-size:12px;color:var(--soft);letter-spacing:0.05em;">価格を読み込み中…</div>
@@ -400,7 +369,6 @@ select:focus { outline: none; border-color: var(--gold); }
     </div>
   </div>
 
-  <!-- 問い合わせ -->
   <div>
     <button class="btn-inquiry" onclick="sendInquiry()">暫定価格</button>
     <p id="sheet-status" style="display:none;font-size:10px;text-align:center;margin-top:6px;letter-spacing:0.05em;"></p>
@@ -410,59 +378,24 @@ select:focus { outline: none; border-color: var(--gold); }
 </div>
 
 <script>
-// ============================================================
-// Google スプレッドシート連携設定
-// ============================================================
+// ── スプレッドシート設定（Price_Num シート GID:1469569588）──
 const SHEET_ID = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
-// スプレッドシートのシート名（タブ名）
-// ※ シート名が「シート1」などの場合はそちらに変更してください
-const MAIN_SHEET  = "Ring_Price";  // スプレのシート名
-const PNUM_SHEET  = "Price_Num";   // 商品番号シート名
-
-// 商品番号マップ: productNumMap[mat][size][width] = 商品番号
-// ★ 通常はページ読み込み時に Price_Num シートの「商品番号」列から動的に取得し、
-//   このオブジェクトを上書きする（loadProductNumMap参照）。
-//   これはシート読み込みに失敗した場合のみ使われるフォールバック値。
-let productNumMap = {
-  "silver": {
-    "1-20": {"1":11010101, "1.5":11010201, "2":11010301, "2.5":11010401, "3":11010501, "4x2":11010601, "5x2":11010701},
-    "20+":  {"1":11010102, "1.5":11010202, "2":11010302, "2.5":11010402, "3":11010502, "4x2":11010602, "5x2":11010702}
-  },
-  "10K": {
-    "1-8":   {"1":11020103, "1.5":11020203, "2":11020303, "2.5":11020403, "3":11020503, "4x2":11020603, "5x2":11020703},
-    "9-16":  {"1":11020104, "1.5":11020204, "2":11020304, "2.5":11020404, "3":11020504, "4x2":11020604, "5x2":11020704},
-    "17-24": {"1":11020105, "1.5":11020205, "2":11020305, "2.5":11020405, "3":11020505, "4x2":11020605, "5x2":11020705},
-    "25-32": {"1":11020106, "1.5":11020206, "2":11020306, "2.5":11020406, "3":11020506, "4x2":11020606, "5x2":11020706},
-    "33-40": {"1":11020107, "1.5":11020207, "2":11020307, "2.5":11020407, "3":11020507, "4x2":11020607, "5x2":11020707}
-  },
-  "18K": {
-    "1-8":   {"1":11030103, "1.5":11030203, "2":11030303, "2.5":11030403, "3":11030503, "4x2":11030603, "5x2":11030703},
-    "9-16":  {"1":11030104, "1.5":11030204, "2":11030304, "2.5":11030404, "3":11030504, "4x2":11030604, "5x2":11030704},
-    "17-24": {"1":11030105, "1.5":11030205, "2":11030305, "2.5":11030405, "3":11030505, "4x2":11030605, "5x2":11030705},
-    "25-32": {"1":11030106, "1.5":11030206, "2":11030306, "2.5":11030406, "3":11030506, "4x2":11030606, "5x2":11030706},
-    "33-40": {"1":11030107, "1.5":11030207, "2":11030307, "2.5":11030407, "3":11030507, "4x2":11030607, "5x2":11030707}
-  },
-  "pt": {
-    "1-8":   {"1":11040103, "1.5":11040203, "2":11040303, "2.5":11040403, "3":11040503, "4x2":11040603, "5x2":11040703},
-    "9-16":  {"1":11040104, "1.5":11040204, "2":11040304, "2.5":11040404, "3":11040504, "4x2":11040604, "5x2":11040704},
-    "17-24": {"1":11040105, "1.5":11040205, "2":11040305, "2.5":11040405, "3":11040505, "4x2":11040605, "5x2":11040705},
-    "25-32": {"1":11040106, "1.5":11040206, "2":11040306, "2.5":11040406, "3":11040506, "4x2":11040606, "5x2":11040706},
-    "33-40": {"1":11040107, "1.5":11040207, "2":11040307, "2.5":11040407, "3":11040507, "4x2":11040607, "5x2":11040707}
-  }
-};
+const PNUM_GID  = "1469569588";  // Price_Num シートのGID
 
 // スプレッドシート上のmaterial名 → HTML内部キーへのマッピング
 const MAT_MAP = {
   "silver925": "silver",
+  "10k":       "10K",
+  "18k":       "18K",
+  "pt900":     "pt",
+  "silver":    "silver",
   "10K":       "10K",
   "18K":       "18K",
-  "pt900":     "pt"
+  "pt":        "pt"
 };
 
-// フォールバック用デフォルト価格（スプレッドシート読み込み失敗時）
-// Ring_Price シートの値と完全一致
+// フォールバック価格（シート読み込み失敗時）
 let prices = {
-  // フォールバック価格（Price_Num シート price列 の値 ※スプレ読み込み失敗時に使用）
   silver: {
     "1":   {"1-20":3850,  "20+":4400},
     "1.5": {"1-20":5500,  "20+":6050},
@@ -501,18 +434,10 @@ let prices = {
   }
 };
 
-// ============================================================
-// 彫刻価格テーブル（スプレ「彫刻」シートと同期）
-// carvingPrices[mat][size][width] = 彫刻料金（リング基本価格に上乗せする金額）
-// 幅キー: "2","2.5","3","4x2","5x2"（幅1mm・1.5mmは彫刻非対応のため対象外）
-// ============================================================
 let carvingPrices = {
   silver: {
-    "1-8":   {"2":57200, "2.5":52800, "3":44000, "4x2":44000, "5x2":44000},
-    "9-16":  {"2":57200, "2.5":59400, "3":59400, "4x2":59400, "5x2":59400},
-    "17-24": {"2":57200, "2.5":59400, "3":59400, "4x2":59400, "5x2":59400},
-    "25-32": {"2":66000, "2.5":66000, "3":59400, "4x2":59400, "5x2":59400},
-    "33-40": {"2":66000, "2.5":66000, "3":59400, "4x2":59400, "5x2":59400}
+    "1-20": {"3":44000, "4x2":44000, "5x2":44000},
+    "20+":  {"3":44000, "4x2":44000, "5x2":44000}
   },
   "10K": {
     "1-8":   {"2":57200, "2.5":52800, "3":44000, "4x2":44000, "5x2":44000},
@@ -536,28 +461,49 @@ let carvingPrices = {
     "33-40": {"2":82500, "2.5":82500, "3":74250, "4x2":74250, "5x2":74250}
   }
 };
-let ringOnly = {}; // 後方互換用（未使用）
 
-// ============================================================
-// Google スプレッドシートからCSVとして読み込む
-// ============================================================
-// シートGIDマップ（シート名 → GID番号）
-// ※ スプレのURLで各シートを開いたとき末尾に表示される gid=XXXXXXX の値を設定
-const SHEET_GIDS = {
-  "Ring_Price": "0",    // Ring_Price シートのGID（最初のシートは通常0）
-  "Price_Num":  "1469569588"     // Price_Num シートのGID
+let productNumMap = {
+  "silver": {
+    "1-20": {"1":11010101, "1.5":11010201, "2":11010301, "2.5":11010401, "3":11010501, "4x2":11010601, "5x2":11010701},
+    "20+":  {"1":11010102, "1.5":11010202, "2":11010302, "2.5":11010402, "3":11010502, "4x2":11010602, "5x2":11010702}
+  },
+  "10K": {
+    "1-8":   {"1":11020103, "1.5":11020203, "2":11020303, "2.5":11020403, "3":11020503, "4x2":11020603, "5x2":11020703},
+    "9-16":  {"1":11020104, "1.5":11020204, "2":11020304, "2.5":11020404, "3":11020504, "4x2":11020604, "5x2":11020704},
+    "17-24": {"1":11020105, "1.5":11020205, "2":11020305, "2.5":11020405, "3":11020505, "4x2":11020605, "5x2":11020705},
+    "25-32": {"1":11020106, "1.5":11020206, "2":11020306, "2.5":11020406, "3":11020506, "4x2":11020606, "5x2":11020706},
+    "33-40": {"1":11020107, "1.5":11020207, "2":11020307, "2.5":11020407, "3":11020507, "4x2":11020607, "5x2":11020707}
+  },
+  "18K": {
+    "1-8":   {"1":11030103, "1.5":11030203, "2":11030303, "2.5":11030403, "3":11030503, "4x2":11030603, "5x2":11030703},
+    "9-16":  {"1":11030104, "1.5":11030204, "2":11030304, "2.5":11030404, "3":11030504, "4x2":11030604, "5x2":11030704},
+    "17-24": {"1":11030105, "1.5":11030205, "2":11030305, "2.5":11030405, "3":11030505, "4x2":11030605, "5x2":11030705},
+    "25-32": {"1":11030106, "1.5":11030206, "2":11030306, "2.5":11030406, "3":11030506, "4x2":11030606, "5x2":11030706},
+    "33-40": {"1":11030107, "1.5":11030207, "2":11030307, "2.5":11030407, "3":11030507, "4x2":11030607, "5x2":11030707}
+  },
+  "pt": {
+    "1-8":   {"1":11040103, "1.5":11040203, "2":11040303, "2.5":11040403, "3":11040503, "4x2":11040603, "5x2":11040703},
+    "9-16":  {"1":11040104, "1.5":11040204, "2":11040304, "2.5":11040404, "3":11040504, "4x2":11040604, "5x2":11040704},
+    "17-24": {"1":11040105, "1.5":11040205, "2":11040305, "2.5":11040405, "3":11040505, "4x2":11040605, "5x2":11040705},
+    "25-32": {"1":11040106, "1.5":11040206, "2":11040306, "2.5":11040406, "3":11040506, "4x2":11040606, "5x2":11040706},
+    "33-40": {"1":11040107, "1.5":11040207, "2":11040307, "2.5":11040407, "3":11040507, "4x2":11040607, "5x2":11040707}
+  }
 };
 
-async function loadCSV(sheetName) {
-  const gid = SHEET_GIDS[sheetName] ?? "0";
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
-  const res = await fetch(url);
+// CSV取得（/gviz/tq = 認証不要・公開スプレ向け）
+async function loadPriceNumCSV() {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${PNUM_GID}`;
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`CSV取得失敗 HTTP ${res.status}`);
   const text = await res.text();
+  // HTMLが返ってきた場合 = スプレが非公開 or 共有設定が不足
+  if (text.trim().startsWith("<!")) {
+    throw new Error("スプレッドシートが非公開です。共有設定を「リンクを知っている全員が閲覧可能」にしてください。");
+  }
   return parseCSV(text);
 }
 
-// シンプルなCSVパーサー（ダブルクォート・カンマ内改行対応）
+// シンプルなCSVパーサー（ダブルクォート対応）
 function parseCSV(text) {
   const rows = [];
   let cur = "", inQ = false, row = [];
@@ -579,204 +525,151 @@ function parseCSV(text) {
   return rows;
 }
 
-// 数値または通貨文字列("¥3,520")を数値に変換
+// 数値または通貨文字列（"¥3,520"）を数値に変換
 function toNum(v) {
   if (v === null || v === undefined) return 0;
   if (typeof v === "number") return v;
   return Number(String(v).replace(/[^0-9.-]/g, "")) || 0;
 }
 
-// width を "1.0" 形式に統一（整数 1 → "1.0"）
-function normalizeWidth(rawW) {
-  if (typeof rawW === "number") return rawW.toFixed(1);
-  const s = String(rawW).trim();
-  if (/^\d+(\.\d+)?$/.test(s)) return parseFloat(s).toFixed(1);
-  return s;
-}
-
-// スプレのmaterial名 → HTML内部キーに変換（未知の場合はそのまま）
-// 大文字小文字を正規化してからマッチング
+// スプレのmaterial名 → HTML内部キーに変換
 function normalizeMat(rawMat) {
   const s = String(rawMat).trim();
-  // 完全一致（大文字小文字無視）
-  const lowerS = s.toLowerCase();
+  const lower = s.toLowerCase();
   for (const [k, v] of Object.entries(MAT_MAP)) {
-    if (k.toLowerCase() === lowerS) return v;
+    if (k.toLowerCase() === lower) return v;
   }
-  // 既にHTML内部キー（silver/10K/18K/pt）の場合はそのまま返す
-  if (Object.values(MAT_MAP).includes(s)) return s;
   return s;
 }
 
-// Ring_PriceシートCSVを読み込み prices を構築
-// CSV列構成（1行目ヘッダー）: list | material | size | 1 | 1.5 | 2 | 2.5 | 3 | 4x2 | 5x2 | ...
-function parseMainSheet(rows) {
-  const newPrices = {};
-
-  if (!rows || rows.length < 2) return { newPrices, newRingOnly: {} };
-
-  // 1行目をヘッダーとして列インデックスを特定
-  const header = rows[0].map(h => String(h).trim().toLowerCase());
-  const idxList = header.indexOf("list");
-  const idxMat  = header.indexOf("material");
-  const idxSize = header.indexOf("size");
-
-  // 幅列の定義（ヘッダー名 → data-valキー）
-  const WIDTH_DEF = [
-    { name: "1",   key: "1"   },
-    { name: "1.5", key: "1.5" },
-    { name: "2",   key: "2"   },
-    { name: "2.5", key: "2.5" },
-    { name: "3",   key: "3"   },
-    { name: "4x2", key: "4x2" },
-    { name: "5x2", key: "5x2" },
-  ];
-  const WIDTH_COLS = WIDTH_DEF.map(d => ({
-    idx: header.indexOf(d.name.toLowerCase()),
-    key: d.key
-  })).filter(d => d.idx >= 0);
-
-  if (idxMat < 0 || idxSize < 0) {
-    console.warn("[RAVINA] Ring_Price: material/size列が見つかりません", header);
-    return { newPrices, newRingOnly: {} };
-  }
-
-  // 2行目以降がデータ
-  for (let i = 1; i < rows.length; i++) {
-    const vals = rows[i];
-    if (!vals || vals.length === 0) continue;
-
-    // list列があれば "Ring" 以外をスキップ
-    if (idxList >= 0) {
-      const lt = String(vals[idxList] || "").trim();
-      if (lt && lt !== "Ring") continue;
-    }
-
-    const rawMat = String(vals[idxMat] || "").trim();
-    if (!rawMat) continue;
-    const mat = normalizeMat(rawMat);
-    if (!Object.values(MAT_MAP).includes(mat)) continue;
-
-    const rawSize = String(vals[idxSize] || "").trim();
-    let size = rawSize.replace(/^size_/, "").replace(/号$/, "").trim();
-    // Silver 2段階キー正規化: "1-20" → "1-20", "20~" / "20号~" 等 → "20+"
-    if (/^20[号〜~]/.test(rawSize) || rawSize === "20~" || rawSize === "20号~") size = "20+";
-    else if (/^1[-~]20/.test(size)) size = "1-20";
-    if (!size) continue;
-
-    if (!newPrices[mat]) newPrices[mat] = {};
-    WIDTH_COLS.forEach(({ idx, key }) => {
-      const price = toNum(vals[idx]);
-      if (price === 0) return;
-      if (!newPrices[mat][key]) newPrices[mat][key] = {};
-      newPrices[mat][key][size] = price;
-    });
-  }
-
-  return { newPrices, newRingOnly: {} };
+// サイズ文字列を正規化
+function normalizeSize(rawSize) {
+  let size = String(rawSize).trim().replace(/^size_/, "").replace(/号$/, "").trim();
+  if (/^20[号〜~]/.test(rawSize) || rawSize === "20~" || rawSize === "20号~") return "20+";
+  if (/^1[-~]20/.test(size)) return "1-20";
+  return size;
 }
 
-// Price_NumシートCSVを読み込み商品番号マップを構築
-// 1行目ヘッダーから list / material / size / width / 商品番号 の列を特定する
+// 幅文字列 → data-val キーに変換
+function toWidthKey(raw) {
+  if (!raw && raw !== 0) return null;
+  const s = String(raw).trim().replace(/[×]/g, "x");
+  if (s === "4x2" || s === "5x2") return s;
+  const n = parseFloat(s);
+  if (isNaN(n)) return null;
+  return String(n);
+}
+
+// Price_Num シート解析（list|material|size|width|商品番号|price|carving_price）
 function parsePriceNumSheet(rows) {
   if (!rows || rows.length < 2) return null;
 
-  const header = rows[0].map(h => String(h).trim());
+  const header  = rows[0].map(h => String(h).trim());
   const headerL = header.map(h => h.toLowerCase());
 
   const idxList       = headerL.indexOf("list");
   const idxMaterial   = headerL.indexOf("material");
   const idxSize       = headerL.indexOf("size");
   const idxWidth      = headerL.indexOf("width");
-  const idxProductNum = header.indexOf("商品番号");
+  const idxProductNum = header.findIndex(h => h === "商品番号" || h.toLowerCase() === "product_num" || h.toLowerCase() === "productnum");
+  const idxPrice      = header.findIndex(h => h.toLowerCase() === "price" || h === "価格" || h === "単価");
+  const idxCarving    = header.findIndex(h => ["carving_price","carvingprice","彫刻価格","彫刻料金"].includes(h.toLowerCase()) || ["carving_price","carvingprice","彫刻価格","彫刻料金"].includes(h));
 
-  if (idxMaterial < 0 || idxSize < 0 || idxWidth < 0 || idxProductNum < 0) {
-    console.warn("Price_Numシート: 必須列が見つかりません", header);
-    return null;
+  if (idxMaterial < 0 || idxSize < 0 || idxWidth < 0) {
+      return null;
   }
 
-  function toWidthKey(raw) {
-    if (!raw && raw !== 0) return null;
-    const s = String(raw).trim().replace(/×/g, "x");
-    if (s === "4x2" || s === "5x2") return s;
-    const n = parseFloat(s);
-    if (isNaN(n)) return null;
-    return String(n);
-  }
+  const newPrices      = {};
+  const newCarving     = {};
+  const newProductNums = {};
 
-  const map = {};
   for (let i = 1; i < rows.length; i++) {
     const vals = rows[i];
     if (!vals || vals.length === 0) continue;
 
+    // list列フィルタ（"Ring" 以外をスキップ）
     if (idxList >= 0) {
       const lt = String(vals[idxList] || "").trim();
-      if (lt && lt !== "Ring") continue;
+      if (lt && lt.toLowerCase() !== "ring") continue;
     }
 
     const mat      = normalizeMat(String(vals[idxMaterial] || "").trim());
-    const rawSize  = String(vals[idxSize] || "").trim();
-    let size = rawSize.replace(/^size_/, "").replace(/号$/, "").trim();
-    if (/^20[号〜~]/.test(rawSize) || rawSize === "20~" || rawSize === "20号~") size = "20+";
-    else if (/^1[-~]20/.test(size)) size = "1-20";
-    const widthKey = toWidthKey(String(vals[idxWidth] || "").replace(/×/g, "x"));
-    const pNum     = vals[idxProductNum];
+    const size     = normalizeSize(String(vals[idxSize] || "").trim());
+    const widthKey = toWidthKey(String(vals[idxWidth] || "").trim());
 
-    if (!mat || !size || !widthKey || pNum === null || pNum === undefined || pNum === "") continue;
+    if (!mat || !size || !widthKey) continue;
     if (!Object.values(MAT_MAP).includes(mat)) continue;
-    if (!map[mat]) map[mat] = {};
-    if (!map[mat][size]) map[mat][size] = {};
-    map[mat][size][widthKey] = pNum;
+
+    // 価格 → prices テーブル
+    if (idxPrice >= 0) {
+      const price = toNum(vals[idxPrice]);
+      if (price > 0) {
+        if (!newPrices[mat])           newPrices[mat] = {};
+        if (!newPrices[mat][widthKey]) newPrices[mat][widthKey] = {};
+        newPrices[mat][widthKey][size] = price;
+      }
+    }
+
+    // 彫刻価格 → carvingPrices テーブル
+    if (idxCarving >= 0) {
+      const cp = toNum(vals[idxCarving]);
+      if (cp > 0) {
+        if (!newCarving[mat])        newCarving[mat] = {};
+        if (!newCarving[mat][size])  newCarving[mat][size] = {};
+        newCarving[mat][size][widthKey] = cp;
+      }
+    }
+
+    // 商品番号 → productNumMap
+    if (idxProductNum >= 0) {
+      const pNum = vals[idxProductNum];
+      if (pNum !== null && pNum !== undefined && pNum !== "") {
+        if (!newProductNums[mat])        newProductNums[mat] = {};
+        if (!newProductNums[mat][size])  newProductNums[mat][size] = {};
+        newProductNums[mat][size][widthKey] = pNum;
+      }
+    }
   }
-  return map;
+
+  return { newPrices, newCarving, newProductNums };
 }
 
+// 初期化: Price_Num シートのみから全データ（価格・彫刻価格・商品番号）を取得
 async function initPrices() {
   showLoadingState(true);
   try {
-    // Ring_Price シートをCSVで取得
-    const mainRows = await loadCSV(MAIN_SHEET);
-    console.log("[RAVINA] Ring_Price CSV rows:", mainRows.length);
-    const { newPrices } = parseMainSheet(mainRows);
-    console.log("[RAVINA] parseMainSheet keys:", Object.keys(newPrices));
+    const rows = await loadPriceNumCSV();
+  
+    const result = parsePriceNumSheet(rows);
+    console.log("[RAVINA] parsePriceNumSheet result:", result ? Object.keys(result) : "null");
 
-    if (Object.keys(newPrices).length > 0) {
-      prices = newPrices;
-      console.log("[RAVINA] prices updated from sheet ✓");
-    } else {
-      console.warn("[RAVINA] parseMainSheet returned empty → fallback prices使用");
-    }
-
-    // ringOnly: prices の 1-8 価格をそのまま使用
-    const autoRingOnly = {};
-    Object.entries(prices).forEach(([m, widths]) => {
-      autoRingOnly[m] = {};
-      Object.entries(widths).forEach(([w, sizes]) => {
-        autoRingOnly[m][w] = sizes["1-8"] || 0;
-      });
-    });
-    ringOnly = autoRingOnly;
-
-    // Price_Num シートから商品番号を読み込み
-    try {
-      const pnumRows = await loadCSV(PNUM_SHEET);
-      console.log("[RAVINA] Price_Num CSV rows:", pnumRows.length);
-      const newProductNumMap = parsePriceNumSheet(pnumRows);
-      console.log("[RAVINA] parsePriceNumSheet keys:", newProductNumMap ? Object.keys(newProductNumMap) : "null");
-      if (newProductNumMap && Object.keys(newProductNumMap).length > 0) {
-        productNumMap = newProductNumMap;
-        console.log("[RAVINA] productNumMap updated ✓");
+    if (result) {
+      // prices を更新（price列がある場合）
+      if (result.newPrices && Object.keys(result.newPrices).length > 0) {
+        prices = result.newPrices;
+        console.log("[RAVINA] prices updated from Price_Num ✓", Object.keys(prices));
       } else {
-        console.warn("[RAVINA] parsePriceNumSheet empty → ハードコード商品番号使用");
-      }
-    } catch (e) {
-      console.warn("Price_Num読み込み失敗 → ハードコード商品番号使用:", e);
-    }
+            }
 
-    showLoadingState(false);
-    showSheetStatus("ok");
+      // carvingPrices を更新（carving_price列がある場合）
+      if (result.newCarving && Object.keys(result.newCarving).length > 0) {
+        carvingPrices = result.newCarving;
+          } else {
+            }
+
+      // productNumMap を更新
+      if (result.newProductNums && Object.keys(result.newProductNums).length > 0) {
+        productNumMap = result.newProductNums;
+          } else {
+            }
+
+      showLoadingState(false);
+      showSheetStatus("ok");
+    } else {
+      throw new Error("Price_Numシートのパースに失敗");
+    }
   } catch (e) {
-    console.warn("スプレッドシート読み込み失敗 → デフォルト価格使用:", e);
+    console.warn("[RAVINA] スプレッドシート読み込み失敗 → デフォルト価格使用:", e);
     showLoadingState(false);
     showSheetStatus("error");
   }
@@ -803,7 +696,6 @@ function showSheetStatus(state) {
   el.style.display = "block";
 }
 
-// 素材ごとの号数定義
 const SIZE_DEFS = {
   silver: [
     { val: "1-20", label: "1〜20号" },
@@ -833,32 +725,15 @@ function renderSizeButtons(m) {
     grp.appendChild(btn);
   });
 }
-const ringColors = {
-  silver: ['#e8e8e8','#b8b8b8','#f4f4f4','#888888'],
-  "10K":  ['#d8c070','#b89840','#e0d080','#906820'],
-  "18K":  ['#e8d08a','#c9a84c','#f0d878','#a07830'],
-  "pt":   ['#eaeaf2','#c0c0d0','#f4f4f8','#9090a8'],
-};
 
 let mat = "silver", del = "normal", scope = "none";
 // scope: "none" | "full" | "half" | "point"
 let counts = { stone: 0, charm: 0, stamp: 0 };
 
-function updateRingColor(m) {
-  const c = ringColors[m] || ringColors.silver;
-  const g = document.getElementById('ringGrad');
-  if (!g) return;
-  g.children[0].setAttribute('stop-color', c[0]);
-  g.children[1].setAttribute('stop-color', c[1]);
-  g.children[2].setAttribute('stop-color', c[2]);
-  g.children[3].setAttribute('stop-color', c[3]);
-}
-
 function setMat(el) {
   document.querySelectorAll("#material-group .btn-opt").forEach(b => b.classList.remove("active"));
   el.classList.add("active");
   mat = el.dataset.val;
-  updateRingColor(mat);
   renderSizeButtons(mat);
   calc();
 }
@@ -960,7 +835,6 @@ function calc() {
   const size    = sizeEl  ? sizeEl.dataset.val  : (mat === "silver" ? "1-20" : "1-8");
   const carving = scope !== "none";
 
-  // スプレの価格 = リング単品価格（彫刻なし状態が正）
   const ringBase = (prices[mat] && prices[mat][width] && prices[mat][width][size]) || 0;
 
   let total = ringBase;
@@ -988,11 +862,9 @@ function calc() {
   // ハワイアン彫り
   // carvingPrices = 彫刻料金そのもの（リング基本価格に上乗せする金額）
   if (carving) {
-    // 幅キーを探す："1"→"2"へのフォールバックはしない。carvingPricesにない幅は非対応
     const fullCarvingFee = (carvingPrices[mat] && carvingPrices[mat][size] && carvingPrices[mat][size][width])
       ? carvingPrices[mat][size][width] : 0;
 
-    // チャーム料金（point選択時はcarving行に統合）
     const charmFee = scope === "point" ? counts.charm * 11000 : 0;
 
     let fee, label;
@@ -1074,23 +946,20 @@ function sendInquiry() {
   const carving = scope !== "none";
 
   // 合計を再計算
-  const ringBase    = (prices[mat] && prices[mat][width] && prices[mat][width][size]) || 0;
-  // 彫刻料金 = carvingPricesの値をそのまま使用（上乗せ方式）
-  const fullCarving2 = (carvingPrices[mat] && carvingPrices[mat][size] && carvingPrices[mat][size][width])
-    ? carvingPrices[mat][size][width] : 0;
-  const fullCarvingFee = fullTotal - ringBase;
+  const ringBase = (prices[mat]?.[width]?.[size]) || 0;
+  const fullCarvingFee = (carvingPrices[mat]?.[size]?.[width]) || 0;
   let total = ringBase;
   if (carving) {
-    if (scope === "half")  total += fullCarvingFee / 2;
-    else if (scope === "point") total += fullCarvingFee / 4;
+    if (scope === "half")  total += Math.round(fullCarvingFee / 2);
+    else if (scope === "point") total += counts.charm * 11000;
     else total += fullCarvingFee;
   }
   total += counts.stone * 11000;
-  total += counts.stamp * 200;
-  total += counts.charm * 11000;
+  total += counts.stamp * 220;
+  total += (scope !== "point" ? counts.charm * 11000 : 0);
   if (del === "7day") total += 20000;
   if (del === "3day") total += 40000;
-  const glossOn2 = document.getElementById("gloss-toggle") && document.getElementById("gloss-toggle").checked;
+  const glossOn2 = document.getElementById("gloss-toggle")?.checked;
   if (glossOn2) total += 1100;
 
   const matLabel = { silver:"Silver 925", "10K":"Gold K10", "18K":"Gold K18", "pt":"Pt900" }[mat];
@@ -1114,12 +983,9 @@ function sendInquiry() {
     + '&body='    + encodeURIComponent(body);
 }
 
-// 初期化（スプレッドシートから読み込み → calc()）
-// 初期スコープはNone（納期非表示）
 renderSizeButtons("silver");
 initPrices();
 
-// 初期幅（1.0mm）は彫刻非対応 → トグルを無効化
 (function() {
   const toggle = document.getElementById("carving-toggle");
   const toggleWrap = toggle ? toggle.closest(".toggle-wrap") : null;

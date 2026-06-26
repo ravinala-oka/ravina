@@ -331,13 +331,9 @@ html, body {
 </div><!-- /app -->
 
 <script>
-// ============================================================
-// スプレッドシート設定
-// ============================================================
-const SHEET_ID     = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
-const BANGLE_SHEET = "Bangle_Price";
-const PNUM_SHEET   = "Price_Num";
-const SHEET_GIDS   = { "Bangle_Price":"1740202800", "Price_Num":"1469569588" };
+// ── スプレッドシート設定（Price_Num シート GID:1469569588）──
+const SHEET_ID = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
+const PNUM_GID = "1469569588";
 
 // ============================================================
 // フォールバック価格
@@ -515,64 +511,102 @@ function calc(){
   document.getElementById("r-total").textContent = total ? fmt(total) : "—";
 }
 
-// ============================================================
-// CSV 読み込み
-// ============================================================
-async function loadCSV(sheetName){
-  const gid = SHEET_GIDS[sheetName]??"0";
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
-  const res = await fetch(url);
-  if(!res.ok) throw new Error(`HTTP ${res.status}`);
-  return parseCSV(await res.text());
-}
+// CSV取得（/gviz/tq = 認証不要・公開スプレ向け）
 function parseCSV(text){
   const rows=[]; let cur="",inQ=false,row=[];
   for(let i=0;i<text.length;i++){
     const ch=text[i];
-    if(inQ){if(ch==='"'&&text[i+1]==='"'){cur+='"';i++;}else if(ch==='"')inQ=false;else cur+=ch;}
-    else{if(ch==='"'){inQ=true;}else if(ch===','){row.push(cur.trim());cur="";}else if(ch==='\n'){row.push(cur.trim());if(row.some(c=>c!==""))rows.push(row);row=[];cur="";}else if(ch!=='\r')cur+=ch;}
+    if(inQ){if(ch==='"' &&text[i+1]==='"'){ cur+='"';i++;}else if(ch==='"')inQ=false;else cur+=ch;}
+    else{if(ch==='"'){ inQ=true;}else if(ch===','){ row.push(cur.trim());cur="";}else if(ch==='\n'){ row.push(cur.trim());if(row.some(c=>c!==""))rows.push(row);row=[];cur="";}else if(ch!=='\r')cur+=ch;}
   }
   if(cur!==""||row.length>0){row.push(cur.trim());if(row.some(c=>c!==""))rows.push(row);}
   return rows;
 }
 function toNum(v){ if(!v&&v!==0)return 0; return Number(String(v).replace(/[^0-9.-]/g,""))||0; }
 
-function parseBangleSheet(rows){
+// Price_Num シート解析
+// 期待列: list | material | size | width | 商品番号 | price | carving_price
+// バングル固有:
+//   material=silver925 size=no_cm    → bPriceSilver[width]=price
+//   material=10K/18K/pt900 size=1cm  → bPriceUnit[mat][width]=price
+//   material=10K/18K/pt900 size=cm_N → bPriceCm[mat][width][N]=price
+//   商品番号列                        → bProductNum
+function parsePriceNumSheet(rows){
   if(!rows||rows.length<2)return false;
-  const hdr=rows[0].map(h=>String(h).trim().toLowerCase());
-  const il=hdr.indexOf("list"),im=hdr.indexOf("material"),is=hdr.indexOf("size");
-  if(im<0||is<0)return false;
-  const WD=["2","2.5","3","4x2","5x2","6x2","10x2"];
-  const wdCols=WD.map(w=>({key:w,idx:hdr.indexOf(w.toLowerCase())})).filter(d=>d.idx>=0);
-  const newSv={},newU={"10K":{},"18K":{},"pt":{}},newC={"10K":{},"18K":{},"pt":{}};
+  const hdr=rows[0].map(h=>String(h).trim());
+  const hL=hdr.map(h=>h.toLowerCase());
+  const iL=hL.indexOf("list"),iM=hL.indexOf("material"),iS=hL.indexOf("size"),iW=hL.indexOf("width");
+  const iPN=hdr.findIndex(h=>h==="商品番号"||h.toLowerCase()==="product_num");
+  const iP=hdr.findIndex(h=>h.toLowerCase()==="price"||h==="価格"||h==="単価");
+  if(iM<0||iS<0)return false;
+
+  function normMat(s){
+    const l=s.toLowerCase();
+    if(/silver/i.test(l))return "silver";
+    if(/^k?10/i.test(l)||/10k/i.test(l))return "10K";
+    if(/^k?18/i.test(l)||/18k/i.test(l))return "18K";
+    if(/^pt/i.test(l))return "pt";
+    return null;
+  }
+  function normWidth(s){
+    if(!s)return null;
+    const r=s.trim().replace(/[×x×]/g,"x");
+    if(r==="4x2"||r==="5x2"||r==="6x2"||r==="10x2")return r;
+    const n=parseFloat(r);
+    return isNaN(n)?null:String(n);
+  }
+
+  const newSv={},newU={"10K":{},"18K":{},"pt":{}},newC={"10K":{},"18K":{},"pt":{}},newPN={};
+
   for(let i=1;i<rows.length;i++){
     const v=rows[i]; if(!v||!v.length)continue;
-    if(il>=0&&String(v[il]||"").trim()!=="Bangle")continue;
-    const rm=String(v[im]||"").trim();
-    const sz=String(v[is]||"").trim();
-    if(/silver/i.test(rm)&&sz==="no_cm"){
-      wdCols.forEach(({key,idx})=>{const p=toNum(v[idx]);if(p>0)newSv[key]=p;});
-      continue;
-    }
-    const mk=/^K10|^10K/i.test(rm)?"10K":/^K18|^18K/i.test(rm)?"18K":/^Pt/i.test(rm)?"pt":null;
-    if(!mk)continue;
-    if(sz==="1cm"){
-      ["2","2.5","3","4x2","5x2"].forEach(w=>{const c=wdCols.find(x=>x.key===w);if(!c)return;const p=toNum(v[c.idx]);if(p>0)newU[mk][w]=p;});
-    } else if(sz.startsWith("cm_")){
-      const cm=sz.replace("cm_","");
-      ["2","2.5","3","4x2","5x2"].forEach(w=>{const c=wdCols.find(x=>x.key===w);if(!c)return;const p=toNum(v[c.idx]);if(p>0){if(!newC[mk][w])newC[mk][w]={};newC[mk][w][cm]=p;}});
+    if(iL>=0){const lt=String(v[iL]||"").trim().toLowerCase();if(lt&&lt!=="bangle")continue;}
+    const mat=normMat(String(v[iM]||"").trim()); if(!mat)continue;
+    const sz=String(v[iS]||"").trim();
+    const price=iP>=0?toNum(v[iP]):0;
+    const pn=iPN>=0?v[iPN]:"";
+
+    if(mat==="silver"){
+      if(iW>=0){
+        const w=normWidth(String(v[iW]||"").trim()); if(!w)continue;
+        if(price>0)newSv[w]=price;
+        if(pn){if(!newPN.silver)newPN.silver={};newPN.silver[w]=pn;}
+      }
+    } else {
+      if(sz==="1cm"||sz==="no_cm"){
+        if(iW>=0){
+          const w=normWidth(String(v[iW]||"").trim()); if(!w)continue;
+          if(price>0)newU[mat][w]=price;
+        }
+      } else if(sz.startsWith("cm_")){
+        const cm=sz.replace("cm_","");
+        if(iW>=0){
+          const w=normWidth(String(v[iW]||"").trim()); if(!w)continue;
+          if(price>0){if(!newC[mat][w])newC[mat][w]={};newC[mat][w][cm]=price;}
+          if(pn){if(!newPN[mat])newPN[mat]={};if(!newPN[mat][w])newPN[mat][w]={};newPN[mat][w][cm]=pn;}
+        }
+      }
     }
   }
+
   if(Object.keys(newSv).length>0)bPriceSilver=newSv;
-  ["10K","18K","pt"].forEach(m=>{if(Object.keys(newU[m]).length>0)bPriceUnit[m]=newU[m];if(Object.keys(newC[m]).length>0)bPriceCm[m]=newC[m];});
+  ["10K","18K","pt"].forEach(m=>{
+    if(Object.keys(newU[m]).length>0)bPriceUnit[m]=newU[m];
+    if(Object.keys(newC[m]).length>0)bPriceCm[m]=newC[m];
+  });
+  if(Object.keys(newPN).length>0)bProductNum=newPN;
   return true;
 }
 
 async function initPrices(){
   document.getElementById("price-loading").style.display="block";
   try{
-    const rows=await loadCSV(BANGLE_SHEET);
-    parseBangleSheet(rows);
+    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${PNUM_GID}`;
+    const res=await fetch(url,{cache:"no-store"});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const text=await res.text();
+    if(text.trim().startsWith("<!"))throw new Error("非公開スプレッドシート");
+    parsePriceNumSheet(parseCSV(text));
     document.getElementById("price-loading").style.display="none";
     showStatus("ok");
   }catch(e){

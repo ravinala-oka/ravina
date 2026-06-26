@@ -119,8 +119,9 @@ html, body {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
-/* ── 号数: 横1行 5ボタン ── */
-.size-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+/* ── 号数: Silver=2ボタン / その他=5ボタン ── */
+.size-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+.size-row.other-mat { grid-template-columns: repeat(5, 1fr); }
 .btn-s {
   border: 1.5px solid var(--border); background: var(--white);
   border-radius: 8px; padding: 7px 2px;
@@ -303,11 +304,15 @@ html, body {
     <div class="sec">
       <div class="sec-label">Ring Size — 号数</div>
       <div class="size-row" id="size-group">
-        <button class="btn-s active" data-val="1-8"   onclick="setSize(this)">1〜8号</button>
-        <button class="btn-s"        data-val="9-16"  onclick="setSize(this)">9〜16号</button>
-        <button class="btn-s"        data-val="17-24" onclick="setSize(this)">17〜24号</button>
-        <button class="btn-s"        data-val="25-32" onclick="setSize(this)">25〜32号</button>
-        <button class="btn-s"        data-val="33-40" onclick="setSize(this)">33〜40号</button>
+        <!-- Silver用: 2ボタン -->
+        <button class="btn-s silver-size active" data-val="1-20"  onclick="setSize(this)">1〜20号</button>
+        <button class="btn-s silver-size"        data-val="20up"  onclick="setSize(this)">20号〜</button>
+        <!-- 他素材用: 5ボタン -->
+        <button class="btn-s other-size" data-val="1-8"   onclick="setSize(this)" style="display:none">1〜8号</button>
+        <button class="btn-s other-size" data-val="9-16"  onclick="setSize(this)" style="display:none">9〜16号</button>
+        <button class="btn-s other-size" data-val="17-24" onclick="setSize(this)" style="display:none">17〜24号</button>
+        <button class="btn-s other-size" data-val="25-32" onclick="setSize(this)" style="display:none">25〜32号</button>
+        <button class="btn-s other-size" data-val="33-40" onclick="setSize(this)" style="display:none">33〜40号</button>
       </div>
     </div>
 
@@ -427,13 +432,12 @@ const MAT_MAP = {
   "pt900":"pt","pt":"pt","platinum":"pt"
 };
 
+let productNameMap = {};
+
 let productNumMap = {
   "silver":{
-    "1-8":  {"1":11010101,"1.5":11010102,"2":11010103,"2.5":11010104,"3":11010105,"4x2":11010106,"5x2":11010107},
-    "9-16": {"1":11010201,"1.5":11010202,"2":11010203,"2.5":11010204,"3":11010205,"4x2":11010206,"5x2":11010207},
-    "17-24":{"1":11010301,"1.5":11010302,"2":11010303,"2.5":11010304,"3":11010305,"4x2":11010306,"5x2":11010307},
-    "25-32":{"1":11010401,"1.5":11010402,"2":11010403,"2.5":11010404,"3":11010405,"4x2":11010406,"5x2":11010407},
-    "33-40":{"1":11010501,"1.5":11010502,"2":11010503,"2.5":11010504,"3":11010505,"4x2":11010506,"5x2":11010507}
+    "1-20": {"1":11010101,"1.5":11010102,"2":11010103,"2.5":11010104,"3":11010105,"4x2":11010106,"5x2":11010107},
+    "20up": {"1":11010201,"1.5":11010202,"2":11010203,"2.5":11010204,"3":11010205,"4x2":11010206,"5x2":11010207}
   },
   "10K":{
     "1-8":  {"1":11020101,"1.5":11020102,"2":11020103,"2.5":11020104,"3":11020105,"4x2":11020106,"5x2":11020107},
@@ -460,21 +464,21 @@ let productNumMap = {
 
 let prices = {
   silver:{
-    "1":  {"1-8":3300,"9-16":3800,"17-24":4300,"25-32":4800,"33-40":5300},
-    "1.5":{"1-8":4400,"9-16":4900,"17-24":5400,"25-32":5900,"33-40":6400},
-    "2":  {"1-8":6600,"9-16":7100,"17-24":7600,"25-32":8100,"33-40":8600},
-    "2.5":{"1-8":8800,"9-16":9800,"17-24":10800,"25-32":11800,"33-40":12800},
-    "3":  {"1-8":12100,"9-16":13100,"17-24":14100,"25-32":15100,"33-40":16100},
-    "4x2":{"1-8":12100,"9-16":13100,"17-24":14100,"25-32":15100,"33-40":16100},
-    "5x2":{"1-8":15950,"9-16":17450,"17-24":18950,"25-32":20450,"33-40":21950}
+    "1":  {"1-20":3850,"20up":4400},
+    "1.5":{"1-20":5500,"20up":6050},
+    "2":  {"1-20":7700,"20up":8800},
+    "2.5":{"1-20":9900,"20up":11000},
+    "3":  {"1-20":12100,"20up":13200},
+    "4x2":{"1-20":12100,"20up":13200},
+    "5x2":{"1-20":17600,"20up":19800}
   },
   "10K":{
-    "1":  {"1-8":14850,"9-16":16500,"17-24":18150,"25-32":19800,"33-40":21450},
-    "1.5":{"1-8":24200,"9-16":26950,"17-24":29700,"25-32":32450,"33-40":35200},
-    "2":  {"1-8":46200,"9-16":51150,"17-24":56100,"25-32":61050,"33-40":66000},
-    "2.5":{"1-8":82500,"9-16":90750,"17-24":99000,"25-32":107250,"33-40":115500},
-    "3":  {"1-8":107800,"9-16":118800,"17-24":129800,"25-32":140800,"33-40":151800},
-    "4x2":{"1-8":107800,"9-16":118800,"17-24":129800,"25-32":140800,"33-40":151800},
+    "1":  {"1-8":15400,"9-16":17050,"17-24":18700,"25-32":20350,"33-40":22000},
+    "1.5":{"1-8":27500,"9-16":30250,"17-24":33000,"25-32":35750,"33-40":38500},
+    "2":  {"1-8":49500,"9-16":54450,"17-24":59400,"25-32":64350,"33-40":69300},
+    "2.5":{"1-8":88000,"9-16":96250,"17-24":104500,"25-32":112750,"33-40":121000},
+    "3":  {"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
+    "4x2":{"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
     "5x2":{"1-8":154000,"9-16":169400,"17-24":184800,"25-32":200200,"33-40":215600}
   },
   "18K":{
@@ -487,23 +491,20 @@ let prices = {
     "5x2":{"1-8":330000,"9-16":363000,"17-24":396000,"25-32":429000,"33-40":462000}
   },
   "pt":{
-    "1":  {"1-8":26400,"9-16":29150,"17-24":31900,"25-32":34650,"33-40":37400},
-    "1.5":{"1-8":51700,"9-16":57200,"17-24":62700,"25-32":68200,"33-40":73700},
-    "2":  {"1-8":105600,"9-16":116600,"17-24":127600,"25-32":138600,"33-40":149600},
-    "2.5":{"1-8":154000,"9-16":169400,"17-24":184800,"25-32":200200,"33-40":215600},
-    "3":  {"1-8":209000,"9-16":229900,"17-24":250800,"25-32":271700,"33-40":292600},
-    "4x2":{"1-8":209000,"9-16":229900,"17-24":250800,"25-32":271700,"33-40":292600},
-    "5x2":{"1-8":253000,"9-16":278300,"17-24":303600,"25-32":328900,"33-40":354200}
+    "1":  {"1-8":25300,"9-16":28050,"17-24":30800,"25-32":33550,"33-40":36300},
+    "1.5":{"1-8":55000,"9-16":60500,"17-24":66000,"25-32":71500,"33-40":77000},
+    "2":  {"1-8":110000,"9-16":121000,"17-24":132000,"25-32":143000,"33-40":154000},
+    "2.5":{"1-8":165000,"9-16":180400,"17-24":195800,"25-32":211200,"33-40":226600},
+    "3":  {"1-8":220000,"9-16":242000,"17-24":264000,"25-32":286000,"33-40":308000},
+    "4x2":{"1-8":220000,"9-16":242000,"17-24":264000,"25-32":286000,"33-40":308000},
+    "5x2":{"1-8":297000,"9-16":322300,"17-24":347600,"25-32":372900,"33-40":398200}
   }
 };
 
 let carvingPrices = {
   silver:{
-    "1-8":  {"2":57200,"2.5":52800,"3":44000,"4x2":44000,"5x2":44000},
-    "9-16": {"2":57200,"2.5":59400,"3":59400,"4x2":59400,"5x2":59400},
-    "17-24":{"2":57200,"2.5":59400,"3":59400,"4x2":59400,"5x2":59400},
-    "25-32":{"2":66000,"2.5":66000,"3":59400,"4x2":59400,"5x2":59400},
-    "33-40":{"2":66000,"2.5":66000,"3":59400,"4x2":59400,"5x2":59400}
+    "1-20": {"2":57200,"2.5":52800,"3":44000,"4x2":44000,"5x2":44000},
+    "20up": {"2":57200,"2.5":59400,"3":59400,"4x2":59400,"5x2":59400}
   },
   "10K":{
     "1-8":  {"2":57200,"2.5":52800,"3":44000,"4x2":44000,"5x2":44000},
@@ -538,7 +539,35 @@ function fmt(n){ return "¥" + Math.round(n).toLocaleString("ja-JP"); }
 
 function setMat(el){
   document.querySelectorAll("#material-group .btn-mat").forEach(b=>b.classList.remove("active"));
-  el.classList.add("active"); mat = el.dataset.val; calc();
+  el.classList.add("active"); mat = el.dataset.val;
+  updateSizeButtons(mat);
+  calc();
+}
+
+function updateSizeButtons(currentMat){
+  const sizeRow = document.getElementById("size-group");
+  const silverBtns = sizeRow.querySelectorAll(".silver-size");
+  const otherBtns  = sizeRow.querySelectorAll(".other-size");
+
+  if(currentMat === "silver"){
+    sizeRow.classList.remove("other-mat");
+    silverBtns.forEach(b => b.style.display = "");
+    otherBtns.forEach(b  => { b.style.display = "none"; b.classList.remove("active"); });
+    // アクティブが他素材用だったらSilver先頭に戻す
+    const hasActive = [...silverBtns].some(b => b.classList.contains("active"));
+    if(!hasActive){
+      silverBtns.forEach((b,i) => b.classList.toggle("active", i===0));
+    }
+  } else {
+    sizeRow.classList.add("other-mat");
+    silverBtns.forEach(b => { b.style.display = "none"; b.classList.remove("active"); });
+    otherBtns.forEach(b  => b.style.display = "");
+    // アクティブがSilver用だったら他素材先頭に戻す
+    const hasActive = [...otherBtns].some(b => b.classList.contains("active"));
+    if(!hasActive){
+      otherBtns.forEach((b,i) => b.classList.toggle("active", i===0));
+    }
+  }
 }
 function setWidth(el){
   document.querySelectorAll("#width-group .btn-w").forEach(b=>b.classList.remove("active"));
@@ -606,8 +635,9 @@ function resetAll(){
   mat = "silver";
   // 幅
   document.querySelectorAll("#width-group .btn-w").forEach((b,i)=>{ b.classList.toggle("active",i===0); });
-  // 号数
-  document.querySelectorAll("#size-group .btn-s").forEach((b,i)=>{ b.classList.toggle("active",i===0); });
+  // 号数（Silver用に戻す）
+  updateSizeButtons("silver");
+  document.querySelectorAll("#size-group .silver-size").forEach((b,i)=>{ b.classList.toggle("active",i===0); });
   // グロス
   document.getElementById("gloss-toggle").checked = false;
   // 彫刻リセット
@@ -634,14 +664,12 @@ function calc(){
   const ringBase = (prices[mat]&&prices[mat][width]&&prices[mat][width][size]) || 0;
   let total = ringBase;
 
-  // サブタイトル
-  const matLabel = {silver:"Silver",  "10K":"K10","18K":"K18","pt":"Pt900"}[mat]||mat;
-  const wLabel   = {  "1":"1.0mm","1.5":"1.5mm","2":"2.0mm","2.5":"2.5mm",
-                      "3":"3.0mm","4x2":"4.0mm","5x2":"5.0mm"}[width]||(width+"mm");
-  document.getElementById("r-base-subtitle").textContent = matLabel+" "+wLabel;
+  // 商品名（スプレッドシートから: mat→width→size）
+  const prodName = (productNameMap[mat]&&productNameMap[mat][width]&&productNameMap[mat][width][size])||null;
+  document.getElementById("r-base-subtitle").textContent = prodName || "";
   document.getElementById("r-base").textContent = ringBase ? fmt(ringBase) : "—";
 
-  // 商品番号
+  // 商品番号（スプレッドシートから: mat→size→width）
   const pNum = (productNumMap[mat]&&productNumMap[mat][size]&&productNumMap[mat][size][width])||null;
   if(pNum){
     document.getElementById("r-product-num").textContent = "商品番号："+pNum;
@@ -750,49 +778,76 @@ function normalizeMat(rawMat){
 }
 function parsePriceNumSheet(rows){
   if(!rows||rows.length<2){ console.log("[RAVINA] rows空"); return null; }
-  const hdr  = rows[0].map(h=>String(h).trim());
-  const hdrl = hdr.map(h=>h.toLowerCase());
+
+  // ── シート構造（確定）──
+  // 1行目 = ヘッダー: shop / material / list / width / size / 商品名 / price / (空) / no.shop / no.list / no.material / no.width / no.size / 商品番号 / (空) / CSV用_商品名
+  // 2行目〜 = データ行
+  const hdr = rows[0].map(h => String(h).trim());
   console.log("[RAVINA] ヘッダー:", hdr);
 
-  const im  = hdrl.indexOf("material");
-  const is_ = hdrl.indexOf("size");
-  const iw  = hdrl.indexOf("width");
-  const il  = hdrl.indexOf("list");
-  const ipn = hdr.findIndex(h => h==="商品番号" || h.toLowerCase()==="no.");
-  const ipr = hdr.findIndex(h => /^(price|金額|料金)$/i.test(h));
-  console.log("[RAVINA] 列インデックス material="+im+" size="+is_+" width="+iw+" list="+il+" 商品番号="+ipn+" price="+ipr);
+  const col = name => hdr.findIndex(h => h === name);
+  const colRe = re => hdr.findIndex(h => re.test(h));
 
-  if(im<0||is_<0||iw<0){ console.log("[RAVINA] 必須列なし→終了"); return null; }
+  const im   = col("material");
+  const iw   = col("width");
+  const is_  = col("size");
+  const il   = col("list");
+  const ipr  = colRe(/^price$/i);
+  const ipn  = col("商品番号");
+  const inam = col("商品名");
 
+  console.log("[RAVINA] 列インデックス material="+im+" width="+iw+" size="+is_+" list="+il+" price="+ipr+" 商品番号="+ipn+" 商品名="+inam);
+
+  // width値 → キー変換（"1.0" → "1"、"4x2" はそのまま）
   const toWKey = r => {
     const s = String(r).trim().replace(/×/g,"x").replace(/mm$/i,"");
     if(s==="4x2"||s==="5x2") return s;
     const n = parseFloat(s);
     return isNaN(n) ? null : String(n);
   };
-  const toSzKey = r => String(r).trim().replace(/^size_/i,"").replace(/号$/,"").trim();
+  // size値 → キー変換（"1-20号" → "1-20"、"20号〜" → "20up"）
+  const toSzKey = r => {
+    let s = String(r).trim();
+    if(/20[号号]?[~〜]/.test(s) || /20[~〜]/.test(s)) return "20up";
+    return s.replace(/[号号]/g,"").replace(/[~〜]/g,"").replace(/\s/g,"").trim();
+  };
 
-  const pnumMap={}, newPrices={};
+  const pnumMap={}, newPrices={}, productNameMap={};
   let priceCount=0;
 
   for(let i=1; i<rows.length; i++){
     const v = rows[i];
     if(!v||!v.length) continue;
-    if(il>=0){ const lt=String(v[il]||"").trim(); if(lt && lt.toLowerCase()!=="ring") continue; }
+
+    // list列が "Ring" でない行はスキップ
+    if(il>=0){
+      const lt = String(v[il]||"").trim();
+      if(lt && lt.toLowerCase()!=="ring") continue;
+    }
 
     const mt = normalizeMat(String(v[im]||"").trim());
     if(!Object.values(MAT_MAP).includes(mt)) continue;
 
-    const sz = toSzKey(v[is_]);
-    const wk = toWKey(String(v[iw]||"").replace(/×/g,"x"));
-    if(!sz||!wk) continue;
+    const wk = toWKey(String(v[iw]||""));
+    const sz = toSzKey(String(v[is_]||""));
+    if(!wk||!sz) continue;
 
-    if(ipn>=0 && v[ipn]!=null && v[ipn]!==""){
+    // 商品番号（スプレッドシートの値をそのまま使用）
+    if(ipn>=0 && v[ipn]!=null && String(v[ipn]).trim()!==""){
       if(!pnumMap[mt])     pnumMap[mt]={};
       if(!pnumMap[mt][sz]) pnumMap[mt][sz]={};
-      pnumMap[mt][sz][wk] = v[ipn];
+      pnumMap[mt][sz][wk] = String(v[ipn]).trim();
     }
-    if(ipr>=0 && v[ipr]!=null && v[ipr]!==""){
+
+    // 商品名
+    if(inam>=0 && v[inam]!=null && String(v[inam]).trim()!==""){
+      if(!productNameMap[mt])     productNameMap[mt]={};
+      if(!productNameMap[mt][wk]) productNameMap[mt][wk]={};
+      productNameMap[mt][wk][sz] = String(v[inam]).trim();
+    }
+
+    // 価格（"¥3,850" 形式 → 数値）
+    if(ipr>=0 && v[ipr]!=null && String(v[ipr]).trim()!==""){
       const p = toNum(v[ipr]);
       if(p>0){
         if(!newPrices[mt])     newPrices[mt]={};
@@ -802,8 +857,8 @@ function parsePriceNumSheet(rows){
       }
     }
   }
-  console.log("[RAVINA] 価格件数:", priceCount, "silver/1/9-16:", newPrices?.silver?.["1"]?.["9-16"]);
-  return { pnumMap, newPrices };
+  console.log("[RAVINA] 価格件数:", priceCount, "| silver/1/1-20 price:", newPrices?.silver?.["1"]?.["1-20"], "| 商品番号:", pnumMap?.silver?.["1-20"]?.["1"], "| 商品名:", productNameMap?.silver?.["1"]?.["1-20"]);
+  return { pnumMap, newPrices, productNameMap };
 }
 
 async function initPrices(){
@@ -812,8 +867,9 @@ async function initPrices(){
     const rows   = await loadCSV(PNUM_GID);
     const result = parsePriceNumSheet(rows);
     if(result){
-      if(Object.keys(result.newPrices).length>0){ prices=result.newPrices; console.log("[RAVINA] prices更新OK"); }
-      if(Object.keys(result.pnumMap).length>0)   productNumMap=result.pnumMap;
+      if(Object.keys(result.newPrices).length>0)     { prices=result.newPrices;           console.log("[RAVINA] prices更新OK"); }
+      if(Object.keys(result.pnumMap).length>0)        productNumMap=result.pnumMap;
+      if(result.productNameMap && Object.keys(result.productNameMap).length>0) productNameMap=result.productNameMap;
     }
     document.getElementById("price-loading").style.display="none";
     showStatus("ok");

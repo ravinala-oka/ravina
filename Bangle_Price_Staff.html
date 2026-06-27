@@ -332,8 +332,9 @@ html, body {
 
 <script>
 // ── スプレッドシート設定（Price_Num シート GID:1469569588）──
-const SHEET_ID = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
-const PNUM_GID = "1469569588";
+// ── GAS中継URL（スプレッドシートIDは非公開・GASのデプロイURLのみ記載）──
+// GASをデプロイ後、発行されたURLをここに貼り付けてください
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzLruhDOLbk-JR_hfozomMc7jfZe3ypsmhN_fyu-hhqnRVdujOR3i4rNwwPJj1umAmq0w/exec";
 
 // ============================================================
 // フォールバック価格
@@ -677,11 +678,11 @@ function parsePriceNumSheet(rows){
 async function initPrices(){
   document.getElementById("price-loading").style.display="block";
   try{
-    const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${PNUM_GID}`;
-    const res=await fetch(url,{cache:"no-store"});
+    if(!GAS_URL||GAS_URL==="YOUR_GAS_DEPLOY_URL_HERE") throw new Error("GAS_URL未設定");
+    const res=await fetch(GAS_URL,{cache:"no-store"});
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
     const text=await res.text();
-    if(text.trim().startsWith("<!"))throw new Error("非公開スプレッドシート");
+    if(text.trim().startsWith("ERROR:"))throw new Error(text.trim());
     parsePriceNumSheet(parseCSV(text));
     document.getElementById("price-loading").style.display="none";
     showStatus("ok");

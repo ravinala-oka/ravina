@@ -422,8 +422,9 @@ html, body {
 // ============================================================
 // Google スプレッドシート連携 — Price_Num シートのみ使用
 // ============================================================
-const SHEET_ID = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
-const PNUM_GID = "1469569588";
+// GAS中継URL（スプレッドシートIDは非公開・GASのデプロイURLのみ記載）
+// GASをデプロイ後、発行されたURLをここに貼り付けてください
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzLruhDOLbk-JR_hfozomMc7jfZe3ypsmhN_fyu-hhqnRVdujOR3i4rNwwPJj1umAmq0w/exec";
 
 const MAT_MAP = {
   "silver925":"silver","silver":"silver","Silver":"silver","SV925":"silver","sv925":"silver",
@@ -752,14 +753,17 @@ function calc(){
   document.getElementById("r-total").textContent = total ? fmt(total) : "—";
 }
 
-// ─── CSV / スプレッドシート ───
-async function loadCSV(gid){
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
-  console.log("[RAVINA] fetch:", url);
-  const res = await fetch(url);
+// ─── GAS経由でPrice_NumシートのCSVを取得 ───
+async function loadCSV(){
+  if (!GAS_URL || GAS_URL === "YOUR_GAS_DEPLOY_URL_HERE") {
+    throw new Error("GAS_URLが未設定です。GASをデプロイしてURLを設定してください。");
+  }
+  console.log("[RAVINA] GAS fetch:", GAS_URL);
+  const res = await fetch(GAS_URL, { cache: "no-store" });
   console.log("[RAVINA] status:", res.status);
   if(!res.ok) throw new Error(`HTTP ${res.status}`);
   const text = await res.text();
+  if(text.trim().startsWith("ERROR:")) throw new Error(text.trim());
   console.log("[RAVINA] CSV先頭300字:", text.slice(0,300));
   return parseCSV(text);
 }
@@ -915,7 +919,7 @@ function parsePriceNumSheet(rows){
 async function initPrices(){
   document.getElementById("price-loading").style.display="block";
   try{
-    const rows   = await loadCSV(PNUM_GID);
+    const rows   = await loadCSV();
     const result = parsePriceNumSheet(rows);
     if(result){
       if(Object.keys(result.newPrices).length>0)     { prices=result.newPrices;           console.log("[RAVINA] prices更新OK:", Object.keys(result.newPrices)); }

@@ -535,9 +535,15 @@ function toNum(v) {
 function normalizeMat(rawMat) {
   const s = String(rawMat).trim();
   const lower = s.toLowerCase();
+  // 完全一致（大小文字無視）
   for (const [k, v] of Object.entries(MAT_MAP)) {
     if (k.toLowerCase() === lower) return v;
   }
+  // 部分一致フォールバック
+  if (lower.includes("silver")) return "silver";
+  if (lower.includes("10k") || lower.includes("k10")) return "10K";
+  if (lower.includes("18k") || lower.includes("k18")) return "18K";
+  if (lower.includes("pt") || lower.includes("plat")) return "pt";
   return s;
 }
 
@@ -571,6 +577,8 @@ function parsePriceNumSheet(rows) {
   const header  = rows[0].map(h => String(h).trim());
   const headerL = header.map(h => h.toLowerCase());
 
+  console.log("[RAVINA] Price_Num header:", header);
+
   const idxList       = headerL.indexOf("list");
   const idxMaterial   = headerL.indexOf("material");
   const idxSize       = headerL.indexOf("size");
@@ -579,13 +587,18 @@ function parsePriceNumSheet(rows) {
   const idxPrice      = header.findIndex(h => h.toLowerCase() === "price" || h === "価格" || h === "単価");
   const idxCarving    = header.findIndex(h => ["carving_price","carvingprice","彫刻価格","彫刻料金"].includes(h.toLowerCase()) || ["carving_price","carvingprice","彫刻価格","彫刻料金"].includes(h));
 
+  console.log("[RAVINA] col idx → material:", idxMaterial, "size:", idxSize, "width:", idxWidth, "price:", idxPrice, "carving:", idxCarving, "productNum:", idxProductNum);
+
   if (idxMaterial < 0 || idxSize < 0 || idxWidth < 0) {
+      console.warn("[RAVINA] 必須列が見つからない。material/size/widthが必要です");
       return null;
   }
 
   const newPrices      = {};
   const newCarving     = {};
   const newProductNums = {};
+
+  let parsedCount = 0;
 
   for (let i = 1; i < rows.length; i++) {
     const vals = rows[i];
@@ -602,7 +615,16 @@ function parsePriceNumSheet(rows) {
     const widthKey = toWidthKey(String(vals[idxWidth] || "").trim());
 
     if (!mat || !size || !widthKey) continue;
-    if (!Object.values(MAT_MAP).includes(mat)) continue;
+    if (!Object.values(MAT_MAP).includes(mat)) {
+      if (i <= 5) console.log("[RAVINA] row", i, "mat skip:", mat, "raw:", vals[idxMaterial]);
+      continue;
+    }
+
+    parsedCount++;
+    if (parsedCount <= 3) {
+      console.log("[RAVINA] row", i, "→ mat:", mat, "size:", size, "width:", widthKey,
+        "price:", idxPrice >= 0 ? vals[idxPrice] : "N/A");
+    }
 
     // 価格 → prices テーブル
     if (idxPrice >= 0) {
@@ -635,6 +657,7 @@ function parsePriceNumSheet(rows) {
     }
   }
 
+  console.log("[RAVINA] parsedCount:", parsedCount, "materials found:", Object.keys(newPrices));
   return { newPrices, newCarving, newProductNums };
 }
 
@@ -643,29 +666,41 @@ async function initPrices() {
   showLoadingState(true);
   try {
     const rows = await loadPriceNumCSV();
+    console.log("[RAVINA] CSV rows取得:", rows.length, "行");
   
     const result = parsePriceNumSheet(rows);
     console.log("[RAVINA] parsePriceNumSheet result:", result ? Object.keys(result) : "null");
 
     if (result) {
-      // prices を更新（price列がある場合）
+      // prices を更新（price列があり、かつ金やプラチナのデータが含まれる場合のみ）
       if (result.newPrices && Object.keys(result.newPrices).length > 0) {
-        prices = result.newPrices;
-        console.log("[RAVINA] prices updated from Price_Num ✓", Object.keys(prices));
+        // 全素材分のデータが揃っているか確認してから上書き
+        const hasMetal = ["10K","18K","pt"].some(m => result.newPrices[m]);
+        if (hasMetal) {
+          prices = result.newPrices;
+          console.log("[RAVINA] prices updated from Price_Num ✓", Object.keys(prices));
+        } else {
+          console.warn("[RAVINA] price列はあるがK10/K18/Ptデータなし → フォールバック維持");
+        }
       } else {
-            }
+        console.warn("[RAVINA] price列データなし → フォールバック価格を使用");
+      }
 
       // carvingPrices を更新（carving_price列がある場合）
       if (result.newCarving && Object.keys(result.newCarving).length > 0) {
         carvingPrices = result.newCarving;
-          } else {
-            }
+        console.log("[RAVINA] carvingPrices updated ✓", Object.keys(carvingPrices));
+      } else {
+        console.warn("[RAVINA] carving_price列データなし → フォールバック彫刻価格を使用");
+      }
 
       // productNumMap を更新
       if (result.newProductNums && Object.keys(result.newProductNums).length > 0) {
         productNumMap = result.newProductNums;
-          } else {
-            }
+        console.log("[RAVINA] productNumMap updated ✓", Object.keys(productNumMap));
+      } else {
+        console.warn("[RAVINA] 商品番号列データなし → フォールバック商品番号を使用");
+      }
 
       showLoadingState(false);
       showSheetStatus("ok");
@@ -738,7 +773,8 @@ function setMat(el) {
   document.querySelectorAll("#material-group .btn-opt").forEach(b => b.classList.remove("active"));
   el.classList.add("active");
   mat = el.dataset.val;
-  renderSizeButtons(mat);
+  renderSizeButtons(mat);  // 号数ボタンを作り直す（最初のボタンにactiveが付く）
+  // renderSizeButtons後にcalc()を呼ぶことで正しいsizeが取得できる
   calc();
 }
 // 彫刻可能な幅のdata-val一覧
@@ -851,8 +887,9 @@ function calc() {
   document.getElementById("r-base-subtitle").textContent = `${matLabel} _ ${widthMmLabel} _ ${sizeLabel}`;
 
   // 商品番号を取得して表示
-  const pNum = (productNumMap[mat] && productNumMap[mat][size] && productNumMap[mat][size][width]) || null;
-  document.getElementById("r-product-num").textContent = pNum ? `商品番号：${pNum}` : "";
+  const pNum = (productNumMap[mat] && productNumMap[mat][size] && productNumMap[mat][size][width] !== undefined)
+    ? productNumMap[mat][size][width] : null;
+  document.getElementById("r-product-num").textContent = (pNum !== null && pNum !== "") ? `商品番号：${pNum}` : "";
 
   // つや有
   const glossOn = document.getElementById("gloss-toggle") && document.getElementById("gloss-toggle").checked;

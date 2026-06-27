@@ -254,7 +254,7 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
       <label>内径サイズ</label>
       <div class="cm-stepper">
         <button onclick="changeCm(-1)">－</button>
-        <div class="cm-display" id="cm-display">15</div>
+        <div class="cm-display" id="cm-display">10</div>
         <button onclick="changeCm(+1)">＋</button>
       </div>
       <span class="cm-unit">cm</span>
@@ -316,98 +316,90 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
 
 <script>
 // ============================================================
-// スプレッドシート設定
+// スプレッドシート設定（Price_Num シート1枚のみ参照）
 // ============================================================
-const SHEET_ID     = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
-const BANGLE_SHEET = "Bangle_Price";
-const PNUM_SHEET   = "Price_Num";
-
-// GIDはURLのgid=XXXXを確認してください
-const SHEET_GIDS = {
-  "Bangle_Price": "1740202800",  // ← Bangle_PriceシートのGID
-  "Price_Num":    "1469569588"   // ← Price_NumシートのGID
-};
+const SHEET_ID = "1PFFJCOuw3KmwwB4SjVfI1b6cthS1iUwbxRSos9lCGl0";
+const PNUM_GID = "1469569588"; // Price_Num シート GID
 
 // ============================================================
-// フォールバック価格（スプレ読み込み失敗時）
-// Bangle_Price シート "Bangle" 行の値
+// フォールバック価格（スプレ読み込み失敗 / 列が見つからない時）
 // ============================================================
 
-// Silver no_cm: bPriceSilver[width] = 価格
+// Silver: bPriceSilver[width] = 価格
 let bPriceSilver = {
-  "2":    12100,
-  "2.5":  17600,
-  "3":    22000,
-  "4x2":  22000,
-  "5x2":  25300,
-  "6x2":  33000,
-  "10x2": 55000
+  "2":12100,"2.5":17600,"3":22000,"4x2":22000,"5x2":25300,"6x2":33000,"10x2":55000
 };
 
 // Gold/Pt 1cm単価: bPriceUnit[mat][width] = 1cm単価
 let bPriceUnit = {
-  "10K": { "2": 10450, "2.5": 15400, "3": 22550, "4x2": 20350, "5x2": 26950 },
-  "18K": { "2": 22550, "2.5": 34650, "3": 49500, "4x2": 50600, "5x2": 54450 },
-  "pt":  { "2": 16500, "2.5": 19800, "3": 28600, "4x2": 41250, "5x2": 51150 }
+  "10K":{"2":10450,"2.5":15400,"3":22550,"4x2":20350,"5x2":26950},
+  "18K":{"2":22550,"2.5":34650,"3":49500,"4x2":50600,"5x2":54450},
+  "pt": {"2":16500,"2.5":19800,"3":28600,"4x2":41250,"5x2":51150}
 };
 
 // Gold/Pt cm別合計: bPriceCm[mat][width][cm文字列] = 価格
 let bPriceCm = {
-  "10K": {
-    "2":   {"10":104500,"11":114950,"12":125400,"13":135850,"14":146300,"15":156750,"16":167200,"17":177650,"18":188100,"19":198550,"20":209000},
-    "2.5": {"10":154000,"11":169400,"12":184800,"13":200200,"14":215600,"15":231000,"16":246400,"17":261800,"18":277200,"19":292600,"20":308000},
-    "3":   {"10":225500,"11":248050,"12":270600,"13":293150,"14":315700,"15":338250,"16":360800,"17":383350,"18":405900,"19":428450,"20":451000},
-    "4x2": {"10":203500,"11":223850,"12":244200,"13":264550,"14":284900,"15":305250,"16":325600,"17":345950,"18":366300,"19":386650,"20":407000},
-    "5x2": {"10":269500,"11":296450,"12":323400,"13":350350,"14":377300,"15":404250,"16":431200,"17":458150,"18":485100,"19":512050,"20":539000}
+  "10K":{
+    "2":  {"10":104500,"11":114950,"12":125400,"13":135850,"14":146300,"15":156750,"16":167200,"17":177650,"18":188100,"19":198550,"20":209000},
+    "2.5":{"10":154000,"11":169400,"12":184800,"13":200200,"14":215600,"15":231000,"16":246400,"17":261800,"18":277200,"19":292600,"20":308000},
+    "3":  {"10":225500,"11":248050,"12":270600,"13":293150,"14":315700,"15":338250,"16":360800,"17":383350,"18":405900,"19":428450,"20":451000},
+    "4x2":{"10":203500,"11":223850,"12":244200,"13":264550,"14":284900,"15":305250,"16":325600,"17":345950,"18":366300,"19":386650,"20":407000},
+    "5x2":{"10":269500,"11":296450,"12":323400,"13":350350,"14":377300,"15":404250,"16":431200,"17":458150,"18":485100,"19":512050,"20":539000}
   },
-  "18K": {
-    "2":   {"10":225500,"11":248050,"12":270600,"13":293150,"14":315700,"15":338250,"16":360800,"17":383350,"18":405900,"19":428450,"20":451000},
-    "2.5": {"10":346500,"11":381150,"12":415800,"13":450450,"14":485100,"15":519750,"16":554400,"17":589050,"18":623700,"19":658350,"20":693000},
-    "3":   {"10":495000,"11":544500,"12":594000,"13":643500,"14":693000,"15":742500,"16":792000,"17":841500,"18":891000,"19":940500,"20":990000},
-    "4x2": {"10":506000,"11":556600,"12":607200,"13":657800,"14":708400,"15":759000,"16":809600,"17":860200,"18":910800,"19":961400,"20":1012000},
-    "5x2": {"10":544500,"11":598950,"12":653400,"13":707850,"14":762300,"15":816750,"16":871200,"17":925650,"18":980100,"19":1034550,"20":1089000}
+  "18K":{
+    "2":  {"10":225500,"11":248050,"12":270600,"13":293150,"14":315700,"15":338250,"16":360800,"17":383350,"18":405900,"19":428450,"20":451000},
+    "2.5":{"10":346500,"11":381150,"12":415800,"13":450450,"14":485100,"15":519750,"16":554400,"17":589050,"18":623700,"19":658350,"20":693000},
+    "3":  {"10":495000,"11":544500,"12":594000,"13":643500,"14":693000,"15":742500,"16":792000,"17":841500,"18":891000,"19":940500,"20":990000},
+    "4x2":{"10":506000,"11":556600,"12":607200,"13":657800,"14":708400,"15":759000,"16":809600,"17":860200,"18":910800,"19":961400,"20":1012000},
+    "5x2":{"10":544500,"11":598950,"12":653400,"13":707850,"14":762300,"15":816750,"16":871200,"17":925650,"18":980100,"19":1034550,"20":1089000}
   },
-  "pt": {
-    "2":   {"10":165000,"11":181500,"12":198000,"13":214500,"14":231000,"15":247500,"16":264000,"17":280500,"18":297000,"19":313500,"20":330000},
-    "2.5": {"10":198000,"11":217800,"12":237600,"13":257400,"14":277200,"15":297000,"16":316800,"17":336600,"18":356400,"19":376200,"20":396000},
-    "3":   {"10":286000,"11":314600,"12":343200,"13":371800,"14":400400,"15":429000,"16":457600,"17":486200,"18":514800,"19":543400,"20":572000},
-    "4x2": {"10":412500,"11":453750,"12":495000,"13":536250,"14":577500,"15":618750,"16":660000,"17":701250,"18":742500,"19":783750,"20":825000},
-    "5x2": {"10":511500,"11":562650,"12":613800,"13":664950,"14":716100,"15":767250,"16":818400,"17":869550,"18":920700,"19":971850,"20":1023000}
+  "pt":{
+    "2":  {"10":165000,"11":181500,"12":198000,"13":214500,"14":231000,"15":247500,"16":264000,"17":280500,"18":297000,"19":313500,"20":330000},
+    "2.5":{"10":198000,"11":217800,"12":237600,"13":257400,"14":277200,"15":297000,"16":316800,"17":336600,"18":356400,"19":376200,"20":396000},
+    "3":  {"10":286000,"11":314600,"12":343200,"13":371800,"14":400400,"15":429000,"16":457600,"17":486200,"18":514800,"19":543400,"20":572000},
+    "4x2":{"10":412500,"11":453750,"12":495000,"13":536250,"14":577500,"15":618750,"16":660000,"17":701250,"18":742500,"19":783750,"20":825000},
+    "5x2":{"10":511500,"11":562650,"12":613800,"13":664950,"14":716100,"15":767250,"16":818400,"17":869550,"18":920700,"19":971850,"20":1023000}
   }
 };
 
 // 商品番号マップ（Price_Numシートから動的更新）
 // Silver: bProductNum.silver[width] = 番号
 // Gold/Pt: bProductNum[mat][width][cm文字列] = 番号
-// Price_Numシートのno.size: 10cm=07, 11cm=08, ..., 20cm=17
 let bProductNum = {
-  silver: { "2":"12010306", "2.5":"12010406", "3":"12010506", "4x2":"12010606", "5x2":"12010706", "6x2":"12010806", "10x2":"12010906" },
-  "10K": {
-    "2":   {"10":"12020307","11":"12020308","12":"12020309","13":"12020310","14":"12020311","15":"12020312","16":"12020313","17":"12020314","18":"12020315","19":"12020316","20":"12020317"},
-    "2.5": {"10":"12020407","11":"12020408","12":"12020409","13":"12020410","14":"12020411","15":"12020412","16":"12020413","17":"12020414","18":"12020415","19":"12020416","20":"12020417"},
-    "3":   {"10":"12020507","11":"12020508","12":"12020509","13":"12020510","14":"12020511","15":"12020512","16":"12020513","17":"12020514","18":"12020515","19":"12020516","20":"12020517"}
+  silver:{"2":"12010306","2.5":"12010406","3":"12010506","4x2":"12010606","5x2":"12010706","6x2":"12010806","10x2":"12010906"},
+  "10K":{
+    "2":  {"10":"12020307","11":"12020308","12":"12020309","13":"12020310","14":"12020311","15":"12020312","16":"12020313","17":"12020314","18":"12020315","19":"12020316","20":"12020317"},
+    "2.5":{"10":"12020407","11":"12020408","12":"12020409","13":"12020410","14":"12020411","15":"12020412","16":"12020413","17":"12020414","18":"12020415","19":"12020416","20":"12020417"},
+    "3":  {"10":"12020507","11":"12020508","12":"12020509","13":"12020510","14":"12020511","15":"12020512","16":"12020513","17":"12020514","18":"12020515","19":"12020516","20":"12020517"},
+    "4x2":{"10":"12020607","11":"12020608","12":"12020609","13":"12020610","14":"12020611","15":"12020612","16":"12020613","17":"12020614","18":"12020615","19":"12020616","20":"12020617"},
+    "5x2":{"10":"12020707","11":"12020708","12":"12020709","13":"12020710","14":"12020711","15":"12020712","16":"12020713","17":"12020714","18":"12020715","19":"12020716","20":"12020717"}
   },
-  "18K": {
-    "2":   {"10":"12030307","11":"12030308","12":"12030309","13":"12030310","14":"12030311","15":"12030312","16":"12030313","17":"12030314","18":"12030315","19":"12030316","20":"12030317"},
-    "2.5": {"10":"12030407","11":"12030408","12":"12030409","13":"12030410","14":"12030411","15":"12030412","16":"12030413","17":"12030414","18":"12030415","19":"12030416","20":"12030417"},
-    "3":   {"10":"12030507","11":"12030508","12":"12030509","13":"12030510","14":"12030511","15":"12030512","16":"12030513","17":"12030514","18":"12030515","19":"12030516","20":"12030517"}
+  "18K":{
+    "2":  {"10":"12030307","11":"12030308","12":"12030309","13":"12030310","14":"12030311","15":"12030312","16":"12030313","17":"12030314","18":"12030315","19":"12030316","20":"12030317"},
+    "2.5":{"10":"12030407","11":"12030408","12":"12030409","13":"12030410","14":"12030411","15":"12030412","16":"12030413","17":"12030414","18":"12030415","19":"12030416","20":"12030417"},
+    "3":  {"10":"12030507","11":"12030508","12":"12030509","13":"12030510","14":"12030511","15":"12030512","16":"12030513","17":"12030514","18":"12030515","19":"12030516","20":"12030517"},
+    "4x2":{"10":"12030607","11":"12030608","12":"12030609","13":"12030610","14":"12030611","15":"12030612","16":"12030613","17":"12030614","18":"12030615","19":"12030616","20":"12030617"},
+    "5x2":{"10":"12030707","11":"12030708","12":"12030709","13":"12030710","14":"12030711","15":"12030712","16":"12030713","17":"12030714","18":"12030715","19":"12030716","20":"12030717"}
   },
-  "pt": {
-    "2":   {"10":"12040307","11":"12040308","12":"12040309","13":"12040310","14":"12040311","15":"12040312","16":"12040313","17":"12040314","18":"12040315","19":"12040316","20":"12040317"},
-    "2.5": {"10":"12040407","11":"12040408","12":"12040409","13":"12040410","14":"12040411","15":"12040412","16":"12040413","17":"12040414","18":"12040415","19":"12040416","20":"12040417"},
-    "3":   {"10":"12040507","11":"12040508","12":"12040509","13":"12040510","14":"12040511","15":"12040512","16":"12040513","17":"12040514","18":"12040515","19":"12040516","20":"12040517"}
+  "pt":{
+    "2":  {"10":"12040307","11":"12040308","12":"12040309","13":"12040310","14":"12040311","15":"12040312","16":"12040313","17":"12040314","18":"12040315","19":"12040316","20":"12040317"},
+    "2.5":{"10":"12040407","11":"12040408","12":"12040409","13":"12040410","14":"12040411","15":"12040412","16":"12040413","17":"12040414","18":"12040415","19":"12040416","20":"12040417"},
+    "3":  {"10":"12040507","11":"12040508","12":"12040509","13":"12040510","14":"12040511","15":"12040512","16":"12040513","17":"12040514","18":"12040515","19":"12040516","20":"12040517"},
+    "4x2":{"10":"12040607","11":"12040608","12":"12040609","13":"12040610","14":"12040611","15":"12040612","16":"12040613","17":"12040614","18":"12040615","19":"12040616","20":"12040617"},
+    "5x2":{"10":"12040707","11":"12040708","12":"12040709","13":"12040710","14":"12040711","15":"12040712","16":"12040713","17":"12040714","18":"12040715","19":"12040716","20":"12040717"}
   }
 };
 
 // ============================================================
-// CSV 読み込み
+// CSV 読み込み・パース
 // ============================================================
-async function loadCSV(sheetName) {
-  const gid = SHEET_GIDS[sheetName] ?? "0";
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`CSV取得失敗 HTTP ${res.status}`);
-  return parseCSV(await res.text());
+async function loadPriceNumCSV() {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${PNUM_GID}`;
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const text = await res.text();
+  if (text.trim().startsWith("<!")) throw new Error("スプレッドシートが非公開です");
+  return parseCSV(text);
 }
 
 function parseCSV(text) {
@@ -423,8 +415,7 @@ function parseCSV(text) {
       if (ch === '"') inQ = true;
       else if (ch === ',') { row.push(cur.trim()); cur = ""; }
       else if (ch === '\n') { row.push(cur.trim()); if (row.some(c => c !== "")) rows.push(row); row = []; cur = ""; }
-      else if (ch === '\r') { /* skip */ }
-      else cur += ch;
+      else if (ch !== '\r') cur += ch;
     }
   }
   if (cur !== "" || row.length > 0) { row.push(cur.trim()); if (row.some(c => c !== "")) rows.push(row); }
@@ -437,145 +428,175 @@ function toNum(v) {
 }
 
 // ============================================================
-// Bangle_Price シートのパース
-// ヘッダー: list | material | size | 2 | 2.5 | 3 | 4x2 | 5x2 | 6x2 | 10x2
-// size: no_cm | 1cm | cm_10 〜 cm_20
+// Price_Num シートのパース（Bangleのみ）
+// 期待列: list | material | size | width | 商品番号 | price | carving_price
+//
+// Bangleのsize規則:
+//   Silver  → size = no_cm / fixed / (空)    → bPriceSilver
+//   Gold/Pt → size = 1cm / unit              → bPriceUnit (1cm単価)
+//   Gold/Pt → size = cm_10〜cm_20 / 10cm〜20cm / 10〜20  → bPriceCm
+//   商品番号列 → bProductNum
 // ============================================================
-function parseBangleSheet(rows) {
+function parsePriceNumSheet(rows) {
   if (!rows || rows.length < 2) return false;
 
-  const header  = rows[0].map(h => String(h).trim().toLowerCase());
-  const idxList = header.indexOf("list");
-  const idxMat  = header.indexOf("material");
-  const idxSize = header.indexOf("size");
-  if (idxMat < 0 || idxSize < 0) return false;
+  const hdr  = rows[0].map(h => String(h).trim());
+  const hdrL = hdr.map(h => h.toLowerCase());
 
-  // 幅列マッピング
-  const WD = ["2","2.5","3","4x2","5x2","6x2","10x2"];
-  const wdCols = WD.map(w => ({ key: w, idx: header.indexOf(w.toLowerCase()) })).filter(d => d.idx >= 0);
+  const iList = hdrL.indexOf("list");
+  const iMat  = hdrL.indexOf("material");
+  const iSize = hdrL.indexOf("size");
+  const iW    = hdrL.indexOf("width");
+  const iPN   = hdr.findIndex(h => h === "商品番号" || h.toLowerCase() === "product_num" || h.toLowerCase() === "productnum");
+  const iP    = hdr.findIndex(h => h.toLowerCase() === "price" || h === "価格" || h === "単価");
 
-  const newSilver = {};
-  const newUnit   = { "10K":{}, "18K":{}, "pt":{} };
-  const newCm     = { "10K":{}, "18K":{}, "pt":{} };
+  console.log("[RAVINA Bangle] header:", hdr);
+  console.log("[RAVINA Bangle] cols → mat:", iMat, "size:", iSize, "width:", iW, "price:", iP, "pn:", iPN, "list:", iList);
+
+  if (iMat < 0 || iSize < 0) {
+    console.warn("[RAVINA Bangle] material/size列が見つかりません");
+    return false;
+  }
+
+  // material文字列 → 内部キー
+  function normMat(s) {
+    const l = s.toLowerCase();
+    if (/silver/.test(l)) return "silver";
+    if (/10k|k10/.test(l)) return "10K";
+    if (/18k|k18/.test(l)) return "18K";
+    if (/^pt|plat/.test(l)) return "pt";
+    return null;
+  }
+
+  // width文字列 → 内部キー
+  function normWidth(s) {
+    if (!s) return null;
+    const r = s.trim().replace(/[×ｘ]/g, "x").replace(/\s/g, "");
+    if (/^4x2$/i.test(r)) return "4x2";
+    if (/^5x2$/i.test(r)) return "5x2";
+    if (/^6x2$/i.test(r)) return "6x2";
+    if (/^10x2$/i.test(r)) return "10x2";
+    const n = parseFloat(r);
+    return isNaN(n) ? null : String(n);
+  }
+
+  // size列からcm数値を抽出: "cm_10","10cm","10","10.5cm" → "10"
+  // 単価行("1cm","unit","no_cm","fixed") → null
+  function normSizeCm(s) {
+    const lower = s.toLowerCase().trim();
+    if (lower === "1cm" || lower === "unit" || lower === "no_cm" || lower === "fixed" || lower === "") return null;
+    const m1 = lower.match(/^cm_?(\d+(?:\.\d+)?)$/);
+    if (m1) return m1[1];
+    const m2 = lower.match(/^(\d+(?:\.\d+)?)cm$/);
+    if (m2) return m2[1];
+    const m3 = lower.match(/^(\d+(?:\.\d+)?)$/);
+    if (m3 && parseFloat(m3[1]) >= 10 && parseFloat(m3[1]) <= 20) return m3[1];
+    return null;
+  }
+
+  function isUnitRow(s) {
+    const l = s.toLowerCase().trim();
+    return l === "1cm" || l === "unit" || l === "no_cm" || l === "fixed";
+  }
+
+  const newSv  = {};
+  const newU   = { "10K":{}, "18K":{}, "pt":{} };
+  const newCm  = { "10K":{}, "18K":{}, "pt":{} };
+  const newPN  = {};
+  let count = 0;
 
   for (let i = 1; i < rows.length; i++) {
-    const vals = rows[i];
-    if (!vals || vals.length === 0) continue;
-    if (idxList >= 0 && String(vals[idxList]||"").trim() !== "Bangle") continue;
+    const v = rows[i];
+    if (!v || !v.length) continue;
 
-    const rawMat = String(vals[idxMat]||"").trim();
-    const size   = String(vals[idxSize]||"").trim();
-
-    // Silver no_cm
-    if (/silver/i.test(rawMat) && size === "no_cm") {
-      wdCols.forEach(({ key, idx }) => {
-        const p = toNum(vals[idx]);
-        if (p > 0) newSilver[key] = p;
-      });
-      continue;
+    // listフィルタ：空またはBangleのみ通す（Ringはスキップ）
+    if (iList >= 0) {
+      const lt = String(v[iList] || "").trim().toLowerCase();
+      if (lt && lt !== "bangle") continue;
     }
 
-    // Gold / Pt
-    const matKey = /^K10|^10K/i.test(rawMat) ? "10K"
-                 : /^K18|^18K/i.test(rawMat) ? "18K"
-                 : /^Pt/i.test(rawMat)        ? "pt"
-                 : null;
-    if (!matKey) continue;
+    const mat = normMat(String(v[iMat] || "").trim());
+    if (!mat) continue;
 
-    if (size === "1cm") {
-      // 1cm単価行（2〜5x2の5列）
-      ["2","2.5","3","4x2","5x2"].forEach(w => {
-        const col = wdCols.find(c => c.key === w);
-        if (!col) return;
-        const p = toNum(vals[col.idx]);
-        if (p > 0) newUnit[matKey][w] = p;
-      });
-    } else if (size.startsWith("cm_")) {
-      const cm = size.replace("cm_",""); // "10"〜"20"
-      ["2","2.5","3","4x2","5x2"].forEach(w => {
-        const col = wdCols.find(c => c.key === w);
-        if (!col) return;
-        const p = toNum(vals[col.idx]);
-        if (p > 0) {
-          if (!newCm[matKey][w]) newCm[matKey][w] = {};
-          newCm[matKey][w][cm] = p;
+    const szRaw = String(v[iSize] || "").trim();
+    const w     = iW >= 0 ? normWidth(String(v[iW] || "").trim()) : null;
+    const price = iP >= 0 ? toNum(v[iP]) : 0;
+    const pnRaw = iPN >= 0 ? String(v[iPN] || "").trim() : "";
+
+    count++;
+    if (count <= 4) console.log("[RAVINA Bangle] row", i, "mat:", mat, "sz:", szRaw, "w:", w, "price:", price, "pn:", pnRaw);
+
+    if (!w) continue;
+
+    if (mat === "silver") {
+      // Silver: サイズ不要・固定価格
+      if (price > 0) newSv[w] = price;
+      if (pnRaw) { if (!newPN.silver) newPN.silver = {}; newPN.silver[w] = pnRaw; }
+
+    } else {
+      // Gold / Pt
+      if (isUnitRow(szRaw)) {
+        // 1cm単価行
+        if (price > 0) newU[mat][w] = price;
+      } else {
+        const cm = normSizeCm(szRaw);
+        if (!cm) continue;
+        if (price > 0) {
+          if (!newCm[mat][w]) newCm[mat][w] = {};
+          newCm[mat][w][cm] = price;
         }
-      });
+        if (pnRaw) {
+          if (!newPN[mat])      newPN[mat]    = {};
+          if (!newPN[mat][w])   newPN[mat][w] = {};
+          newPN[mat][w][cm] = pnRaw;
+        }
+      }
     }
   }
 
-  // 更新
-  if (Object.keys(newSilver).length > 0) bPriceSilver = newSilver;
+  console.log("[RAVINA Bangle] total parsed:", count, "newSv keys:", Object.keys(newSv), "newPN keys:", Object.keys(newPN));
+
+  // 価格更新（取得できた素材のみ上書き）
+  if (Object.keys(newSv).length > 0) bPriceSilver = newSv;
   ["10K","18K","pt"].forEach(m => {
-    if (Object.keys(newUnit[m]).length > 0) bPriceUnit[m] = newUnit[m];
-    if (Object.keys(newCm[m]).length > 0)   bPriceCm[m]   = newCm[m];
+    if (Object.keys(newU[m]).length > 0) bPriceUnit[m] = newU[m];
+    if (Object.keys(newCm[m]).length > 0) bPriceCm[m]  = newCm[m];
   });
+
+  // 商品番号：フォールバックをベースにシート取得分でマージ（上書きではなく合成）
+  if (Object.keys(newPN).length > 0) {
+    const merged = JSON.parse(JSON.stringify(bProductNum));
+    for (const [m, v] of Object.entries(newPN)) {
+      if (typeof v !== "object") continue;
+      if (!merged[m]) merged[m] = {};
+      for (const [k, val] of Object.entries(v)) {
+        if (typeof val === "object") {
+          if (!merged[m][k]) merged[m][k] = {};
+          Object.assign(merged[m][k], val);
+        } else {
+          merged[m][k] = val;
+        }
+      }
+    }
+    bProductNum = merged;
+  }
+
   return true;
 }
 
 // ============================================================
-// Price_Num シートのパース（Bangleのみ）
-// ============================================================
-function parsePriceNumSheet(rows) {
-  if (!rows || rows.length < 2) return false;
-  const header = rows[0].map(h => String(h).trim());
-  const hL     = header.map(h => h.toLowerCase());
-  const idxList = hL.indexOf("list");
-  const idxMat  = hL.indexOf("material");
-  const idxSize = hL.indexOf("size");
-  const idxW    = hL.indexOf("width");
-  const idxNum  = header.indexOf("商品番号");
-  if (idxMat < 0 || idxSize < 0 || idxW < 0 || idxNum < 0) return false;
-
-  const newMap = { silver:{}, "10K":{}, "18K":{}, "pt":{} };
-  for (let i = 1; i < rows.length; i++) {
-    const vals = rows[i];
-    if (!vals || vals.length === 0) continue;
-    if (idxList >= 0 && String(vals[idxList]||"").trim() !== "Bangle") continue;
-
-    const rawMat = String(vals[idxMat]||"").trim();
-    const size   = String(vals[idxSize]||"").trim();
-    const rawW   = String(vals[idxW]||"").trim().replace(/×/g,"x");
-    const num    = String(vals[idxNum]||"").trim();
-    if (!num) continue;
-
-    const matKey = /silver/i.test(rawMat) ? "silver"
-                 : /^K10|^10K/i.test(rawMat) ? "10K"
-                 : /^K18|^18K/i.test(rawMat) ? "18K"
-                 : /^Pt/i.test(rawMat)        ? "pt"
-                 : null;
-    if (!matKey) continue;
-
-    // widthキーを正規化
-    let wKey = rawW;
-    const wNum = parseFloat(rawW);
-    if (!isNaN(wNum) && !rawW.includes("x")) wKey = String(wNum);
-
-    newMap[matKey][wKey] = num;
-  }
-  let updated = false;
-  Object.entries(newMap).forEach(([m,v]) => { if (Object.keys(v).length > 0) { bProductNum[m] = v; updated = true; } });
-  return updated;
-}
-
-// ============================================================
-// 初期化
+// 初期化（Price_Num シート1枚のみ）
 // ============================================================
 async function initPrices() {
   showLoading(true);
   try {
-    const bangleRows = await loadCSV(BANGLE_SHEET);
-    const ok = parseBangleSheet(bangleRows);
-    if (!ok) console.warn("[RAVINA] Bangle_Price parse failed → fallback");
-
-    try {
-      const pnumRows = await loadCSV(PNUM_SHEET);
-      parsePriceNumSheet(pnumRows);
-    } catch(e) { console.warn("Price_Num読み込み失敗:", e); }
-
+    const rows = await loadPriceNumCSV();
+    console.log("[RAVINA Bangle] CSV rows:", rows.length);
+    const ok = parsePriceNumSheet(rows);
+    if (!ok) console.warn("[RAVINA Bangle] パース失敗 → フォールバック価格を使用");
     showStatus("ok");
   } catch(e) {
-    console.warn("スプレ読み込み失敗:", e);
+    console.warn("[RAVINA Bangle] 読み込み失敗:", e);
     showStatus("error");
   }
   showLoading(false);
@@ -591,7 +612,7 @@ function showStatus(state) {
   el.textContent = state === "ok"
     ? "✓ 最新価格を読み込みました"
     : "⚠ 価格の読み込みに失敗。デフォルト価格を表示しています。";
-  el.style.color = state === "ok" ? "#6a9a6a" : "#c07a4a";
+  el.style.color  = state === "ok" ? "#6a9a6a" : "#c07a4a";
   el.style.display = "block";
 }
 
@@ -599,7 +620,7 @@ function showStatus(state) {
 // UI 状態
 // ============================================================
 let mat   = "silver";
-let cmVal = 15;
+let cmVal = 10; // デフォルト10cm（変更: 15 → 10）
 let counts = { stone: 0 };
 
 function setMat(el) {
@@ -613,7 +634,6 @@ function setMat(el) {
   document.getElementById("width-group-gold").style.display   = isSilver ? "none" : "";
   document.getElementById("length-section").style.display     = isSilver ? "none" : "";
 
-  // Gold切替時は選択中の幅ボタンをリセット（Silver専用幅が残らないよう）
   if (!isSilver) {
     const goldFirst = document.querySelector("#width-group-gold .btn-opt");
     if (goldFirst && !document.querySelector("#width-group-gold .btn-opt.active")) {
@@ -664,37 +684,34 @@ function calc() {
   if (mat === "silver") {
     basePrice = bPriceSilver[width] || 0;
     subtitle  = `Silver 925 / 幅 ${width}mm（固定価格）`;
-    prodNum   = bProductNum.silver[width] ? "商品番号：" + bProductNum.silver[width] : "";
+    const pn  = bProductNum.silver && bProductNum.silver[width];
+    prodNum   = pn ? "商品番号：" + pn : "";
   } else {
     const cmKey    = String(cmVal);
     const matLabel = mat === "10K" ? "Gold K10" : mat === "18K" ? "Gold K18" : "Pt900";
-    // cm別テーブルが存在すればそちらを使用、なければ単価×cm
-    const cmTable = (bPriceCm[mat] || {})[width] || {};
-    const unit    = (bPriceUnit[mat] || {})[width] || 0;
+    const cmTable  = (bPriceCm[mat] || {})[width] || {};
+    const unit     = (bPriceUnit[mat] || {})[width] || 0;
     basePrice = cmTable[cmKey] || (unit * cmVal) || 0;
     subtitle  = `${matLabel} / 幅 ${width}mm / ${cmVal}cm`;
-    // 単価表示
     const unitDisp = unit > 0 ? `（1cm ＝ ${fmt(unit)}）` : "";
     document.getElementById("cm-unit-price").textContent = unitDisp;
     const cmMap = bProductNum[mat] && bProductNum[mat][width];
-    prodNum = cmMap && cmMap[cmKey] ? "商品番号：" + cmMap[cmKey] : "";
+    prodNum = (cmMap && cmMap[cmKey]) ? "商品番号：" + cmMap[cmKey] : "";
   }
 
   let total = basePrice;
-  document.getElementById("r-base").textContent          = fmt(basePrice);
+  document.getElementById("r-base").textContent          = basePrice ? fmt(basePrice) : "—";
   document.getElementById("r-base-subtitle").textContent = subtitle;
   document.getElementById("r-product-num").textContent   = prodNum;
 
-  // 石留め
   if (counts.stone > 0) {
     const s = counts.stone * 11000; total += s;
-    document.getElementById("lbl-stone").textContent     = `石留め ×${counts.stone}石`;
-    document.getElementById("r-stone").textContent       = fmt(s);
-    document.getElementById("row-stone").style.display   = "";
+    document.getElementById("lbl-stone").textContent   = `石留め ×${counts.stone}石`;
+    document.getElementById("r-stone").textContent     = fmt(s);
+    document.getElementById("row-stone").style.display = "";
   } else { document.getElementById("row-stone").style.display = "none"; }
 
-
-  document.getElementById("r-total").textContent = fmt(total);
+  document.getElementById("r-total").textContent = total ? fmt(total) : "—";
 }
 
 // ============================================================
@@ -702,7 +719,7 @@ function calc() {
 // ============================================================
 function sendInquiry() {
   const width = getWidth();
-  let total = 0, basePrice = 0;
+  let basePrice = 0;
 
   if (mat === "silver") {
     basePrice = bPriceSilver[width] || 0;
@@ -712,24 +729,18 @@ function sendInquiry() {
     const unit    = (bPriceUnit[mat] || {})[width] || 0;
     basePrice = cmTable[cmKey] || (unit * cmVal) || 0;
   }
-  total = basePrice + counts.stone * 11000;
+  const total = basePrice + counts.stone * 11000;
 
-  const matLabel = mat === "silver" ? "Silver 925"
-                 : mat === "10K"    ? "Gold K10"
-                 : mat === "18K"    ? "Gold K18" : "Pt900";
+  const matLabel = mat === "silver" ? "Silver 925" : mat === "10K" ? "Gold K10" : mat === "18K" ? "Gold K18" : "Pt900";
   const sizeStr  = mat === "silver" ? "（固定価格）" : `/ ${cmVal}cm`;
 
   const body = [
-    "RAVINAバングルシミュレーターよりお問い合わせ",
-    "",
+    "RAVINAバングルシミュレーターよりお問い合わせ","",
     `■ 素材　：${matLabel}`,
     `■ 幅　　：${width}mm ${sizeStr}`,
     `■ 石留め：${counts.stone}石`,
     `■ 概算金額：${fmt(total)}`,
-    "",
-    "---",
-    "RAVINA jewelry workshop studio",
-    "American Village 3F, Okinawa"
+    "","---","RAVINA jewelry workshop studio","American Village 3F, Okinawa"
   ].join("\n");
 
   const subject = `【バングルお問い合わせ】${matLabel} ${width}mm`;

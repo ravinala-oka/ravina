@@ -527,74 +527,137 @@ function toNum(v){ if(!v&&v!==0)return 0; return Number(String(v).replace(/[^0-9
 // Price_Num シート解析
 // 期待列: list | material | size | width | 商品番号 | price | carving_price
 // バングル固有:
-//   material=silver925 size=no_cm    → bPriceSilver[width]=price
-//   material=10K/18K/pt900 size=1cm  → bPriceUnit[mat][width]=price
-//   material=10K/18K/pt900 size=cm_N → bPriceCm[mat][width][N]=price
-//   商品番号列                        → bProductNum
+//   material=silver925  size=no_cm / 固定 / (数値以外)  → bPriceSilver[width]=price
+//   material=10K/18K/pt size=1cm / unit               → bPriceUnit[mat][width]=price
+//   material=10K/18K/pt size=cm_N / Ncm / N(数値cm)   → bPriceCm[mat][width][N]=price
+//   商品番号列                                          → bProductNum
 function parsePriceNumSheet(rows){
   if(!rows||rows.length<2)return false;
   const hdr=rows[0].map(h=>String(h).trim());
   const hL=hdr.map(h=>h.toLowerCase());
   const iL=hL.indexOf("list"),iM=hL.indexOf("material"),iS=hL.indexOf("size"),iW=hL.indexOf("width");
-  const iPN=hdr.findIndex(h=>h==="商品番号"||h.toLowerCase()==="product_num");
+  const iPN=hdr.findIndex(h=>h==="商品番号"||h.toLowerCase()==="product_num"||h.toLowerCase()==="productnum");
   const iP=hdr.findIndex(h=>h.toLowerCase()==="price"||h==="価格"||h==="単価");
   if(iM<0||iS<0)return false;
+
+  console.log("[RAVINA Bangle] header:", hdr);
+  console.log("[RAVINA Bangle] col idx → mat:",iM,"size:",iS,"width:",iW,"price:",iP,"pn:",iPN,"list:",iL);
 
   function normMat(s){
     const l=s.toLowerCase();
     if(/silver/i.test(l))return "silver";
-    if(/^k?10/i.test(l)||/10k/i.test(l))return "10K";
-    if(/^k?18/i.test(l)||/18k/i.test(l))return "18K";
-    if(/^pt/i.test(l))return "pt";
+    if(/10k|k10/i.test(l))return "10K";
+    if(/18k|k18/i.test(l))return "18K";
+    if(/^pt|plat/i.test(l))return "pt";
     return null;
   }
   function normWidth(s){
     if(!s)return null;
-    const r=s.trim().replace(/[×x×]/g,"x");
-    if(r==="4x2"||r==="5x2"||r==="6x2"||r==="10x2")return r;
+    // ×→x、全角→半角
+    const r=s.trim().replace(/[×ｘ]/g,"x").replace(/[－−]/g,"-");
+    if(/^4x2$/i.test(r))return "4x2";
+    if(/^5x2$/i.test(r))return "5x2";
+    if(/^6x2$/i.test(r))return "6x2";
+    if(/^10x2$/i.test(r))return "10x2";
     const n=parseFloat(r);
     return isNaN(n)?null:String(n);
   }
+  // size 列からcm数値を抽出。"cm_10","10cm","10","10.0cm" → "10"
+  // "1cm","unit","no_cm" → null（単価行として扱う）
+  function normSizeCm(s){
+    const lower=s.toLowerCase().trim();
+    // 単価・固定行パターン
+    if(lower==="1cm"||lower==="unit"||lower==="no_cm"||lower==="fixed"||lower===""||lower==="固定")return null;
+    // cm_N 形式
+    const m1=lower.match(/^cm_?(\d+(?:\.\d+)?)$/);
+    if(m1)return m1[1];
+    // Ncm 形式
+    const m2=lower.match(/^(\d+(?:\.\d+)?)cm$/);
+    if(m2)return m2[1];
+    // 純数値
+    const m3=lower.match(/^(\d+(?:\.\d+)?)$/);
+    if(m3)return m3[1];
+    return null;
+  }
+  // size列が「単価行」かどうか判定
+  function isUnitRow(s){
+    const lower=s.toLowerCase().trim();
+    return lower==="1cm"||lower==="unit"||lower==="no_cm"||lower==="fixed";
+  }
 
   const newSv={},newU={"10K":{},"18K":{},"pt":{}},newC={"10K":{},"18K":{},"pt":{}},newPN={};
+  let parsedRows=0;
 
   for(let i=1;i<rows.length;i++){
     const v=rows[i]; if(!v||!v.length)continue;
     if(iL>=0){const lt=String(v[iL]||"").trim().toLowerCase();if(lt&&lt!=="bangle")continue;}
     const mat=normMat(String(v[iM]||"").trim()); if(!mat)continue;
-    const sz=String(v[iS]||"").trim();
+    const szRaw=String(v[iS]||"").trim();
     const price=iP>=0?toNum(v[iP]):0;
-    const pn=iPN>=0?v[iPN]:"";
+    const pnRaw=iPN>=0?String(v[iPN]||"").trim():"";
+
+    parsedRows++;
+    if(parsedRows<=4)console.log("[RAVINA Bangle] row",i,"mat:",mat,"sz:",szRaw,"w:",iW>=0?v[iW]:"?","price:",price,"pn:",pnRaw);
+
+    if(iW<0)continue;
+    const w=normWidth(String(v[iW]||"").trim());
+    if(!w)continue;
 
     if(mat==="silver"){
-      if(iW>=0){
-        const w=normWidth(String(v[iW]||"").trim()); if(!w)continue;
-        if(price>0)newSv[w]=price;
-        if(pn){if(!newPN.silver)newPN.silver={};newPN.silver[w]=pn;}
-      }
+      // Silver: cm不要・固定価格
+      if(price>0)newSv[w]=price;
+      if(pnRaw){if(!newPN.silver)newPN.silver={};newPN.silver[w]=pnRaw;}
     } else {
-      if(sz==="1cm"||sz==="no_cm"){
-        if(iW>=0){
-          const w=normWidth(String(v[iW]||"").trim()); if(!w)continue;
-          if(price>0)newU[mat][w]=price;
-        }
-      } else if(sz.startsWith("cm_")){
-        const cm=sz.replace("cm_","");
-        if(iW>=0){
-          const w=normWidth(String(v[iW]||"").trim()); if(!w)continue;
-          if(price>0){if(!newC[mat][w])newC[mat][w]={};newC[mat][w][cm]=price;}
-          if(pn){if(!newPN[mat])newPN[mat]={};if(!newPN[mat][w])newPN[mat][w]={};newPN[mat][w][cm]=pn;}
+      // Gold/Pt: size列で単価行とcm行を区別
+      if(isUnitRow(szRaw)){
+        if(price>0)newU[mat][w]=price;
+        // 単価行に商品番号はない想定（あれば格納しない）
+      } else {
+        const cm=normSizeCm(szRaw);
+        if(!cm)continue;
+        if(price>0){if(!newC[mat][w])newC[mat][w]={};newC[mat][w][cm]=price;}
+        if(pnRaw){
+          if(!newPN[mat])newPN[mat]={};
+          if(!newPN[mat][w])newPN[mat][w]={};
+          newPN[mat][w][cm]=pnRaw;
         }
       }
     }
   }
 
+  console.log("[RAVINA Bangle] parsed rows:",parsedRows);
+  console.log("[RAVINA Bangle] newSv keys:",Object.keys(newSv));
+  console.log("[RAVINA Bangle] newPN keys:",Object.keys(newPN));
+  ["10K","18K","pt"].forEach(m=>{
+    console.log("[RAVINA Bangle] newC["+m+"] keys:",Object.keys(newC[m]));
+  });
+
+  // 素材ごとに上書き（取得できた分だけ更新・他はフォールバックを保持）
   if(Object.keys(newSv).length>0)bPriceSilver=newSv;
   ["10K","18K","pt"].forEach(m=>{
     if(Object.keys(newU[m]).length>0)bPriceUnit[m]=newU[m];
     if(Object.keys(newC[m]).length>0)bPriceCm[m]=newC[m];
   });
-  if(Object.keys(newPN).length>0)bProductNum=newPN;
+
+  // 商品番号：素材ごとにマージ（silver だけ取れても 10K/18K/pt はフォールバック維持）
+  if(Object.keys(newPN).length>0){
+    // フォールバックをベースにシートの値で上書き
+    const merged=JSON.parse(JSON.stringify(bProductNum));
+    for(const [m,v] of Object.entries(newPN)){
+      if(typeof v==="object"&&!Array.isArray(v)){
+        if(!merged[m])merged[m]={};
+        for(const [k2,v2] of Object.entries(v)){
+          if(typeof v2==="object"){
+            if(!merged[m][k2])merged[m][k2]={};
+            Object.assign(merged[m][k2],v2);
+          } else {
+            merged[m][k2]=v2;
+          }
+        }
+      }
+    }
+    bProductNum=merged;
+  }
   return true;
 }
 

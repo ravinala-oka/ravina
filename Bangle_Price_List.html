@@ -118,6 +118,20 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
 .option-name { font-size: 13px; font-weight: 300; }
 .option-price-note { font-size: 11px; color: var(--soft); margin-top: 2px; }
 
+/* トグルスイッチ */
+.toggle-wrap { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+.toggle-wrap input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--border); border-radius: 22px; cursor: pointer; transition: background 0.2s;
+}
+.toggle-slider:before {
+  content: ""; position: absolute; width: 16px; height: 16px;
+  background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s;
+}
+.toggle-wrap input:checked + .toggle-slider { background: var(--gold); }
+.toggle-wrap input:checked + .toggle-slider:before { transform: translateX(18px); }
+
 /* カウンター */
 .counter { display: flex; align-items: center; gap: 0; }
 .counter-btn {
@@ -171,8 +185,8 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
 
 <div class="header">
   <div class="header-label">Bangle Customizer</div>
-  <h1>Bangle Price Calculator</h1>
-  <p>腕輪（バングル）料金シミュレーター</p>
+  <h1>Bangle Price Estimator</h1>
+  <p>バングル料金</p>
 </div>
 
 <div class="simulator">
@@ -270,6 +284,17 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
   <div>
     <div class="section-title">Option — オプション</div>
 
+    <div class="option-row">
+      <div>
+        <div class="option-name">つや加工</div>
+        <div class="option-price-note">¥2,200</div>
+      </div>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="gloss-toggle" onchange="calc()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
     <div class="option-row" style="border-bottom:none;">
       <div>
         <div class="option-name">ダイヤモンド石留め</div>
@@ -296,6 +321,9 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
           <span id="r-product-num"   style="font-size:10px;color:var(--soft);font-weight:300;letter-spacing:0.04em;"></span>
         </span>
         <span id="r-base">—</span>
+      </div>
+      <div class="result-row" id="row-gloss" style="display:none;">
+        <span>つや加工</span><span id="r-gloss">¥2,200</span>
       </div>
       <div class="result-row" id="row-stone" style="display:none;">
         <span id="lbl-stone">石留め</span><span id="r-stone">—</span>
@@ -709,6 +737,14 @@ function calc() {
   document.getElementById("r-base-subtitle").textContent = subtitle;
   document.getElementById("r-product-num").textContent   = prodNum;
 
+  const glossOn = document.getElementById("gloss-toggle") && document.getElementById("gloss-toggle").checked;
+  if (glossOn) {
+    total += 2200;
+    document.getElementById("row-gloss").style.display = "flex";
+  } else {
+    document.getElementById("row-gloss").style.display = "none";
+  }
+
   if (counts.stone > 0) {
     const s = counts.stone * 11000; total += s;
     document.getElementById("lbl-stone").textContent   = `石留め ×${counts.stone}石`;
@@ -734,7 +770,8 @@ function sendInquiry() {
     const unit    = (bPriceUnit[mat] || {})[width] || 0;
     basePrice = cmTable[cmKey] || (unit * cmVal) || 0;
   }
-  const total = basePrice + counts.stone * 11000;
+  const glossOn = document.getElementById("gloss-toggle") && document.getElementById("gloss-toggle").checked;
+  const total = basePrice + (glossOn ? 2200 : 0) + counts.stone * 11000;
 
   const matLabel = mat === "silver" ? "Silver 925" : mat === "10K" ? "Gold K10" : mat === "18K" ? "Gold K18" : "Pt900";
   const sizeStr  = mat === "silver" ? "（固定価格）" : `/ ${cmVal}cm`;
@@ -743,6 +780,7 @@ function sendInquiry() {
     "RAVINAバングルシミュレーターよりお問い合わせ","",
     `■ 素材　：${matLabel}`,
     `■ 幅　　：${width}mm ${sizeStr}`,
+    `■ つや加工：${glossOn ? 'あり（¥2,200）' : 'なし'}`,
     `■ 石留め：${counts.stone}石`,
     `■ 概算金額：${fmt(total)}`,
     "","---","RAVINA jewelry workshop studio","American Village 3F, Okinawa"

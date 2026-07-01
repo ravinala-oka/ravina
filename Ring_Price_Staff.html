@@ -250,7 +250,7 @@ html, body {
   <div class="topbar">
     <div>
       <div class="topbar-title">RAVINA — Ring Price</div>
-      <div class="topbar-sub">指輪 料金シミュレーター</div>
+      <div class="topbar-sub">指輪 料金</div>
     </div>
     <div style="display:flex;gap:6px;align-items:center;">
       <button class="btn-reset" onclick="resetAll()">リセット</button>
@@ -266,8 +266,8 @@ html, body {
       <div class="sec-label">Material — 素材</div>
       <div class="mat-row" id="material-group">
         <button class="btn-mat active" data-val="silver" onclick="setMat(this)">Silver<span>SV925</span></button>
-        <button class="btn-mat" data-val="10K"    onclick="setMat(this)">Gold K10<span>K10</span></button>
-        <button class="btn-mat" data-val="18K"    onclick="setMat(this)">Gold K18<span>K18</span></button>
+        <button class="btn-mat" data-val="10K"    onclick="setMat(this)">K10 Gold <span>K10</span></button>
+        <button class="btn-mat" data-val="18K"    onclick="setMat(this)">K18 Gold <span>K18</span></button>
         <button class="btn-mat" data-val="pt"     onclick="setMat(this)">Platinum<span>Pt900</span></button>
       </div>
     </div>
@@ -321,9 +321,9 @@ html, body {
       <div class="sec-label">Option — オプション</div>
       <div class="opts">
 
-        <!-- つや有 -->
+        <!-- つや加工 -->
         <div class="opt-row">
-          <div><div class="opt-name">つや有</div><div class="opt-note">¥1,100</div></div>
+          <div><div class="opt-name">つや加工</div><div class="opt-note">¥1,100</div></div>
           <label class="toggle-wrap">
             <input type="checkbox" id="gloss-toggle" onchange="calc()">
             <span class="toggle-slider"></span>
@@ -332,7 +332,7 @@ html, body {
 
         <!-- 沖縄彫刻 -->
         <div class="opt-row">
-          <div><div class="opt-name">オーダー彫刻</div><div class="opt-note">3.0mm以上</div></div>
+          <div><div class="opt-name">手作り彫刻</div><div class="opt-note">3.0mm以上</div></div>
           <label class="toggle-wrap">
             <input type="checkbox" id="carving-toggle" onchange="onCarvingToggle()">
             <span class="toggle-slider"></span>
@@ -371,7 +371,7 @@ html, body {
 
         <!-- ダイヤモンド -->
         <div class="opt-row">
-          <div><div class="opt-name">ダイヤモンド1石</div><div class="opt-note">¥11,000 / 石</div></div>
+          <div><div class="opt-name">ダイヤモンド</div><div class="opt-note">¥11,000 / 石</div></div>
           <div class="counter">
             <button class="counter-btn" onclick="change('stone',-1)">−</button>
             <div class="counter-val" id="val-stone">0</div>
@@ -405,7 +405,7 @@ html, body {
       <div id="r-product-num-row" class="res-row" style="display:none">
         <span id="r-product-num" style="font-size:10px;color:var(--soft);"></span><span></span>
       </div>
-      <div class="res-row" id="row-gloss"    style="display:none"><span>つや有</span><span id="r-gloss">¥1,100</span></div>
+      <div class="res-row" id="row-gloss"    style="display:none"><span>つや加工</span><span id="r-gloss">¥1,100</span></div>
       <div class="res-row" id="row-carving"  style="display:none"><span id="lbl-carving">沖縄彫刻（全周）</span><span id="r-carving">—</span></div>
       <div class="res-row" id="row-stone"    style="display:none"><span id="lbl-stone">ダイヤモンド</span><span id="r-stone">—</span></div>
       <div class="res-row" id="row-stamp"    style="display:none"><span id="lbl-stamp">刻印</span><span id="r-stamp">—</span></div>
@@ -684,7 +684,7 @@ function calc(){
     document.getElementById("r-product-num-row").style.display="none";
   }
 
-  // つや有
+  // つや加工
   const glossOn = document.getElementById("gloss-toggle").checked;
   if(glossOn){ total+=1100; document.getElementById("row-gloss").style.display="flex"; }
   else { document.getElementById("row-gloss").style.display="none"; }

@@ -159,6 +159,20 @@ html, body {
 .opt-name { font-size: 12px; font-weight: 500; }
 .opt-note { font-size: 9px; color: var(--soft); margin-top: 1px; }
 
+/* トグルスイッチ */
+.toggle-wrap { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle-wrap input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: #d1d5db; border-radius: 20px; cursor: pointer; transition: background 0.2s;
+}
+.toggle-slider:before {
+  content: ""; position: absolute; width: 14px; height: 14px;
+  background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s;
+}
+.toggle-wrap input:checked + .toggle-slider { background: var(--accent); }
+.toggle-wrap input:checked + .toggle-slider:before { transform: translateX(16px); }
+
 /* カウンター */
 .counter { display: flex; align-items: center; }
 .counter-btn {
@@ -205,7 +219,7 @@ html, body {
   <div class="topbar">
     <div>
       <div class="topbar-title">RAVINA — Bangle Price</div>
-      <div class="topbar-sub">腕輪（バングル）料金シミュレーター</div>
+      <div class="topbar-sub">バングル料金</div>
     </div>
     <div style="display:flex;gap:6px;align-items:center;">
       <button class="btn-reset" onclick="resetAll()">リセット</button>
@@ -296,6 +310,13 @@ html, body {
     <div class="sec">
       <div class="sec-label">Option — オプション</div>
       <div class="opts">
+        <div class="opt-row">
+          <div><div class="opt-name">つや加工</div><div class="opt-note">¥2,200</div></div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="gloss-toggle" onchange="calc()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
         <div class="opt-row" style="border-bottom:none;">
           <div><div class="opt-name">ダイヤモンド石留め</div><div class="opt-note">¥11,000 / 石</div></div>
           <div class="counter">
@@ -319,6 +340,9 @@ html, body {
       </div>
       <div id="r-product-num-row" class="res-row" style="display:none;">
         <span id="r-product-num" style="font-size:10px;color:var(--footer-soft);"></span><span></span>
+      </div>
+      <div class="res-row" id="row-gloss" style="display:none;">
+        <span>つや加工</span><span id="r-gloss">¥2,200</span>
       </div>
       <div class="res-row" id="row-stone" style="display:none;">
         <span id="lbl-stone">石留め</span><span id="r-stone">—</span>
@@ -455,6 +479,8 @@ function resetAll(){
   // カウンター
   counts = { stone:0 };
   document.getElementById("val-stone").textContent = 0;
+  // グロス
+  document.getElementById("gloss-toggle").checked = false;
   calc();
 }
 
@@ -505,6 +531,15 @@ function calc(){
     document.getElementById("r-product-num-row").style.display = "flex";
   } else {
     document.getElementById("r-product-num-row").style.display = "none";
+  }
+
+  // つや加工
+  const glossOn = document.getElementById("gloss-toggle") && document.getElementById("gloss-toggle").checked;
+  if (glossOn) {
+    total += 2200;
+    document.getElementById("row-gloss").style.display = "flex";
+  } else {
+    document.getElementById("row-gloss").style.display = "none";
   }
 
   // 石留め

@@ -199,8 +199,8 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
 
 <div class="header">
   <div class="header-label">Ring Customizer</div>
-  <h1>Ring Price Calculator</h1>
-  <p>指輪 料金シミュレーター</p>
+  <h1>Ring Price Estimator</h1>
+  <p>指輪 料金</p>
 </div>
 
 <div class="simulator">
@@ -209,8 +209,8 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
     <div class="section-title">Material — 素材</div>
     <div class="mat-grid" id="material-group">
       <button class="btn-opt active" data-val="silver" onclick="setMat(this)">Silver<br><span style="font-size:10px;color:var(--soft)">silver925</span></button>
-      <button class="btn-opt" data-val="10K"    onclick="setMat(this)">Gold K10<br><span style="font-size:10px;color:var(--soft)">K10</span></button>
-      <button class="btn-opt" data-val="18K"    onclick="setMat(this)">Gold K18<br><span style="font-size:10px;color:var(--soft)">K18</span></button>
+      <button class="btn-opt" data-val="10K"    onclick="setMat(this)">K10 Gold <br><span style="font-size:10px;color:var(--soft)">K10</span></button>
+      <button class="btn-opt" data-val="18K"    onclick="setMat(this)">K18 Gold <br><span style="font-size:10px;color:var(--soft)">K18</span></button>
       <button class="btn-opt" data-val="pt"     onclick="setMat(this)">Platinum<br><span style="font-size:10px;color:var(--soft)">Pt900</span></button>
     </div>
   </div>
@@ -259,7 +259,7 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
 
     <div class="option-row">
       <div>
-        <div class="option-name">つや有</div>
+        <div class="option-name">つや加工</div>
         <div class="option-price-note">¥1,100</div>
       </div>
       <label class="toggle-wrap">
@@ -270,7 +270,7 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
 
     <div class="option-row">
       <div>
-        <div class="option-name">オーダー彫刻</div>
+        <div class="option-name">手作り彫刻</div>
         <div class="option-price-note">彫刻は3.0mmから可能です</div>
       </div>
       <label class="toggle-wrap">
@@ -331,7 +331,7 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
 
     <div class="option-row">
       <div>
-        <div class="option-name">ダイヤモンド1石</div>
+        <div class="option-name">ダイヤモンド</div>
         <div class="option-price-note">¥11,000 / 石</div>
       </div>
       <div class="counter">
@@ -359,7 +359,7 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
     <div id="price-loading" style="display:none;text-align:center;padding:8px 0;font-size:12px;color:var(--soft);letter-spacing:0.05em;">価格を読み込み中…</div>
     <div id="result-rows">
       <div class="result-row"><span>基本料金（リング）<br><span id="r-base-subtitle" style="font-size:10px;color:var(--soft);font-weight:300;letter-spacing:0.04em;"></span><br><span id="r-product-num" style="font-size:10px;color:var(--soft);font-weight:300;letter-spacing:0.04em;"></span></span><span id="r-base">—</span></div>
-      <div class="result-row" id="row-gloss" style="display:none"><span>つや有</span><span id="r-gloss">¥1,100</span></div>
+      <div class="result-row" id="row-gloss" style="display:none"><span>つや加工</span><span id="r-gloss">¥1,100</span></div>
       <div class="result-row" id="row-carving"><span id="lbl-carving">ハワイアン彫り（全周）</span><span id="r-carving">—</span></div>
       <div class="result-row" id="row-stone"    style="display:none"><span id="lbl-stone">石留め</span><span id="r-stone">—</span></div>
       <div class="result-row" id="row-stamp"    style="display:none"><span id="lbl-stamp">刻印</span><span id="r-stamp">—</span></div>
@@ -882,7 +882,7 @@ function calc() {
   document.getElementById("r-base").textContent = fmt(ringBase);
 
   // 基本料金の副題（例: Silver _ 1(1.0mm) _ 1～8号）
-  const matLabel = { silver:"Silver", "10K":"Gold K10", "18K":"Gold K18", "pt":"Platinum" }[mat] || mat;
+  const matLabel = { silver:"Silver", "10K":"K10 Gold ", "18K":"K18 Gold ", "pt":"Platinum" }[mat] || mat;
   const sizeLabel = { "1-8":"1～8号","9-16":"9～16号","17-24":"17～24号","25-32":"25～32号","33-40":"33～40号","1-20":"1～20号","21+":"21号〜" }[size] || size;
   const widthMmLabel = { "1":"1.0mm","1.5":"1.5mm","2":"2.0mm","2.5":"2.5mm","3":"3.0mm","4x2":"4.0mm(4x2)","5x2":"5.0mm(5x2)" }[width] || (width + "mm");
   document.getElementById("r-base-subtitle").textContent = `${matLabel} _ ${widthMmLabel} _ ${sizeLabel}`;
@@ -892,7 +892,7 @@ function calc() {
     ? productNumMap[mat][size][width] : null;
   document.getElementById("r-product-num").textContent = (pNum !== null && pNum !== "") ? `商品番号：${pNum}` : "";
 
-  // つや有
+  // つや加工
   const glossOn = document.getElementById("gloss-toggle") && document.getElementById("gloss-toggle").checked;
   if (glossOn) {
     total += 1100;
@@ -1004,13 +1004,13 @@ function sendInquiry() {
   const glossOn2 = document.getElementById("gloss-toggle")?.checked;
   if (glossOn2) total += 1100;
 
-  const matLabel = { silver:"Silver 925", "10K":"Gold K10", "18K":"Gold K18", "pt":"Pt900" }[mat];
+  const matLabel = { silver:"Silver 925", "10K":"K10 Gold ", "18K":"K18 Gold ", "pt":"Pt900" }[mat];
   const body =
     'RAVINAリングシミュレーターよりお問い合わせ\n\n' +
     '■ 素材：'         + matLabel + '\n' +
     '■ 幅：'           + width + 'mm\n' +
     '■ 号数：'         + size + '\n' +
-    '■ つや有：'        + (glossOn2 ? 'あり（¥1,100）' : 'なし') + '\n' +
+    '■ つや加工：'        + (glossOn2 ? 'あり（¥1,100）' : 'なし') + '\n' +
     '■ ハワイアン彫り：' + (scope === 'none' ? 'なし' : scope === 'full' ? '全周' : scope === 'half' ? '半周' : 'ポイント（¥0）') + '\n' +
     '■ 石留め：'       + counts.stone + '石\n' +
     '■ 刻印：'         + counts.stamp + '文字\n' +

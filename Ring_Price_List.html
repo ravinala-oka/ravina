@@ -209,8 +209,8 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
     <div class="section-title">Material — 素材</div>
     <div class="mat-grid" id="material-group">
       <button class="btn-opt active" data-val="silver" onclick="setMat(this)">Silver<br><span style="font-size:10px;color:var(--soft)">silver925</span></button>
-      <button class="btn-opt" data-val="10K"    onclick="setMat(this)">K10 Gold <br><span style="font-size:10px;color:var(--soft)">K10</span></button>
-      <button class="btn-opt" data-val="18K"    onclick="setMat(this)">K18 Gold <br><span style="font-size:10px;color:var(--soft)">K18</span></button>
+      <button class="btn-opt" data-val="10K"    onclick="setMat(this)">Gold <br><span style="font-size:10px;color:var(--soft)">K10</span></button>
+      <button class="btn-opt" data-val="18K"    onclick="setMat(this)">Gold <br><span style="font-size:10px;color:var(--soft)">K18</span></button>
       <button class="btn-opt" data-val="pt"     onclick="setMat(this)">Platinum<br><span style="font-size:10px;color:var(--soft)">Pt900</span></button>
     </div>
   </div>
@@ -744,9 +744,7 @@ const SIZE_DEFS = {
   default: [
     { val: "1-8",   label: "1〜8号" },
     { val: "9-16",  label: "9〜16号" },
-    { val: "17-24", label: "17〜24号" },
-    { val: "25-32", label: "25〜32号" },
-    { val: "33-40", label: "33〜40号" }
+    { val: "17-24", label: "17〜24号" }
   ]
 };
 
@@ -755,7 +753,7 @@ function renderSizeButtons(m) {
   const grp = document.getElementById("size-group");
   grp.innerHTML = "";
   // グリッド列数を素材に合わせる
-  grp.style.gridTemplateColumns = m === "silver" ? "repeat(2,1fr)" : "repeat(5,1fr)";
+  grp.style.gridTemplateColumns = m === "silver" ? "repeat(2,1fr)" : "repeat(3,1fr)";
   defs.forEach((d, i) => {
     const btn = document.createElement("button");
     btn.className = "btn-opt" + (i === 0 ? " active" : "");

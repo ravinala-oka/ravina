@@ -119,6 +119,9 @@ html, body {
   background: var(--accent-pale); border-color: var(--accent); color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--accent);
 }
+.btn-w.disabled {
+  opacity: 0.35; pointer-events: none; cursor: default;
+}
 
 /* ── 号数: Silver=2ボタン / その他=5ボタン ── */
 .size-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
@@ -298,7 +301,7 @@ html, body {
         <button class="btn-w" data-val="5x2" onclick="setWidth(this)">
           <svg viewBox="-1 0 24 16"><ellipse cx="11" cy="8" rx="11" ry="6"/></svg>5.0
         </button>
-        <button class="btn-w" data-val="6" onclick="setWidth(this)">
+        <button class="btn-w" data-val="6" onclick="setWidth(this)" id="width-6-btn">
           <svg viewBox="0 0 22 16"><rect x="2" y="4" width="18" height="8" rx="2" ry="2"/></svg>6.0
         </button>
       </div>
@@ -557,6 +560,19 @@ function fmt(n){ return "¥" + Math.round(n).toLocaleString("ja-JP"); }
 function setMat(el){
   document.querySelectorAll("#material-group .btn-mat").forEach(b=>b.classList.remove("active"));
   el.classList.add("active"); mat = el.dataset.val;
+
+  // K10/K18/Pt900は6.0mmのデータがないため選択不可にする
+  const sixBtn = document.getElementById("width-6-btn");
+  if (sixBtn) {
+    const isSilver = mat === "silver";
+    sixBtn.classList.toggle("disabled", !isSilver);
+    if (!isSilver && sixBtn.classList.contains("active")) {
+      sixBtn.classList.remove("active");
+      const fallback = document.querySelector('#width-group .btn-w[data-val="5x2"]');
+      if (fallback) fallback.classList.add("active");
+    }
+  }
+
   updateSizeButtons(mat);
   calc();
 }
@@ -652,6 +668,8 @@ function resetAll(){
   mat = "silver";
   // 幅
   document.querySelectorAll("#width-group .btn-w").forEach((b,i)=>{ b.classList.toggle("active",i===0); });
+  const sixBtn = document.getElementById("width-6-btn");
+  if(sixBtn) sixBtn.classList.remove("disabled");
   // 号数（Silver用に戻す）
   updateSizeButtons("silver");
   document.querySelectorAll("#size-group .silver-size").forEach((b,i)=>{ b.classList.toggle("active",i===0); });

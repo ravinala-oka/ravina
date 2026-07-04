@@ -267,7 +267,13 @@ html, body {
           <svg viewBox="0 0 22 14"><rect x="0" y="3" width="22" height="8" rx="1"/></svg>10×2
         </button>
       </div>
-      <div class="sv-note">Silver 925 は長さに関わらず固定価格です</div>
+      <div class="opt-row" style="border-bottom:none; background:var(--bg); border-radius:8px; padding:7px 10px;">
+        <div><div class="opt-name">18㎝以上</div><div class="opt-note">+10%</div></div>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="silver-18cm-toggle" onchange="calc()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
     </div>
 
     <!-- 幅：Gold / Pt（5種） + cm入力 -->
@@ -365,6 +371,9 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbzLruhDOLbk-JR_hfozomMc
 // ============================================================
 let bPriceSilver = {
   "2":12100,"2.5":17600,"3":22000,"4x2":22000,"5x2":25300,"6x2":38500,"10x2":66000
+};
+let bPriceSilver18 = {
+  "2":13310,"2.5":19360,"3":24200,"4x2":24200,"5x2":27830,"6x2":42350,"10x2":72600
 };
 let bPriceUnit = {
   "10K":{"2":10450,"2.5":15400,"3":22550,"4x2":20350,"5x2":26950},
@@ -481,6 +490,8 @@ function resetAll(){
   document.getElementById("val-stone").textContent = 0;
   // グロス
   document.getElementById("gloss-toggle").checked = false;
+  // 18cm以上
+  document.getElementById("silver-18cm-toggle").checked = false;
   calc();
 }
 
@@ -504,9 +515,10 @@ function calc(){
   let basePrice = 0, subtitle = "", prodNumStr = "";
 
   if(mat==="silver"){
-    basePrice = bPriceSilver[width] || 0;
+    const isLong = document.getElementById("silver-18cm-toggle") && document.getElementById("silver-18cm-toggle").checked;
+    basePrice = (isLong ? bPriceSilver18[width] : bPriceSilver[width]) || 0;
     const wLabel = {"2":"2mm","2.5":"2.5mm","3":"3mm","4x2":"4×2mm","5x2":"5×2mm","6x2":"6×2mm","10x2":"10×2mm"}[width]||width;
-    subtitle  = "Silver / "+wLabel;
+    subtitle  = "Silver / "+wLabel+(isLong ? " / 18cm以上" : "");
     const pn = bProductNum.silver[width];
     prodNumStr = pn ? "商品番号："+pn : "";
   } else {
@@ -627,7 +639,7 @@ function parsePriceNumSheet(rows){
     return lower==="1cm"||lower==="unit"||lower==="no_cm"||lower==="fixed";
   }
 
-  const newSv={},newU={"10K":{},"18K":{},"pt":{}},newC={"10K":{},"18K":{},"pt":{}},newPN={};
+  const newSv={},newSv18={},newU={"10K":{},"18K":{},"pt":{}},newC={"10K":{},"18K":{},"pt":{}},newPN={};
   let parsedRows=0;
 
   for(let i=1;i<rows.length;i++){
@@ -646,8 +658,11 @@ function parsePriceNumSheet(rows){
     if(!w)continue;
 
     if(mat==="silver"){
-      // Silver: cm不要・固定価格
-      if(price>0)newSv[w]=price;
+      // Silver: size列が18cm系なら18cm以上価格、それ以外(no_cm/固定/空欄)は基本価格
+      const szLower=szRaw.toLowerCase();
+      const is18 = szLower==="18cm"||szLower==="18"||szLower==="cm_18";
+      if(is18){ if(price>0)newSv18[w]=price; }
+      else { if(price>0)newSv[w]=price; }
       if(pnRaw){if(!newPN.silver)newPN.silver={};newPN.silver[w]=pnRaw;}
     } else {
       // Gold/Pt: size列で単価行とcm行を区別
@@ -676,6 +691,7 @@ function parsePriceNumSheet(rows){
 
   // 素材ごとに更新（取得できた幅のみ上書き・スプレにない幅はフォールバックを保持）
   if(Object.keys(newSv).length>0) Object.assign(bPriceSilver, newSv);
+  if(Object.keys(newSv18).length>0) Object.assign(bPriceSilver18, newSv18);
   ["10K","18K","pt"].forEach(m=>{
     if(Object.keys(newU[m]).length>0) Object.assign(bPriceUnit[m], newU[m]);
     if(Object.keys(newC[m]).length>0){

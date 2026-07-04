@@ -236,9 +236,17 @@ body { font-family: 'Noto Serif JP', serif; background: var(--bg); color: var(--
         <svg class="width-silhouette" viewBox="0 0 40 20"><rect x="1" y="6" width="38" height="8" rx="1"/></svg>10×2
       </button>
     </div>
-    <!-- Silver説明バナー -->
-    <div class="info-banner" id="silver-info" style="margin-top:10px;">
-      Silver 925 バングルは長さに関わらず固定価格です（no_cm）
+
+    <!-- Silver 18cm以上 オプション -->
+    <div class="option-row" id="silver-18cm-row" style="margin-top:10px;">
+      <div>
+        <div class="option-name">18㎝以上</div>
+        <div class="option-price-note">+10%</div>
+      </div>
+      <label class="toggle-wrap">
+        <input type="checkbox" id="silver-18cm-toggle" onchange="calc()">
+        <span class="toggle-slider"></span>
+      </label>
     </div>
 
     <!-- Gold / Pt用（5種） -->
@@ -358,6 +366,11 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbzLruhDOLbk-JR_hfozomMc
 // Silver: bPriceSilver[width] = 価格
 let bPriceSilver = {
   "2":12100,"2.5":17600,"3":22000,"4x2":22000,"5x2":25300,"6x2":38500,"10x2":66000
+};
+
+// Silver 18cm以上: bPriceSilver18[width] = 価格（+10%）
+let bPriceSilver18 = {
+  "2":13310,"2.5":19360,"3":24200,"4x2":24200,"5x2":27830,"6x2":42350,"10x2":72600
 };
 
 // Gold/Pt 1cm単価: bPriceUnit[mat][width] = 1cm単価
@@ -532,7 +545,8 @@ function parsePriceNumSheet(rows) {
     return l === "1cm" || l === "unit" || l === "no_cm" || l === "fixed";
   }
 
-  const newSv  = {};
+  const newSv   = {};
+  const newSv18 = {};
   const newU   = { "10K":{}, "18K":{}, "pt":{} };
   const newCm  = { "10K":{}, "18K":{}, "pt":{} };
   const newPN  = {};
@@ -562,8 +576,11 @@ function parsePriceNumSheet(rows) {
     if (!w) continue;
 
     if (mat === "silver") {
-      // Silver: サイズ不要・固定価格
-      if (price > 0) newSv[w] = price;
+      // Silver: size列が18cm系なら18cm以上価格、それ以外(no_cm/固定/空欄)は基本価格
+      const szLower = szRaw.toLowerCase();
+      const is18 = szLower === "18cm" || szLower === "18" || szLower === "cm_18";
+      if (is18) { if (price > 0) newSv18[w] = price; }
+      else      { if (price > 0) newSv[w]   = price; }
       if (pnRaw) { if (!newPN.silver) newPN.silver = {}; newPN.silver[w] = pnRaw; }
 
     } else {
@@ -591,6 +608,7 @@ function parsePriceNumSheet(rows) {
 
   // 価格更新（取得できた素材のみ上書き）
   if (Object.keys(newSv).length > 0) bPriceSilver = newSv;
+  if (Object.keys(newSv18).length > 0) bPriceSilver18 = newSv18;
   ["10K","18K","pt"].forEach(m => {
     if (Object.keys(newU[m]).length > 0) bPriceUnit[m] = newU[m];
     if (Object.keys(newCm[m]).length > 0) bPriceCm[m]  = newCm[m];
@@ -663,7 +681,7 @@ function setMat(el) {
 
   const isSilver = mat === "silver";
   document.getElementById("width-group-silver").style.display = isSilver ? "" : "none";
-  document.getElementById("silver-info").style.display        = isSilver ? "" : "none";
+  document.getElementById("silver-18cm-row").style.display    = isSilver ? "" : "none";
   document.getElementById("width-group-gold").style.display   = isSilver ? "none" : "";
   document.getElementById("length-section").style.display     = isSilver ? "none" : "";
 
@@ -715,8 +733,9 @@ function calc() {
   let basePrice = 0, subtitle = "", prodNum = "";
 
   if (mat === "silver") {
-    basePrice = bPriceSilver[width] || 0;
-    subtitle  = `Silver 925 / 幅 ${width}mm（固定価格）`;
+    const isLong = document.getElementById("silver-18cm-toggle") && document.getElementById("silver-18cm-toggle").checked;
+    basePrice = (isLong ? bPriceSilver18[width] : bPriceSilver[width]) || 0;
+    subtitle  = `Silver 925 / 幅 ${width}mm（固定価格）` + (isLong ? " / 18cm以上" : "");
     const pn  = bProductNum.silver && bProductNum.silver[width];
     prodNum   = pn ? "商品番号：" + pn : "";
   } else {
@@ -762,8 +781,9 @@ function sendInquiry() {
   const width = getWidth();
   let basePrice = 0;
 
+  const silverLong = document.getElementById("silver-18cm-toggle") && document.getElementById("silver-18cm-toggle").checked;
   if (mat === "silver") {
-    basePrice = bPriceSilver[width] || 0;
+    basePrice = (silverLong ? bPriceSilver18[width] : bPriceSilver[width]) || 0;
   } else {
     const cmKey   = String(cmVal);
     const cmTable = (bPriceCm[mat] || {})[width] || {};
@@ -774,7 +794,7 @@ function sendInquiry() {
   const total = basePrice + (glossOn ? 2200 : 0) + counts.stone * 11000;
 
   const matLabel = mat === "silver" ? "Silver 925" : mat === "10K" ? "Gold K10" : mat === "18K" ? "Gold K18" : "Pt900";
-  const sizeStr  = mat === "silver" ? "（固定価格）" : `/ ${cmVal}cm`;
+  const sizeStr  = mat === "silver" ? ("（固定価格）" + (silverLong ? " / 18cm以上" : "")) : `/ ${cmVal}cm`;
 
   const body = [
     "RAVINAバングルシミュレーターよりお問い合わせ","",

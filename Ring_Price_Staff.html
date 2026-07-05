@@ -370,8 +370,8 @@ html, body {
             <span class="sub-label">納期</span>
             <div class="del-row" id="delivery-group" style="width:100%;padding:0;">
               <button class="btn-del active" data-val="normal" onclick="setDel(this)">通常納品<span class="del-note">約3週間</span></button>
-              <button class="btn-del"        data-val="7day"   onclick="setDel(this)">7日後<span class="del-note">+¥20,000</span></button>
-              <button class="btn-del"        data-val="3day"   onclick="setDel(this)">3日後<span class="del-note">+¥40,000</span></button>
+              <button class="btn-del"        data-val="7day"   onclick="setDel(this)">7日後<span class="del-note">+¥22,000</span></button>
+              <button class="btn-del"        data-val="3day"   onclick="setDel(this)">3日後<span class="del-note">+¥44,000</span></button>
             </div>
           </div>
         </div>
@@ -768,13 +768,13 @@ function calc(){
   if(del==="7day"){
     document.getElementById("row-delivery").style.display="flex";
     document.getElementById("lbl-del").textContent="速納（7日後）";
-    document.getElementById("r-delivery").textContent="+¥20,000";
-    total+=20000;
+    document.getElementById("r-delivery").textContent="+¥22,000";
+    total+=22000;
   } else if(del==="3day"){
     document.getElementById("row-delivery").style.display="flex";
     document.getElementById("lbl-del").textContent="速納（3日後）";
-    document.getElementById("r-delivery").textContent="+¥40,000";
-    total+=40000;
+    document.getElementById("r-delivery").textContent="+¥44,000";
+    total+=44000;
   } else {
     document.getElementById("row-delivery").style.display="none";
   }

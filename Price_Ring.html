@@ -152,6 +152,7 @@ html, body {
 .opt-row:last-child { border-bottom: none; }
 .opt-name { font-size: 12px; font-weight: 500; }
 .opt-note { font-size: 9px; color: var(--soft); margin-top: 1px; }
+.i18n { font-size: 9px; color: var(--soft); font-weight: 400; margin-left: 5px; opacity: 0.8; }
 
 /* トグル */
 .toggle-wrap { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
@@ -335,7 +336,7 @@ html, body {
 
         <!-- つや加工 -->
         <div class="opt-row">
-          <div><div class="opt-name">つや加工</div><div class="opt-note">¥1,100</div></div>
+          <div><div class="opt-name">つや加工<span class="i18n">Polish</span></div><div class="opt-note">¥1,100</div></div>
           <label class="toggle-wrap">
             <input type="checkbox" id="gloss-toggle" onchange="calc()">
             <span class="toggle-slider"></span>
@@ -344,7 +345,7 @@ html, body {
 
         <!-- 沖縄彫刻 -->
         <div class="opt-row">
-          <div><div class="opt-name">手彫り加工</div><div class="opt-note">3.0mm以上</div></div>
+          <div><div class="opt-name">手彫り加工<span class="i18n">Hand Engraving</span></div><div class="opt-note">3.0mm以上</div></div>
           <label class="toggle-wrap">
             <input type="checkbox" id="carving-toggle" onchange="onCarvingToggle()">
             <span class="toggle-slider"></span>
@@ -352,17 +353,17 @@ html, body {
         </div>
         <div class="accordion-sub" id="carving-scope-sub">
           <div class="sub-row" style="flex-direction:column;align-items:flex-start;gap:5px;padding-top:3px;">
-            <span class="sub-label">彫り範囲</span>
+            <span class="sub-label">彫り範囲<span class="i18n">Engraving Range</span></span>
             <div class="radio-group" id="scope-group" style="width:100%;">
               <button class="radio-btn active" data-val="full"  onclick="setScope(this)">Full 360°</button>
               <button class="radio-btn"        data-val="half"  onclick="setScope(this)">Half 180°</button>
-              <button class="radio-btn"        data-val="point" onclick="setScope(this)">Point チャーム</button>
+              <button class="radio-btn"        data-val="point" onclick="setScope(this)">Point Charm</button>
             </div>
           </div>
         </div>
         <div class="accordion-sub" id="charm-sub">
           <div class="sub-row">
-            <div><span class="sub-label">チャーム追加</span><div style="font-size:9px;color:var(--soft);">¥11,000 / 個</div></div>
+            <div><span class="sub-label">チャーム追加<span class="i18n">Add Charm</span></span><div style="font-size:9px;color:var(--soft);">¥11,000 / 個</div></div>
             <div class="counter">
               <button class="counter-btn" onclick="change('charm',-1)">−</button>
               <div class="counter-val" id="val-charm">0</div>
@@ -372,18 +373,18 @@ html, body {
         </div>
         <div class="accordion-sub" id="carving-sub">
           <div class="sub-row" style="flex-direction:column;align-items:flex-start;gap:5px;">
-            <span class="sub-label">納期</span>
+            <span class="sub-label">納期<span class="i18n">Delivery</span></span>
             <div class="del-row" id="delivery-group" style="width:100%;padding:0;">
-              <button class="btn-del active" data-val="normal" onclick="setDel(this)">通常納品<span class="del-note">約3週間</span></button>
-              <button class="btn-del"        data-val="7day"   onclick="setDel(this)">7日後<span class="del-note">+¥22,000</span></button>
-              <button class="btn-del"        data-val="3day"   onclick="setDel(this)">3日後<span class="del-note">+¥44,000</span></button>
+              <button class="btn-del active" data-val="normal" onclick="setDel(this)">通常納品<span class="del-note">約3週間 ・ Standard</span></button>
+              <button class="btn-del"        data-val="7day"   onclick="setDel(this)">7日後<span class="del-note">+¥22,000 ・ 7 Days</span></button>
+              <button class="btn-del"        data-val="3day"   onclick="setDel(this)">3日後<span class="del-note">+¥44,000 ・ 3 Days</span></button>
             </div>
           </div>
         </div>
 
         <!-- ダイヤモンド -->
         <div class="opt-row">
-          <div><div class="opt-name">ダイヤモンド</div><div class="opt-note">¥11,000 / 石</div></div>
+          <div><div class="opt-name">ダイヤモンド<span class="i18n">Diamond</span></div><div class="opt-note">¥11,000 / 石</div></div>
           <div class="counter">
             <button class="counter-btn" onclick="change('stone',-1)">−</button>
             <div class="counter-val" id="val-stone">0</div>
@@ -393,7 +394,7 @@ html, body {
 
         <!-- 刻印 -->
         <div class="opt-row" style="border-bottom:none">
-          <div><div class="opt-name">刻印</div><div class="opt-note">¥220 / 文字</div></div>
+          <div><div class="opt-name">刻印<span class="i18n">Engraving</span></div><div class="opt-note">¥220 / 文字</div></div>
           <div class="counter">
             <button class="counter-btn" onclick="change('stamp',-1)">−</button>
             <div class="counter-val" id="val-stamp">0</div>
@@ -408,22 +409,22 @@ html, body {
 
   <!-- 固定フッター: 結果 -->
   <div id="footer">
-    <div id="price-loading">価格を読み込み中…</div>
+    <div id="price-loading">価格を読み込み中… <span style="opacity:0.7;">Loading…</span></div>
     <div id="result-rows" class="res-rows">
       <div class="res-row">
-        <span>基本料金<span id="r-base-subtitle" style="margin-left:5px;font-size:9px;color:var(--soft);"></span></span>
+        <span>基本料金<span class="i18n">Base Price</span><span id="r-base-subtitle" style="margin-left:5px;font-size:9px;color:var(--soft);"></span></span>
         <span id="r-base">—</span>
       </div>
       <div id="r-product-num-row" class="res-row" style="display:none">
         <span id="r-product-num" style="font-size:10px;color:var(--soft);"></span><span></span>
       </div>
-      <div class="res-row" id="row-gloss"    style="display:none"><span>つや加工</span><span id="r-gloss">¥1,100</span></div>
+      <div class="res-row" id="row-gloss"    style="display:none"><span>つや加工<span class="i18n">Polish</span></span><span id="r-gloss">¥1,100</span></div>
       <div class="res-row" id="row-carving"  style="display:none"><span id="lbl-carving">沖縄彫刻（全周）</span><span id="r-carving">—</span></div>
       <div class="res-row" id="row-stone"    style="display:none"><span id="lbl-stone">ダイヤモンド</span><span id="r-stone">—</span></div>
       <div class="res-row" id="row-stamp"    style="display:none"><span id="lbl-stamp">刻印</span><span id="r-stamp">—</span></div>
       <div class="res-row" id="row-charm"    style="display:none"><span id="lbl-charm">チャーム</span><span id="r-charm">—</span></div>
       <div class="res-row" id="row-delivery" style="display:none"><span id="lbl-del">—</span><span id="r-delivery">—</span></div>
-      <div class="res-row total"><span>合計（税込）</span><span id="r-total">—</span></div>
+      <div class="res-row total"><span>合計（税込）<span class="i18n" style="font-size:9px;">Total incl. tax</span></span><span id="r-total">—</span></div>
     </div>
     <div id="sheet-status"></div>
   </div>
@@ -712,7 +713,7 @@ function calc(){
   // 商品番号（スプレッドシートから: mat→size→width）
   const pNum = (productNumMap[mat]&&productNumMap[mat][size]&&productNumMap[mat][size][width])||null;
   if(pNum){
-    document.getElementById("r-product-num").textContent = "商品番号："+pNum;
+    document.getElementById("r-product-num").textContent = "商品番号 / No.："+pNum;
     document.getElementById("r-product-num-row").style.display="flex";
   } else {
     document.getElementById("r-product-num-row").style.display="none";
@@ -729,11 +730,11 @@ function calc(){
       ? carvingPrices[mat][size][width] : 0;
     let fee, label;
     if(scope==="half"){
-      fee = Math.round(fullFee/2); label = "沖縄彫刻（半周）";
+      fee = Math.round(fullFee/2); label = "沖縄彫刻（半周） Hand Engraving (Half)";
     } else if(scope==="point"){
-      fee = counts.charm*11000; label = `沖縄彫刻（チャーム×${counts.charm}）`;
+      fee = counts.charm*11000; label = `沖縄彫刻（チャーム×${counts.charm}） Charm ×${counts.charm}`;
     } else {
-      fee = fullFee; label = "沖縄彫刻（全周）";
+      fee = fullFee; label = "沖縄彫刻（全周） Hand Engraving (Full)";
     }
     total += fee;
     document.getElementById("lbl-carving").textContent = label;
@@ -746,7 +747,7 @@ function calc(){
   // 石留め
   if(counts.stone>0){
     const s=counts.stone*11000; total+=s;
-    document.getElementById("lbl-stone").textContent = `ダイヤモンド×${counts.stone}`;
+    document.getElementById("lbl-stone").textContent = `ダイヤモンド×${counts.stone} Diamond×${counts.stone}`;
     document.getElementById("r-stone").textContent   = fmt(s);
     document.getElementById("row-stone").style.display="flex";
   } else { document.getElementById("row-stone").style.display="none"; }
@@ -754,7 +755,7 @@ function calc(){
   // 刻印
   if(counts.stamp>0){
     const s=counts.stamp*220; total+=s;
-    document.getElementById("lbl-stamp").textContent = `刻印×${counts.stamp}文字`;
+    document.getElementById("lbl-stamp").textContent = `刻印×${counts.stamp}文字 Engraving×${counts.stamp}`;
     document.getElementById("r-stamp").textContent   = fmt(s);
     document.getElementById("row-stamp").style.display="flex";
   } else { document.getElementById("row-stamp").style.display="none"; }
@@ -764,7 +765,7 @@ function calc(){
     document.getElementById("row-charm").style.display="none";
   } else if(counts.charm>0){
     const c=counts.charm*11000; total+=c;
-    document.getElementById("lbl-charm").textContent=`チャーム×${counts.charm}`;
+    document.getElementById("lbl-charm").textContent=`チャーム×${counts.charm} Charm×${counts.charm}`;
     document.getElementById("r-charm").textContent=fmt(c);
     document.getElementById("row-charm").style.display="flex";
   } else { document.getElementById("row-charm").style.display="none"; }
@@ -772,12 +773,12 @@ function calc(){
   // 納期
   if(del==="7day"){
     document.getElementById("row-delivery").style.display="flex";
-    document.getElementById("lbl-del").textContent="速納（7日後）";
+    document.getElementById("lbl-del").textContent="速納（7日後） Express (7 Days)";
     document.getElementById("r-delivery").textContent="+¥22,000";
     total+=22000;
   } else if(del==="3day"){
     document.getElementById("row-delivery").style.display="flex";
-    document.getElementById("lbl-del").textContent="速納（3日後）";
+    document.getElementById("lbl-del").textContent="速納（3日後） Express (3 Days)";
     document.getElementById("r-delivery").textContent="+¥44,000";
     total+=44000;
   } else {
@@ -974,8 +975,8 @@ async function initPrices(){
 }
 function showStatus(st){
   const el=document.getElementById("sheet-status");
-  if(st==="ok"){el.textContent="✓ 最新価格";el.style.color="#6a9a6a";}
-  else{el.textContent="⚠ オフライン価格";el.style.color="#c07a4a";}
+  if(st==="ok"){el.textContent="✓ 最新価格 Latest prices";el.style.color="#6a9a6a";}
+  else{el.textContent="⚠ オフライン価格 Offline prices";el.style.color="#c07a4a";}
   el.style.display="block";
 }
 

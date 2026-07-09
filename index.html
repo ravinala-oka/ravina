@@ -234,6 +234,7 @@
       transition: opacity 0.25s, transform 0.2s;
       cursor: pointer;
       border: none;
+      border-radius: 8px;
     }
 
     .btn-instagram:hover { opacity: 0.88; transform: translateX(4px); }
@@ -253,12 +254,34 @@
       transition: background 0.25s, transform 0.2s;
       cursor: pointer;
       border: none;
+      border-radius: 8px;
     }
 
     .btn-tiktok:hover { background: #2e2e28; transform: translateX(4px); }
 
+    .btn-price {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      background: #493e1e;
+      color: #d3bd77;
+      text-decoration: none;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      transition: background 0.25s, transform 0.2s;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+    }
+
+    .btn-price:hover { background: #5c4e28; transform: translateX(4px); }
+
     .btn-instagram svg,
-    .btn-tiktok svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .btn-tiktok svg,
+    .btn-price svg { width: 18px; height: 18px; flex-shrink: 0; }
 
     /* ── セクション共通 ── */
     .section { padding: 100px 48px; }
@@ -471,6 +494,7 @@
       font-size: 15px;
       letter-spacing: 0.12em;
       border: none;
+      border-radius: 8px;
       cursor: pointer;
       transition: opacity 0.25s, transform 0.2s;
       text-decoration: none;
@@ -478,57 +502,6 @@
     }
     .btn-reservation:hover { opacity: 0.88; transform: translateX(4px); }
     .btn-reservation svg { width: 18px; height: 18px; flex-shrink: 0; }
-
-    /* ── Price画像セクション ボタン ── */
-    .price-img-btn {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      width: 300px;
-      padding: 16px 20px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.35);
-      color: #fff;
-      font-family: 'Cormorant Garamond', serif;
-      cursor: pointer;
-      text-align: left;
-      transition: background 0.25s, border-color 0.25s, transform 0.2s;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      border-radius: 2px;
-    }
-    .price-img-btn:hover {
-      background: rgba(255,255,255,0.20);
-      border-color: rgba(255,255,255,0.65);
-      transform: translateX(4px);
-    }
-    .price-img-btn--gold {
-      border-color: rgba(201,168,76,0.7);
-      background: rgba(201,168,76,0.12);
-    }
-    .price-img-btn--gold:hover {
-      background: rgba(201,168,76,0.24);
-      border-color: var(--gold);
-    }
-    .price-btn-label {
-      font-size: 10px;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      opacity: 0.6;
-      display: block;
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-    .price-btn-name {
-      font-size: 16px;
-      letter-spacing: 0.08em;
-      font-weight: 500;
-      display: block;
-      line-height: 1.2;
-    }
-    .price-img-btn > span {
-      flex: 1;
-    }
 
     /* ── FOOTER ── */
     footer {
@@ -601,52 +574,6 @@
     /* ═══════════════════════════════════════════
        MOBILE
     ═══════════════════════════════════════════ */
-    /* ── 価格ボトムシート（指輪・腕輪共通） ── */
-    #price-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(10,10,8,0.6);
-      z-index: 200;
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-    }
-    #price-overlay.open { display: block; }
-
-    #price-sheet {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 201;
-      background: #fff;
-      border-radius: 20px 20px 0 0;
-      max-height: 92vh;
-      overflow-y: auto;
-      transform: translateY(100%);
-      transition: transform 0.38s cubic-bezier(0.32,0.72,0,1);
-      -webkit-overflow-scrolling: touch;
-    }
-    #price-sheet.open { transform: translateY(0); }
-
-    .price-sheet-handle {
-      display: flex; justify-content: center;
-      padding: 12px 0 4px;
-      position: sticky; top: 0; background: #fff; z-index: 1;
-    }
-    .price-sheet-handle-bar { width: 40px; height: 4px; background: #d0ccc6; border-radius: 2px; }
-    .price-sheet-close {
-      position: absolute; top: 10px; right: 16px;
-      width: 32px; height: 32px; border-radius: 50%;
-      border: none; background: #f0ece6; color: #5a5a52;
-      font-size: 20px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; z-index: 2;
-    }
-    .price-sheet-close:hover { background: #e0dbd2; }
-    #price-sheet iframe {
-      width: 100%; border: none;
-      height: 92vh;
-      display: block;
-    }
-
     @media (max-width: 768px) {
       nav { padding: 12px 16px; }
       .nav-links { gap: 16px; }
@@ -688,9 +615,6 @@
       .map-container iframe { height: 260px; }
 
       footer { grid-template-columns: 1fr; padding: 40px 20px; }
-
-      /* Price画像セクション スマホ対応 */
-      .price-img-btn { width: 88vw; max-width: 320px; }
     }
   </style>
 </head>
@@ -706,7 +630,7 @@
   </a>
   <ul class="nav-links">
     <li><a href="#" class="active">Home</a></li>
-    <li><a href="#price">Price</a></li>
+    <li><a href="Price_Ring.html" target="_blank" rel="noopener noreferrer">Price</a></li>
     <li><a href="#company" onclick="switchTab('shop')">Shop</a></li>
     <li><a href="#access">Access</a></li>
   </ul>
@@ -743,145 +667,16 @@
         </svg>
         TikTok
       </a>
+      <a href="Price_Ring.html" class="btn-price" target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41L11 3.83A2 2 0 009.59 3.24L4 3a1 1 0 00-1 1l.24 5.59a2 2 0 00.58 1.41l9.58 9.58a2 2 0 002.83 0l4.36-4.36a2 2 0 000-2.81z"/>
+          <circle cx="7.5" cy="7.5" r="1.5"/>
+        </svg>
+        <span data-en="Price" data-ja="料金">Price</span>
+      </a>
     </div>
   </div>
 </section>
-
-<!-- CONCEPT -->
-<section id="price" style="position:relative; padding:0; background:transparent;">
-
-  <!--
-    構造：
-    ┌─ section（padding で上下左右に動画が見える余白）─────────────────┐
-    │  ┌─ price-frame（固定高さ・contain コンテナ）──────────────────┐ │
-    │  │  [img: object-fit:contain → 常に全体が見える・縦横比維持]   │ │
-    │  │  [overlay: inset:0 → 画像の実描画領域に追従してオーバーレイ] │ │
-    │  │    Price / Price / ボタン（中央）                      │ │
-    │  └──────────────────────────────────────────────────────────┘ │
-    └────────────────────────────────────────────────────────────────┘
-    ※ overlay は img の上に重なるため、ボタン等は必ず画像内に収まる
-  -->
-
-  <div id="price-frame" style="
-    position: relative;
-    z-index: 1;
-    width: 100%;
-  ">
-    <!-- 画像：containで縦横比を保ったまま枠内に収まる -->
-    <img
-      src="Price_image.JPEG"
-      alt="RAVINA Price"
-      style="
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        object-position: center;
-        border-radius: 2px;
-      "
-    />
-
-    <!-- オーバーレイ：imgと完全に同じ矩形に追従（JS で位置合わせ） -->
-    <div id="price-overlay-inner" style="
-      position: absolute;
-      background: rgba(20,18,14,0.40);
-      border-radius: 2px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      padding: 40px 24px;
-      box-sizing: border-box;
-    ">
-      <!-- ラベル＋見出し -->
-      <div style="text-align:center; margin-bottom:36px;">
-        <p style="font-family:'Cormorant Garamond',serif; font-size:11px; letter-spacing:0.25em; text-transform:uppercase; color:var(--gold); margin-bottom:10px;">Price</p>
-        <h2 style="font-family:'Cormorant Garamond',serif; font-size:clamp(24px,3vw,44px); font-weight:500; letter-spacing:0.06em; color:#fff; text-shadow:0 2px 24px rgba(0,0,0,0.6); margin:0;">Price List</h2>
-      </div>
-
-      <!-- ボタン群 -->
-      <div style="display:flex; flex-direction:column; gap:12px; align-items:center;">
-
-        <button onclick="openPriceSheet('ring')" class="price-img-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.75;">
-            <ellipse cx="12" cy="15" rx="9" ry="3.5"/><ellipse cx="12" cy="9" rx="9" ry="3.5"/>
-            <line x1="3" y1="9" x2="3" y2="15"/><line x1="21" y1="9" x2="21" y2="15"/>
-          </svg>
-          <span><span class="price-btn-label">menu01</span><span class="price-btn-name" data-en="Ring Price" data-ja="指輪　価格">Ring Price Estimator</span></span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.6;"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-
-        <button onclick="openPriceSheet('bangle')" class="price-img-btn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.75;">
-            <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>
-          </svg>
-          <span><span class="price-btn-label">menu02</span><span class="price-btn-name" data-en="Bangle Price" data-ja="バングル　価格">Bangle Price Estimator</span></span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.6;"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-
-        <button onclick="window.open('Ring_Price_Staff.html','_blank')" class="price-img-btn price-img-btn--gold">
-          <!-- スマホアイコン -->
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.85;">
-            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-            <line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <span><span class="price-btn-label">staff</span><span class="price-btn-name" data-en="Ring Simulator" data-ja="指輪　料金計">Ring Simulator</span></span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;opacity:0.75;"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-
-      </div>
-    </div>
-  </div>
-
-</section>
-
-<script>
-// Price画像のcontain実描画矩形にオーバーレイをぴったり合わせる
-(function () {
-  function fitPriceOverlay() {
-    const section = document.getElementById('price');
-    const frame   = document.getElementById('price-frame');
-    const overlay = document.getElementById('price-overlay-inner');
-    if (!section || !frame || !overlay) return;
-
-    // sectionのpadding（上下左右）を取得してframeの高さを動的に決定
-    const cs   = getComputedStyle(section);
-    const padT = parseFloat(cs.paddingTop);
-    const padB = parseFloat(cs.paddingBottom);
-    const fh   = window.innerHeight - padT - padB;
-    frame.style.height = fh + 'px';
-
-    const img = frame.querySelector('img');
-    const fw  = frame.offsetWidth;
-
-    // 画像の自然サイズ（ロード前は0になるので fallback）
-    const nw = img.naturalWidth  || 1600;
-    const nh = img.naturalHeight || 1066;
-
-    // 画像を110%表示（scaleを大きくして表示領域を拡大）
-    const scale = Math.min(fw / nw, fh / nh) * 1.0;
-    const rw    = nw * scale;
-    const rh    = nh * scale;
-    const left  = (fw - rw) / 2;
-    const top   = (fh - rh) / 2;
-
-    // overlayは画像の実描画領域だけに追従（動画にはかからない）
-    overlay.style.left   = left + 'px';
-    overlay.style.top    = top  + 'px';
-    overlay.style.width  = rw   + 'px';
-    overlay.style.height = rh   + 'px';
-  }
-
-  // 画像ロード後 & リサイズ時に再計算
-  const img = document.querySelector('#price-frame img');
-  if (img) {
-    if (img.complete) { fitPriceOverlay(); }
-    else { img.addEventListener('load', fitPriceOverlay); }
-  }
-  window.addEventListener('resize', fitPriceOverlay);
-})();
-</script>
 
 <!-- COMPANY ─────────────────────────────────────
      上段：店舗概要（bg_RAVINA.png）
@@ -1015,7 +810,7 @@
     <p class="footer-col-title">Navigation</p>
     <ul class="footer-links">
       <li><a href="#">Home</a></li>
-      <li><a href="#price">Price</a></li>
+      <li><a href="Price_Ring.html" target="_blank" rel="noopener noreferrer">Price</a></li>
       <li><a href="#company" onclick="switchTab('shop')">Shop</a></li>
       <li><a href="#access">Access</a></li>
     </ul>
@@ -1032,37 +827,7 @@
 <div class="footer-bottom">
   &copy; RAVINALA Co., Ltd. All rights reserved.
 </div>
-<!-- 指輪彫刻 オーバーレイ -->
-<!-- 価格ボトムシート -->
-<div id="price-overlay" onclick="closePriceSheet()"></div>
-<div id="price-sheet" role="dialog" aria-modal="true" aria-label="価格">
-  <div class="price-sheet-handle">
-    <div class="price-sheet-handle-bar"></div>
-  </div>
-  <button class="price-sheet-close" onclick="closePriceSheet()" aria-label="閉じる">&times;</button>
-  <iframe id="price-iframe" src="" title="価格"></iframe>
-</div>
-
 <script>
-// ============================================================
-// 価格ボトムシート（指輪・腕輪）
-// ============================================================
-function openPriceSheet(type) {
-  const iframe = document.getElementById('price-iframe');
-  iframe.src = (type === 'ring') ? 'Ring_Price_List.html'
-             : (type === 'staff') ? 'Ring_Price_Staff.html'
-             : 'Bangle_Price_List.html';
-  document.getElementById('price-overlay').classList.add('open');
-  document.getElementById('price-sheet').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closePriceSheet() {
-  document.getElementById('price-overlay').classList.remove('open');
-  document.getElementById('price-sheet').classList.remove('open');
-  document.body.style.overflow = '';
-  setTimeout(() => { document.getElementById('price-iframe').src = ''; }, 400);
-}
-
 // ============================================================
 // Shop / Company タブ切り替え
 // ============================================================

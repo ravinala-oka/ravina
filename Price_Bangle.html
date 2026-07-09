@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RAVINA — Bangle Staff Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --accent: #c9a84c;
+  --accent-pale: #fdf8ee;
+  --dark: #1a1a18;
+  --soft: #8a8a7e;
+  --border: #e0dbd0;
+  --bg: #faf8f4;
+  --white: #ffffff;
+  --footer-bg: #1a1a18;
+  --footer-text: #fdf8ee;
+  --footer-soft: #ab9d7a;
+  --total-accent: #ddc26f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  font-size: 13px;
+}
+
+/* ─── レイアウト ─── */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--white);
+}
+
+/* トップバー */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--white);
+  flex-shrink: 0;
+}
+.topbar-title { font-size: 15px; font-weight: 700; letter-spacing: 0.05em; color: var(--dark); }
+.topbar-sub   { font-size: 10px; color: var(--soft); margin-top: 1px; }
+.btn-reset {
+  font-size: 11px; padding: 5px 14px;
+  border: 1.5px solid var(--border); border-radius: 6px;
+  background: var(--white); color: var(--soft); cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif; font-weight: 500; transition: all 0.15s;
+}
+.btn-reset:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-pale); }
+.btn-ring { border-color: #9c7a3c; color: #9c7a3c; }
+.btn-ring:hover { border-color: #9c7a3c; color: #ffffff; background: #9c7a3c; }
+.btn-close {
+  width: 28px; height: 28px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; line-height: 1;
+}
+
+/* スクロールエリア */
+#scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 12px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* セクション */
+.sec { display: flex; flex-direction: column; gap: 5px; }
+.sec-label {
+  font-size: 9px; letter-spacing: 0.18em; color: var(--soft);
+  text-transform: uppercase; font-weight: 700;
+}
+
+/* 素材 4列 */
+.mat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
+.btn-mat {
+  border: 1.5px solid var(--border); background: var(--white);
+  border-radius: 8px; padding: 6px 3px 5px;
+  font-size: 11px; line-height: 1.3; cursor: pointer;
+  text-align: center; font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.15s; color: var(--dark); font-weight: 500;
+}
+.btn-mat span { display: block; font-size: 9px; color: var(--soft); margin-top: 1px; font-weight: 400; }
+.btn-mat:hover, .btn-mat.active {
+  background: var(--accent-pale); border-color: var(--accent); color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.btn-mat.active span { color: var(--accent); opacity: 0.75; }
+
+/* 幅ボタン共通 */
+.width-row { display: grid; gap: 4px; }
+.width-row.w7 { grid-template-columns: repeat(7, 1fr); }
+.width-row.w5 { grid-template-columns: repeat(5, 1fr); }
+.btn-w {
+  border: 1.5px solid var(--border); background: var(--white);
+  border-radius: 8px; padding: 4px 2px;
+  font-size: 9px; cursor: pointer; text-align: center;
+  font-family: 'Noto Sans JP', sans-serif; color: var(--dark); font-weight: 500;
+  transition: all 0.15s; line-height: 1.3;
+  aspect-ratio: 1 / 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+}
+.btn-w svg { display: block; width: 70%; height: auto; max-height: 18px; overflow: visible; }
+.btn-w circle, .btn-w ellipse, .btn-w rect { fill: #c9bfa1; transition: fill 0.15s; }
+.btn-w:hover circle,  .btn-w.active circle,
+.btn-w:hover ellipse, .btn-w.active ellipse,
+.btn-w:hover rect,    .btn-w.active rect  { fill: var(--accent); opacity: 0.8; }
+.btn-w:hover, .btn-w.active {
+  background: var(--accent-pale); border-color: var(--accent); color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* Silver info */
+.sv-note {
+  font-size: 9px; color: var(--soft); background: var(--bg);
+  border-radius: 5px; padding: 4px 8px; letter-spacing: 0.03em;
+}
+
+/* cm ステッパー */
+.cm-row {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: var(--bg); border-radius: 10px; padding: 10px 12px 8px;
+}
+.cm-label { font-size: 11px; color: var(--soft); font-weight: 500; letter-spacing: 0.04em; }
+.cm-stepper { display: flex; align-items: center; }
+.cm-btn {
+  width: 54px; height: 54px; border: 1.5px solid var(--border);
+  background: var(--white); color: var(--dark); font-size: 28px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; transition: background 0.1s;
+}
+.cm-btn:first-child { border-radius: 10px 0 0 10px; }
+.cm-btn:last-child  { border-radius: 0 10px 10px 0; }
+.cm-btn:hover { background: var(--accent-pale); color: var(--accent); border-color: var(--accent); }
+.cm-val {
+  min-width: 72px; height: 54px; text-align: center; font-size: 30px; font-weight: 700;
+  border-top: 1.5px solid var(--border); border-bottom: 1.5px solid var(--border);
+  background: var(--white); display: flex; align-items: center; justify-content: center;
+}
+.cm-unit { font-size: 16px; color: var(--soft); font-weight: 500; }
+.cm-unit-price { font-size: 10px; color: var(--soft); }
+
+/* オプション行 */
+.opts { display: flex; flex-direction: column; }
+.opt-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+}
+.opt-row:last-child { border-bottom: none; }
+.opt-name { font-size: 12px; font-weight: 500; }
+.opt-note { font-size: 9px; color: var(--soft); margin-top: 1px; }
+
+/* トグルスイッチ */
+.toggle-wrap { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+.toggle-wrap input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: #e0dbd0; border-radius: 20px; cursor: pointer; transition: background 0.2s;
+}
+.toggle-slider:before {
+  content: ""; position: absolute; width: 14px; height: 14px;
+  background: white; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.2s;
+}
+.toggle-wrap input:checked + .toggle-slider { background: var(--accent); }
+.toggle-wrap input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+/* カウンター */
+.counter { display: flex; align-items: center; }
+.counter-btn {
+  width: 26px; height: 26px; border: 1.5px solid var(--border);
+  background: var(--white); color: var(--dark); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-weight: 700; transition: background 0.1s;
+}
+.counter-btn:first-child { border-radius: 6px 0 0 6px; }
+.counter-btn:last-child  { border-radius: 0 6px 6px 0; }
+.counter-btn:hover { background: var(--accent-pale); color: var(--accent); border-color: var(--accent); }
+.counter-val {
+  width: 30px; height: 26px; text-align: center; font-size: 13px; font-weight: 700;
+  border-top: 1.5px solid var(--border); border-bottom: 1.5px solid var(--border);
+  background: var(--white); display: flex; align-items: center; justify-content: center;
+}
+
+/* 固定フッター */
+#footer {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  background: var(--footer-bg);
+  padding: 8px 12px 10px;
+}
+.res-rows { display: flex; flex-direction: column; gap: 3px; margin-bottom: 4px; }
+.res-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11px; color: var(--footer-soft);
+}
+.res-row.total {
+  font-size: 17px; color: var(--footer-text);
+  font-weight: 700; letter-spacing: 0.02em;
+  margin-top: 4px; padding-top: 6px; border-top: 1px solid #3a382f;
+}
+.res-row.total span:last-child { color: var(--total-accent); font-size: 21px; }
+#price-loading { display:none; text-align:center; font-size:10px; color:var(--footer-soft); padding:4px 0; }
+#sheet-status  { display:none; font-size:9px; text-align:center; margin-top:3px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- トップバー -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">RAVINA — Bangle Price</div>
+      <div class="topbar-sub">バングル料金</div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <button class="btn-reset btn-ring" onclick="location.href='Price_Ring.html'">Ring</button>
+      <button class="btn-reset btn-close" onclick="window.close()">×</button>
+    </div>
+  </div>
+
+  <!-- スクロールエリア -->
+  <div id="scroll-area">
+
+    <!-- 素材 -->
+    <div class="sec">
+      <div class="sec-label">Material — 素材</div>
+      <div class="mat-row" id="material-group">
+        <button class="btn-mat active" data-val="silver" onclick="setMat(this)">Silver<span>SV925</span></button>
+        <button class="btn-mat" data-val="10K"    onclick="setMat(this)">Gold<span>K10</span></button>
+        <button class="btn-mat" data-val="18K"    onclick="setMat(this)">Gold<span>K18</span></button>
+        <button class="btn-mat" data-val="pt"     onclick="setMat(this)">Platinum<span>Pt900</span></button>
+      </div>
+    </div>
+
+    <!-- 幅：Silver（7種） -->
+    <div class="sec" id="width-sec-silver">
+      <div class="sec-label">Thickness — 幅</div>
+      <div class="width-row w7" id="width-group-silver">
+        <button class="btn-w active" data-val="2"    onclick="setWidth(this,'s')">
+          <svg viewBox="-1 -1 24 16"><circle cx="11" cy="7" r="5"/></svg>2
+        </button>
+        <button class="btn-w" data-val="2.5" onclick="setWidth(this,'s')">
+          <svg viewBox="-1 -1 24 16"><circle cx="11" cy="7" r="6"/></svg>2.5
+        </button>
+        <button class="btn-w" data-val="3"   onclick="setWidth(this,'s')">
+          <svg viewBox="-2 -1 26 16"><circle cx="11" cy="7" r="7"/></svg>3
+        </button>
+        <button class="btn-w" data-val="4x2" onclick="setWidth(this,'s')">
+          <svg viewBox="0 0 22 14"><ellipse cx="11" cy="7" rx="10" ry="5"/></svg>4×2
+        </button>
+        <button class="btn-w" data-val="5x2" onclick="setWidth(this,'s')">
+          <svg viewBox="0 0 22 14"><ellipse cx="11" cy="7" rx="10" ry="4"/></svg>5×2
+        </button>
+        <button class="btn-w" data-val="6x2" onclick="setWidth(this,'s')">
+          <svg viewBox="0 0 22 14"><rect x="1" y="4" width="20" height="6" rx="1"/></svg>6×2
+        </button>
+        <button class="btn-w" data-val="10x2" onclick="setWidth(this,'s')">
+          <svg viewBox="0 0 22 14"><rect x="0" y="3" width="22" height="8" rx="1"/></svg>10×2
+        </button>
+      </div>
+      <div class="opt-row" style="border-bottom:none; background:var(--bg); border-radius:8px; padding:7px 10px;">
+        <div><div class="opt-name">18㎝以上</div><div class="opt-note">+10%</div></div>
+        <label class="toggle-wrap">
+          <input type="checkbox" id="silver-18cm-toggle" onchange="calc()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- 幅：Gold / Pt（5種） + cm入力 -->
+    <div class="sec" id="width-sec-gold" style="display:none;">
+      <div class="sec-label">Width — 幅</div>
+      <div class="width-row w5" id="width-group-gold">
+        <button class="btn-w active" data-val="2"   onclick="setWidth(this,'g')">
+          <svg viewBox="-1 -1 24 16"><circle cx="11" cy="7" r="5"/></svg>2
+        </button>
+        <button class="btn-w" data-val="2.5" onclick="setWidth(this,'g')">
+          <svg viewBox="-1 -1 24 16"><circle cx="11" cy="7" r="6"/></svg>2.5
+        </button>
+        <button class="btn-w" data-val="3"   onclick="setWidth(this,'g')">
+          <svg viewBox="-2 -1 26 16"><circle cx="11" cy="7" r="7"/></svg>3
+        </button>
+        <button class="btn-w" data-val="4x2" onclick="setWidth(this,'g')">
+          <svg viewBox="0 0 22 14"><ellipse cx="11" cy="7" rx="10" ry="5"/></svg>4×2
+        </button>
+        <button class="btn-w" data-val="5x2" onclick="setWidth(this,'g')">
+          <svg viewBox="0 0 22 14"><ellipse cx="11" cy="7" rx="10" ry="4"/></svg>5×2
+        </button>
+      </div>
+
+      <!-- cm ステッパー -->
+      <div class="cm-row">
+        
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="cm-stepper">
+            <button class="cm-btn" onclick="changeCm(-1)">－</button>
+            <div class="cm-val" id="cm-display">10</div>
+            <button class="cm-btn" onclick="changeCm(+1)">＋</button>
+          </div>
+          <span class="cm-unit">cm</span>
+        </div>
+        <span class="cm-unit-price" id="cm-unit-price"></span>
+      </div>
+    </div>
+
+    <!-- オプション -->
+    <div class="sec">
+      <div class="sec-label">Option — オプション</div>
+      <div class="opts">
+        <div class="opt-row">
+          <div><div class="opt-name">つや加工</div><div class="opt-note">¥2,200</div></div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="gloss-toggle" onchange="calc()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="opt-row" style="border-bottom:none;">
+          <div><div class="opt-name">ダイヤモンド石留め</div><div class="opt-note">¥11,000 / 石</div></div>
+          <div class="counter">
+            <button class="counter-btn" onclick="change('stone',-1)">−</button>
+            <div class="counter-val" id="val-stone">0</div>
+            <button class="counter-btn" onclick="change('stone',1)">＋</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /scroll-area -->
+
+  <!-- 固定フッター -->
+  <div id="footer">
+    <div id="price-loading">価格を読み込み中…</div>
+    <div id="result-rows" class="res-rows">
+      <div class="res-row">
+        <span>基本料金<span id="r-base-subtitle" style="margin-left:5px;font-size:9px;color:var(--footer-soft);"></span></span>
+        <span id="r-base">—</span>
+      </div>
+      <div id="r-product-num-row" class="res-row" style="display:none;">
+        <span id="r-product-num" style="font-size:10px;color:var(--footer-soft);"></span><span></span>
+      </div>
+      <div class="res-row" id="row-gloss" style="display:none;">
+        <span>つや加工</span><span id="r-gloss">¥2,200</span>
+      </div>
+      <div class="res-row" id="row-stone" style="display:none;">
+        <span id="lbl-stone">石留め</span><span id="r-stone">—</span>
+      </div>
+      <div class="res-row total"><span>合計（税込）</span><span id="r-total">—</span></div>
+    </div>
+    <div id="sheet-status"></div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ── スプレッドシート設定（Price_Num シート GID:1469569588）──
+// ── GAS中継URL（スプレッドシートIDは非公開・GASのデプロイURLのみ記載）──
+// GASをデプロイ後、発行されたURLをここに貼り付けてください
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzLruhDOLbk-JR_hfozomMc7jfZe3ypsmhN_fyu-hhqnRVdujOR3i4rNwwPJj1umAmq0w/exec";
+
+// ============================================================
+// フォールバック価格
+// ============================================================
+let bPriceSilver = {
+  "2":12100,"2.5":17600,"3":22000,"4x2":22000,"5x2":25300,"6x2":38500,"10x2":66000
+};
+let bPriceSilver18 = {
+  "2":13310,"2.5":19360,"3":24200,"4x2":24200,"5x2":27830,"6x2":42350,"10x2":72600
+};
+let bPriceUnit = {
+  "10K":{"2":10450,"2.5":15400,"3":22550,"4x2":20350,"5x2":26950},
+  "18K":{"2":22550,"2.5":34650,"3":49500,"4x2":50600,"5x2":54450},
+  "pt": {"2":16500,"2.5":19800,"3":28600,"4x2":41250,"5x2":51150}
+};
+let bPriceCm = {
+  "10K":{
+    "2":   {"10":110000,"11":121000,"12":132000,"13":143000,"14":154000,"15":165000,"16":176000,"17":187000,"18":198000,"19":209000,"20":220000},
+    "2.5": {"10":165000,"11":181500,"12":198000,"13":214500,"14":231000,"15":247500,"16":264000,"17":280500,"18":297000,"19":313500,"20":330000},
+    "3":   {"10":242000,"11":266200,"12":290400,"13":314600,"14":338800,"15":363000,"16":387200,"17":411400,"18":435600,"19":459800,"20":484000},
+    "4x2": {"10":242000,"11":266200,"12":290400,"13":314600,"14":338800,"15":363000,"16":387200,"17":411400,"18":435600,"19":459800,"20":484000},
+    "5x2": {"10":269500,"11":296450,"12":323400,"13":350350,"14":377300,"15":404250,"16":431200,"17":458150,"18":485100,"19":512050,"20":539000}
+  },
+  "18K":{
+    "2":   {"10":225500,"11":248050,"12":270600,"13":293150,"14":315700,"15":338250,"16":360800,"17":383350,"18":405900,"19":428450,"20":451000},
+    "2.5": {"10":346500,"11":381150,"12":415800,"13":450450,"14":485100,"15":519750,"16":554400,"17":589050,"18":623700,"19":658350,"20":693000},
+    "3":   {"10":506000,"11":556600,"12":607200,"13":657800,"14":708400,"15":759000,"16":809600,"17":860200,"18":910800,"19":961400,"20":1012000},
+    "4x2": {"10":506000,"11":556600,"12":607200,"13":657800,"14":708400,"15":759000,"16":809600,"17":860200,"18":910800,"19":961400,"20":1012000},
+    "5x2": {"10":544500,"11":598950,"12":653400,"13":707850,"14":762300,"15":816750,"16":871200,"17":925650,"18":980100,"19":1034550,"20":1089000}
+  },
+  "pt":{
+    "2":   {"10":165000,"11":181500,"12":198000,"13":214500,"14":231000,"15":247500,"16":264000,"17":280500,"18":297000,"19":313500,"20":330000},
+    "2.5": {"10":198000,"11":217800,"12":237600,"13":257400,"14":277200,"15":297000,"16":316800,"17":336600,"18":356400,"19":376200,"20":396000},
+    "3":   {"10":374000,"11":411400,"12":448800,"13":486200,"14":523600,"15":561000,"16":598400,"17":635800,"18":673200,"19":710600,"20":748000},
+    "4x2": {"10":374000,"11":411400,"12":448800,"13":486200,"14":523600,"15":561000,"16":598400,"17":635800,"18":673200,"19":710600,"20":748000},
+    "5x2": {"10":484000,"11":532400,"12":580800,"13":629200,"14":677600,"15":726000,"16":774400,"17":822800,"18":871200,"19":919600,"20":968000}
+  }
+};
+let bProductNum = {
+  silver:{"2":"12010306","2.5":"12010406","3":"12010506","4x2":"12010606","5x2":"12010706","6x2":"12010806","10x2":"12010906"},
+  "10K":{
+    "2":  {"10":"12020307","11":"12020308","12":"12020309","13":"12020310","14":"12020311","15":"12020312","16":"12020313","17":"12020314","18":"12020315","19":"12020316","20":"12020317"},
+    "2.5":{"10":"12020407","11":"12020408","12":"12020409","13":"12020410","14":"12020411","15":"12020412","16":"12020413","17":"12020414","18":"12020415","19":"12020416","20":"12020417"},
+    "3":  {"10":"12020507","11":"12020508","12":"12020509","13":"12020510","14":"12020511","15":"12020512","16":"12020513","17":"12020514","18":"12020515","19":"12020516","20":"12020517"},
+    "4x2":{"10":"12020607","11":"12020608","12":"12020609","13":"12020610","14":"12020611","15":"12020612","16":"12020613","17":"12020614","18":"12020615","19":"12020616","20":"12020617"},
+    "5x2":{"10":"12020707","11":"12020708","12":"12020709","13":"12020710","14":"12020711","15":"12020712","16":"12020713","17":"12020714","18":"12020715","19":"12020716","20":"12020717"}
+  },
+  "18K":{
+    "2":  {"10":"12030307","11":"12030308","12":"12030309","13":"12030310","14":"12030311","15":"12030312","16":"12030313","17":"12030314","18":"12030315","19":"12030316","20":"12030317"},
+    "2.5":{"10":"12030407","11":"12030408","12":"12030409","13":"12030410","14":"12030411","15":"12030412","16":"12030413","17":"12030414","18":"12030415","19":"12030416","20":"12030417"},
+    "3":  {"10":"12030507","11":"12030508","12":"12030509","13":"12030510","14":"12030511","15":"12030512","16":"12030513","17":"12030514","18":"12030515","19":"12030516","20":"12030517"},
+    "4x2":{"10":"12030607","11":"12030608","12":"12030609","13":"12030610","14":"12030611","15":"12030612","16":"12030613","17":"12030614","18":"12030615","19":"12030616","20":"12030617"},
+    "5x2":{"10":"12030707","11":"12030708","12":"12030709","13":"12030710","14":"12030711","15":"12030712","16":"12030713","17":"12030714","18":"12030715","19":"12030716","20":"12030717"}
+  },
+  "pt":{
+    "2":  {"10":"12040307","11":"12040308","12":"12040309","13":"12040310","14":"12040311","15":"12040312","16":"12040313","17":"12040314","18":"12040315","19":"12040316","20":"12040317"},
+    "2.5":{"10":"12040407","11":"12040408","12":"12040409","13":"12040410","14":"12040411","15":"12040412","16":"12040413","17":"12040414","18":"12040415","19":"12040416","20":"12040417"},
+    "3":  {"10":"12040507","11":"12040508","12":"12040509","13":"12040510","14":"12040511","15":"12040512","16":"12040513","17":"12040514","18":"12040515","19":"12040516","20":"12040517"},
+    "4x2":{"10":"12040607","11":"12040608","12":"12040609","13":"12040610","14":"12040611","15":"12040612","16":"12040613","17":"12040614","18":"12040615","19":"12040616","20":"12040617"},
+    "5x2":{"10":"12040707","11":"12040708","12":"12040709","13":"12040710","14":"12040711","15":"12040712","16":"12040713","17":"12040714","18":"12040715","19":"12040716","20":"12040717"}
+  }
+};
+
+// ============================================================
+// UI 状態
+// ============================================================
+let mat   = "silver";
+let cmVal = 10;
+let counts = { stone: 0 };
+
+function setMat(el){
+  document.querySelectorAll("#material-group .btn-mat").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");
+  mat = el.dataset.val;
+  const isSilver = mat === "silver";
+  document.getElementById("width-sec-silver").style.display = isSilver ? "" : "none";
+  document.getElementById("width-sec-gold").style.display   = isSilver ? "none" : "";
+  if(!isSilver){
+    // Goldグループ：選択中ボタンがなければ先頭をactive
+    if(!document.querySelector("#width-group-gold .btn-w.active")){
+      document.querySelector("#width-group-gold .btn-w").classList.add("active");
+    }
+  }
+  calc();
+}
+
+function setWidth(el, grp){
+  const id = grp==="s" ? "#width-group-silver" : "#width-group-gold";
+  document.querySelectorAll(id+" .btn-w").forEach(b=>b.classList.remove("active"));
+  el.classList.add("active");
+  calc();
+}
+
+function changeCm(d){
+  cmVal = Math.max(10, Math.min(20, cmVal+d));
+  document.getElementById("cm-display").textContent = cmVal;
+  calc();
+}
+
+function change(key, d){
+  counts[key] = Math.max(0, counts[key]+d);
+  document.getElementById("val-"+key).textContent = counts[key];
+  calc();
+}
+
+function resetAll(){
+  // 素材 → Silver
+  document.querySelectorAll("#material-group .btn-mat").forEach(b=>b.classList.remove("active"));
+  document.querySelector('#material-group .btn-mat[data-val="silver"]').classList.add("active");
+  mat = "silver";
+  document.getElementById("width-sec-silver").style.display = "";
+  document.getElementById("width-sec-gold").style.display   = "none";
+  // 幅 → 先頭
+  document.querySelectorAll("#width-group-silver .btn-w").forEach(b=>b.classList.remove("active"));
+  document.querySelector("#width-group-silver .btn-w").classList.add("active");
+  document.querySelectorAll("#width-group-gold .btn-w").forEach(b=>b.classList.remove("active"));
+  document.querySelector("#width-group-gold .btn-w").classList.add("active");
+  // cm
+  cmVal = 10;
+  document.getElementById("cm-display").textContent = 10;
+  // カウンター
+  counts = { stone:0 };
+  document.getElementById("val-stone").textContent = 0;
+  // グロス
+  document.getElementById("gloss-toggle").checked = false;
+  // 18cm以上
+  document.getElementById("silver-18cm-toggle").checked = false;
+  calc();
+}
+
+function getWidth(){
+  if(mat==="silver"){
+    const el = document.querySelector("#width-group-silver .btn-w.active");
+    return el ? el.dataset.val : "2";
+  } else {
+    const el = document.querySelector("#width-group-gold .btn-w.active");
+    return el ? el.dataset.val : "2";
+  }
+}
+
+function fmt(n){ return "¥"+Math.round(n).toLocaleString("ja-JP"); }
+
+// ============================================================
+// 計算
+// ============================================================
+function calc(){
+  const width = getWidth();
+  let basePrice = 0, subtitle = "", prodNumStr = "";
+
+  if(mat==="silver"){
+    const isLong = document.getElementById("silver-18cm-toggle") && document.getElementById("silver-18cm-toggle").checked;
+    basePrice = (isLong ? bPriceSilver18[width] : bPriceSilver[width]) || 0;
+    const wLabel = {"2":"2mm","2.5":"2.5mm","3":"3mm","4x2":"4×2mm","5x2":"5×2mm","6x2":"6×2mm","10x2":"10×2mm"}[width]||width;
+    subtitle  = "Silver / "+wLabel+(isLong ? " / 18cm以上" : "");
+    const pn = bProductNum.silver[width];
+    prodNumStr = pn ? "商品番号："+pn : "";
+  } else {
+    const cmKey = String(cmVal);
+    const matLabel = {"10K":"K10","18K":"K18","pt":"Pt900"}[mat]||mat;
+    const wLabel   = {"2":"2mm","2.5":"2.5mm","3":"3mm","4x2":"4×2mm","5x2":"5×2mm"}[width]||width;
+    const cmTable  = (bPriceCm[mat]||{})[width]||{};
+    const unit     = (bPriceUnit[mat]||{})[width]||0;
+    basePrice = cmTable[cmKey] || (unit*cmVal) || 0;
+    subtitle  = matLabel+" "+wLabel+" "+cmVal+"cm";
+    document.getElementById("cm-unit-price").textContent = unit ? "1cm="+fmt(unit) : "";
+    const cmMap = bProductNum[mat] && bProductNum[mat][width];
+    prodNumStr = cmMap && cmMap[cmKey] ? "商品番号："+cmMap[cmKey] : "";
+  }
+
+  let total = basePrice;
+  document.getElementById("r-base").textContent          = basePrice ? fmt(basePrice) : "—";
+  document.getElementById("r-base-subtitle").textContent = subtitle;
+
+  if(prodNumStr){
+    document.getElementById("r-product-num").textContent = prodNumStr;
+    document.getElementById("r-product-num-row").style.display = "flex";
+  } else {
+    document.getElementById("r-product-num-row").style.display = "none";
+  }
+
+  // つや加工
+  const glossOn = document.getElementById("gloss-toggle") && document.getElementById("gloss-toggle").checked;
+  if (glossOn) {
+    total += 2200;
+    document.getElementById("row-gloss").style.display = "flex";
+  } else {
+    document.getElementById("row-gloss").style.display = "none";
+  }
+
+  // 石留め
+  if(counts.stone>0){
+    const s = counts.stone*11000; total+=s;
+    document.getElementById("lbl-stone").textContent = `ダイヤモンド×${counts.stone}`;
+    document.getElementById("r-stone").textContent   = fmt(s);
+    document.getElementById("row-stone").style.display = "flex";
+  } else { document.getElementById("row-stone").style.display = "none"; }
+
+  document.getElementById("r-total").textContent = total ? fmt(total) : "—";
+}
+
+// CSV取得（/gviz/tq = 認証不要・公開スプレ向け）
+function parseCSV(text){
+  const rows=[]; let cur="",inQ=false,row=[];
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(inQ){if(ch==='"' &&text[i+1]==='"'){ cur+='"';i++;}else if(ch==='"')inQ=false;else cur+=ch;}
+    else{if(ch==='"'){ inQ=true;}else if(ch===','){ row.push(cur.trim());cur="";}else if(ch==='\n'){ row.push(cur.trim());if(row.some(c=>c!==""))rows.push(row);row=[];cur="";}else if(ch!=='\r')cur+=ch;}
+  }
+  if(cur!==""||row.length>0){row.push(cur.trim());if(row.some(c=>c!==""))rows.push(row);}
+  return rows;
+}
+function toNum(v){ if(!v&&v!==0)return 0; return Number(String(v).replace(/[^0-9.-]/g,""))||0; }
+
+// Price_Num シート解析
+// 期待列: list | material | size | width | 商品番号 | price | carving_price
+// バングル固有:
+//   material=silver925  size=no_cm / 固定 / (数値以外)  → bPriceSilver[width]=price
+//   material=10K/18K/pt size=1cm / unit               → bPriceUnit[mat][width]=price
+//   material=10K/18K/pt size=cm_N / Ncm / N(数値cm)   → bPriceCm[mat][width][N]=price
+//   商品番号列                                          → bProductNum
+function parsePriceNumSheet(rows){
+  if(!rows||rows.length<2)return false;
+  const hdr=rows[0].map(h=>String(h).trim());
+  const hL=hdr.map(h=>h.toLowerCase());
+  const iL=hL.indexOf("list"),iM=hL.indexOf("material"),iS=hL.indexOf("size"),iW=hL.indexOf("width");
+  const iPN=hdr.findIndex(h=>h==="商品番号"||h.toLowerCase()==="product_num"||h.toLowerCase()==="productnum");
+  const iP=hdr.findIndex(h=>h.toLowerCase()==="price"||h==="価格"||h==="単価");
+  if(iM<0||iS<0)return false;
+
+  console.log("[RAVINA Bangle] header:", hdr);
+  console.log("[RAVINA Bangle] col idx → mat:",iM,"size:",iS,"width:",iW,"price:",iP,"pn:",iPN,"list:",iL);
+
+  function normMat(s){
+    const l=s.toLowerCase();
+    if(/silver/i.test(l))return "silver";
+    if(/10k|k10/i.test(l))return "10K";
+    if(/18k|k18/i.test(l))return "18K";
+    if(/^pt|plat/i.test(l))return "pt";
+    return null;
+  }
+  function normWidth(s){
+    if(!s)return null;
+    // ×→x、全角→半角
+    const r=s.trim().replace(/[×ｘ]/g,"x").replace(/[－−]/g,"-");
+    if(/^4x2$/i.test(r))return "4x2";
+    if(/^5x2$/i.test(r))return "5x2";
+    if(/^6x2$/i.test(r))return "6x2";
+    if(/^10x2$/i.test(r))return "10x2";
+    const n=parseFloat(r);
+    return isNaN(n)?null:String(n);
+  }
+  // size 列からcm数値を抽出。"cm_10","10cm","10","10.0cm" → "10"
+  // "1cm","unit","no_cm" → null（単価行として扱う）
+  function normSizeCm(s){
+    const lower=s.toLowerCase().trim();
+    // 単価・固定行パターン
+    if(lower==="1cm"||lower==="unit"||lower==="no_cm"||lower==="fixed"||lower===""||lower==="固定")return null;
+    // cm_N 形式
+    const m1=lower.match(/^cm_?(\d+(?:\.\d+)?)$/);
+    if(m1)return m1[1];
+    // Ncm 形式
+    const m2=lower.match(/^(\d+(?:\.\d+)?)cm$/);
+    if(m2)return m2[1];
+    // 純数値
+    const m3=lower.match(/^(\d+(?:\.\d+)?)$/);
+    if(m3)return m3[1];
+    return null;
+  }
+  // size列が「単価行」かどうか判定
+  function isUnitRow(s){
+    const lower=s.toLowerCase().trim();
+    return lower==="1cm"||lower==="unit"||lower==="no_cm"||lower==="fixed";
+  }
+
+  const newSv={},newSv18={},newU={"10K":{},"18K":{},"pt":{}},newC={"10K":{},"18K":{},"pt":{}},newPN={};
+  let parsedRows=0;
+
+  for(let i=1;i<rows.length;i++){
+    const v=rows[i]; if(!v||!v.length)continue;
+    if(iL>=0){const lt=String(v[iL]||"").trim().toLowerCase();if(lt&&lt!=="bangle")continue;}
+    const mat=normMat(String(v[iM]||"").trim()); if(!mat)continue;
+    const szRaw=String(v[iS]||"").trim();
+    const price=iP>=0?toNum(v[iP]):0;
+    const pnRaw=iPN>=0?String(v[iPN]||"").trim():"";
+
+    parsedRows++;
+    if(parsedRows<=4)console.log("[RAVINA Bangle] row",i,"mat:",mat,"sz:",szRaw,"w:",iW>=0?v[iW]:"?","price:",price,"pn:",pnRaw);
+
+    if(iW<0)continue;
+    const w=normWidth(String(v[iW]||"").trim());
+    if(!w)continue;
+
+    if(mat==="silver"){
+      // Silver: size列が18cm系なら18cm以上価格、それ以外(no_cm/固定/空欄)は基本価格
+      const szLower=szRaw.toLowerCase();
+      const is18 = szLower==="18cm"||szLower==="18"||szLower==="cm_18";
+      if(is18){ if(price>0)newSv18[w]=price; }
+      else { if(price>0)newSv[w]=price; }
+      if(pnRaw){if(!newPN.silver)newPN.silver={};newPN.silver[w]=pnRaw;}
+    } else {
+      // Gold/Pt: size列で単価行とcm行を区別
+      if(isUnitRow(szRaw)){
+        if(price>0)newU[mat][w]=price;
+        // 単価行に商品番号はない想定（あれば格納しない）
+      } else {
+        const cm=normSizeCm(szRaw);
+        if(!cm)continue;
+        if(price>0){if(!newC[mat][w])newC[mat][w]={};newC[mat][w][cm]=price;}
+        if(pnRaw){
+          if(!newPN[mat])newPN[mat]={};
+          if(!newPN[mat][w])newPN[mat][w]={};
+          newPN[mat][w][cm]=pnRaw;
+        }
+      }
+    }
+  }
+
+  console.log("[RAVINA Bangle] parsed rows:",parsedRows);
+  console.log("[RAVINA Bangle] newSv keys:",Object.keys(newSv));
+  console.log("[RAVINA Bangle] newPN keys:",Object.keys(newPN));
+  ["10K","18K","pt"].forEach(m=>{
+    console.log("[RAVINA Bangle] newC["+m+"] keys:",Object.keys(newC[m]));
+  });
+
+  // 素材ごとに更新（取得できた幅のみ上書き・スプレにない幅はフォールバックを保持）
+  if(Object.keys(newSv).length>0) Object.assign(bPriceSilver, newSv);
+  if(Object.keys(newSv18).length>0) Object.assign(bPriceSilver18, newSv18);
+  ["10K","18K","pt"].forEach(m=>{
+    if(Object.keys(newU[m]).length>0) Object.assign(bPriceUnit[m], newU[m]);
+    if(Object.keys(newC[m]).length>0){
+      // cm別テーブルも幅キー単位でマージ
+      for(const [w, cmMap] of Object.entries(newC[m])){
+        if(!bPriceCm[m]) bPriceCm[m]={};
+        if(!bPriceCm[m][w]) bPriceCm[m][w]={};
+        Object.assign(bPriceCm[m][w], cmMap);
+      }
+    }
+  });
+
+  // 商品番号：素材ごとにマージ（silver だけ取れても 10K/18K/pt はフォールバック維持）
+  if(Object.keys(newPN).length>0){
+    // フォールバックをベースにシートの値で上書き
+    const merged=JSON.parse(JSON.stringify(bProductNum));
+    for(const [m,v] of Object.entries(newPN)){
+      if(typeof v==="object"&&!Array.isArray(v)){
+        if(!merged[m])merged[m]={};
+        for(const [k2,v2] of Object.entries(v)){
+          if(typeof v2==="object"){
+            if(!merged[m][k2])merged[m][k2]={};
+            Object.assign(merged[m][k2],v2);
+          } else {
+            merged[m][k2]=v2;
+          }
+        }
+      }
+    }
+    bProductNum=merged;
+  }
+  return true;
+}
+
+async function initPrices(){
+  document.getElementById("price-loading").style.display="block";
+  try{
+    if(!GAS_URL||GAS_URL==="YOUR_GAS_DEPLOY_URL_HERE") throw new Error("GAS_URL未設定");
+    const res=await fetch(GAS_URL,{cache:"no-store"});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const text=await res.text();
+    if(text.trim().startsWith("ERROR:"))throw new Error(text.trim());
+    parsePriceNumSheet(parseCSV(text));
+    document.getElementById("price-loading").style.display="none";
+    showStatus("ok");
+  }catch(e){
+    document.getElementById("price-loading").style.display="none";
+    showStatus("error");
+  }
+  calc();
+}
+function showStatus(st){
+  const el=document.getElementById("sheet-status");
+  if(st==="ok"){el.textContent="✓ 最新価格";el.style.color="#6a9a6a";}
+  else{el.textContent="⚠ オフライン価格";el.style.color="#c07a4a";}
+  el.style.display="block";
+}
+
+initPrices();
+</script>
+</body>
+</html>

@@ -191,6 +191,7 @@ html, body {
 }
 .radio-btn:last-child { border-right: none; }
 .radio-btn.active { background: var(--accent-pale); color: var(--accent); font-weight: 700; }
+.radio-btn .rb-note { display: block; font-size: 8px; font-weight: 400; opacity: 0.75; margin-top: 1px; }
 
 /* カウンター */
 .counter { display: flex; align-items: center; }
@@ -219,6 +220,7 @@ html, body {
 }
 .btn-del.active { background: var(--accent-pale); border-color: var(--accent); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .btn-del .del-note { font-size: 9px; color: var(--soft); display: block; }
+.btn-del.auto { cursor: default; pointer-events: none; }
 
 /* ── 固定フッター: 結果 ── */
 #footer {
@@ -355,29 +357,18 @@ html, body {
           <div class="sub-row" style="flex-direction:column;align-items:flex-start;gap:5px;padding-top:3px;">
             <span class="sub-label">彫り範囲<span class="i18n">Engraving Range</span></span>
             <div class="radio-group" id="scope-group" style="width:100%;">
-              <button class="radio-btn active" data-val="full"  onclick="setScope(this)">Full 360°</button>
-              <button class="radio-btn"        data-val="half"  onclick="setScope(this)">Half 180°</button>
-              <button class="radio-btn"        data-val="point" onclick="setScope(this)">Point Charm</button>
-            </div>
-          </div>
-        </div>
-        <div class="accordion-sub" id="charm-sub">
-          <div class="sub-row">
-            <div><span class="sub-label">チャーム追加<span class="i18n">Add Charm</span></span><div style="font-size:9px;color:var(--soft);">¥11,000 / 個</div></div>
-            <div class="counter">
-              <button class="counter-btn" onclick="change('charm',-1)">−</button>
-              <div class="counter-val" id="val-charm">0</div>
-              <button class="counter-btn" onclick="change('charm',1)">＋</button>
+              <button class="radio-btn active" data-val="full"  onclick="setScope(this)">Full 360°<span class="rb-note">¥38,500</span></button>
+              <button class="radio-btn"        data-val="half"  onclick="setScope(this)">Half 180°<span class="rb-note">¥22,000</span></button>
+              <button class="radio-btn"        data-val="point" onclick="setScope(this)">Charm Only<span class="rb-note">¥11,000</span></button>
             </div>
           </div>
         </div>
         <div class="accordion-sub" id="carving-sub">
           <div class="sub-row" style="flex-direction:column;align-items:flex-start;gap:5px;">
             <span class="sub-label">納期<span class="i18n">Delivery</span></span>
-            <div class="del-row" id="delivery-group" style="width:100%;padding:0;">
-              <button class="btn-del active" data-val="normal" onclick="setDel(this)">通常納品<span class="del-note">約3週間 ・ Standard</span></button>
-              <button class="btn-del"        data-val="7day"   onclick="setDel(this)">7日後<span class="del-note">+¥22,000 ・ 7 Days</span></button>
-              <button class="btn-del"        data-val="3day"   onclick="setDel(this)">3日後<span class="del-note">+¥44,000 ・ 3 Days</span></button>
+            <div class="del-row" id="delivery-group" style="width:100%;padding:0;grid-template-columns:repeat(2,1fr);">
+              <button class="btn-del active" data-val="normal" onclick="setDel(this)">通常料金<span class="del-note">約3週間 ・ Standard</span></button>
+              <button class="btn-del"        data-val="3day"   onclick="setDel(this)">３日後納品<span class="del-note">+¥12,000 ・ 3 Days</span></button>
             </div>
           </div>
         </div>
@@ -405,6 +396,15 @@ html, body {
       </div>
     </div>
 
+    <!-- 送料 -->
+    <div class="sec" id="shipping-sec" style="display:none">
+      <div class="sec-label">Shipping — 送料</div>
+      <div class="del-row" id="shipping-group" style="grid-template-columns:repeat(2,1fr);">
+        <button class="btn-del auto active" id="ship-free">無料<span class="del-note">¥22,000以上 ・ Free</span></button>
+        <button class="btn-del auto"        id="ship-paid">￥1,100<span class="del-note">¥22,000未満 ・ Under ¥22,000</span></button>
+      </div>
+    </div>
+
   </div><!-- /scroll-area -->
 
   <!-- 固定フッター: 結果 -->
@@ -422,8 +422,8 @@ html, body {
       <div class="res-row" id="row-carving"  style="display:none"><span id="lbl-carving">沖縄彫刻（全周）</span><span id="r-carving">—</span></div>
       <div class="res-row" id="row-stone"    style="display:none"><span id="lbl-stone">ダイヤモンド</span><span id="r-stone">—</span></div>
       <div class="res-row" id="row-stamp"    style="display:none"><span id="lbl-stamp">刻印</span><span id="r-stamp">—</span></div>
-      <div class="res-row" id="row-charm"    style="display:none"><span id="lbl-charm">チャーム</span><span id="r-charm">—</span></div>
       <div class="res-row" id="row-delivery" style="display:none"><span id="lbl-del">—</span><span id="r-delivery">—</span></div>
+      <div class="res-row" id="row-shipping" style="display:none"><span>送料<span class="i18n">Shipping</span></span><span id="r-shipping">—</span></div>
       <div class="res-row total"><span>合計（税込）<span class="i18n" style="font-size:9px;">Total incl. tax</span></span><span id="r-total">—</span></div>
     </div>
     <div id="sheet-status"></div>
@@ -527,37 +527,17 @@ let prices = {
   }
 };
 
-let carvingPrices = {
-  silver:{
-    "1-20": {"2":57200,"2.5":52800,"3":44000,"4x2":44000,"5x2":44000,"6":44000},
-    "21up": {"2":57200,"2.5":59400,"3":59400,"4x2":59400,"5x2":59400,"6":59400}
-  },
-  "10K":{
-    "1-8":  {"2":57200,"2.5":52800,"3":44000,"4x2":44000,"5x2":44000,"6":44000},
-    "9-16": {"2":57200,"2.5":59400,"3":59400,"4x2":59400,"5x2":59400,"6":59400},
-    "17-24":{"2":57200,"2.5":59400,"3":59400,"4x2":59400,"5x2":59400,"6":59400},
-    "25-32":{"2":66000,"2.5":66000,"3":59400,"4x2":59400,"5x2":59400,"6":59400},
-    "33-40":{"2":66000,"2.5":66000,"3":59400,"4x2":59400,"5x2":59400,"6":59400}
-  },
-  "18K":{
-    "1-8":  {"2":71500,"2.5":66000,"3":55000,"4x2":55000,"5x2":55000,"6":55000},
-    "9-16": {"2":71500,"2.5":74250,"3":74250,"4x2":74250,"5x2":74250,"6":74250},
-    "17-24":{"2":71500,"2.5":74250,"3":74250,"4x2":74250,"5x2":74250,"6":74250},
-    "25-32":{"2":82500,"2.5":82500,"3":74250,"4x2":74250,"5x2":74250,"6":74250},
-    "33-40":{"2":82500,"2.5":82500,"3":74250,"4x2":74250,"5x2":74250,"6":74250}
-  },
-  "pt":{
-    "1-8":  {"2":71500,"2.5":66000,"3":55000,"4x2":55000,"5x2":55000,"6":55000},
-    "9-16": {"2":71500,"2.5":74250,"3":74250,"4x2":74250,"5x2":74250,"6":74250},
-    "17-24":{"2":71500,"2.5":74250,"3":74250,"4x2":74250,"5x2":74250,"6":74250},
-    "25-32":{"2":82500,"2.5":82500,"3":74250,"4x2":74250,"5x2":74250,"6":74250},
-    "33-40":{"2":82500,"2.5":82500,"3":74250,"4x2":74250,"5x2":74250,"6":74250}
-  }
-};
+// 手彫り加工（彫り範囲）: 固定料金制 — 素材・幅・号数に関係なく一律
+const CARVING_SCOPE_PRICE = { full: 38500, half: 22000, point: 11000 };
+// 納期（3日後納品）: 固定追加料金
+const DELIVERY_3DAY_FEE = 12000;
+// 送料: 合計（税込）¥22,000以上で無料、未満は¥1,100
+const SHIPPING_FREE_THRESHOLD = 22000;
+const SHIPPING_FEE = 1100;
 
 // ─── State ───
 let mat = "silver", del = "normal", scope = "none";
-let counts = { stone:0, charm:0, stamp:0 };
+let counts = { stone:0, stamp:0 };
 const CARVABLE_WIDTHS = ["3","4x2","5x2","6"];
 
 // ─── UI helpers ───
@@ -634,8 +614,6 @@ function setDel(el){
 function setScope(el){
   document.querySelectorAll("#scope-group .radio-btn").forEach(b=>b.classList.remove("active"));
   el.classList.add("active"); scope = el.dataset.val;
-  document.getElementById("charm-sub").classList.toggle("open", scope==="point");
-  if(scope!=="point"){ counts.charm=0; document.getElementById("val-charm").textContent=0; }
   calc();
 }
 function onCarvingToggle(){
@@ -651,9 +629,6 @@ function onCarvingToggle(){
   } else {
     scopeSub.classList.remove("open");
     scope = "none";
-    counts.charm = 0;
-    document.getElementById("val-charm").textContent = 0;
-    document.getElementById("charm-sub").classList.remove("open");
     del = "normal";
     document.querySelectorAll("#delivery-group .btn-del").forEach(b=>b.classList.remove("active"));
     const norm = document.querySelector("#delivery-group .btn-del[data-val='normal']");
@@ -686,8 +661,8 @@ function resetAll(){
   if(carvingToggle.checked){ carvingToggle.checked=false; onCarvingToggle(); }
   else { onCarvingToggle(); } // ensure sub closed
   // カウンター
-  counts = {stone:0,charm:0,stamp:0};
-  ["stone","charm","stamp"].forEach(k=>{ document.getElementById("val-"+k).textContent=0; });
+  counts = {stone:0,stamp:0};
+  ["stone","stamp"].forEach(k=>{ document.getElementById("val-"+k).textContent=0; });
   // 幅トグル無効化（1.0mm初期）
   const tw = carvingToggle.closest(".toggle-wrap");
   if(tw){ tw.style.opacity="0.35"; tw.style.pointerEvents="none"; }
@@ -724,18 +699,13 @@ function calc(){
   if(glossOn){ total+=1100; document.getElementById("row-gloss").style.display="flex"; }
   else { document.getElementById("row-gloss").style.display="none"; }
 
-  // 彫刻
+  // 彫刻（固定料金制）
   if(carving){
-    const fullFee = (carvingPrices[mat]&&carvingPrices[mat][size]&&carvingPrices[mat][size][width])
-      ? carvingPrices[mat][size][width] : 0;
-    let fee, label;
-    if(scope==="half"){
-      fee = Math.round(fullFee/2); label = "沖縄彫刻（半周） Hand Engraving (Half)";
-    } else if(scope==="point"){
-      fee = counts.charm*11000; label = `沖縄彫刻（チャーム×${counts.charm}） Charm ×${counts.charm}`;
-    } else {
-      fee = fullFee; label = "沖縄彫刻（全周） Hand Engraving (Full)";
-    }
+    const fee = CARVING_SCOPE_PRICE[scope] || 0;
+    let label;
+    if(scope==="half")       label = "沖縄彫刻（半周 Half180°） Hand Engraving (Half180°)";
+    else if(scope==="point") label = "沖縄彫刻（チャームのみ Charm Only） Hand Engraving (Charm Only)";
+    else                     label = "沖縄彫刻（全周 Full360°） Hand Engraving (Full360°)";
     total += fee;
     document.getElementById("lbl-carving").textContent = label;
     document.getElementById("r-carving").textContent   = fmt(fee);
@@ -760,29 +730,34 @@ function calc(){
     document.getElementById("row-stamp").style.display="flex";
   } else { document.getElementById("row-stamp").style.display="none"; }
 
-  // チャーム（point以外）
-  if(scope==="point"){
-    document.getElementById("row-charm").style.display="none";
-  } else if(counts.charm>0){
-    const c=counts.charm*11000; total+=c;
-    document.getElementById("lbl-charm").textContent=`チャーム×${counts.charm} Charm×${counts.charm}`;
-    document.getElementById("r-charm").textContent=fmt(c);
-    document.getElementById("row-charm").style.display="flex";
-  } else { document.getElementById("row-charm").style.display="none"; }
-
-  // 納期
-  if(del==="7day"){
+  // 納期（３日後納品のみ）
+  if(del==="3day"){
     document.getElementById("row-delivery").style.display="flex";
-    document.getElementById("lbl-del").textContent="速納（7日後） Express (7 Days)";
-    document.getElementById("r-delivery").textContent="+¥22,000";
-    total+=22000;
-  } else if(del==="3day"){
-    document.getElementById("row-delivery").style.display="flex";
-    document.getElementById("lbl-del").textContent="速納（3日後） Express (3 Days)";
-    document.getElementById("r-delivery").textContent="+¥44,000";
-    total+=44000;
+    document.getElementById("lbl-del").textContent="３日後納品 3 Days";
+    document.getElementById("r-delivery").textContent="+"+fmt(DELIVERY_3DAY_FEE);
+    total+=DELIVERY_3DAY_FEE;
   } else {
     document.getElementById("row-delivery").style.display="none";
+  }
+
+  // 送料（手彫り加工 または ダイヤモンドのいずれかが選択されている時のみ適用）
+  const shippingSec = document.getElementById("shipping-sec");
+  const rowShipping  = document.getElementById("row-shipping");
+  const shippingApplicable = carving || counts.stone > 0;
+  if(shippingApplicable){
+    const shipFree = total >= SHIPPING_FREE_THRESHOLD;
+    const shipFee  = shipFree ? 0 : SHIPPING_FEE;
+    const shipFreeBtn = document.getElementById("ship-free");
+    const shipPaidBtn = document.getElementById("ship-paid");
+    if(shipFreeBtn) shipFreeBtn.classList.toggle("active", shipFree);
+    if(shipPaidBtn) shipPaidBtn.classList.toggle("active", !shipFree);
+    document.getElementById("r-shipping").textContent = shipFree ? "無料" : fmt(shipFee);
+    total += shipFee;
+    if(shippingSec) shippingSec.style.display = "flex";
+    if(rowShipping) rowShipping.style.display = "flex";
+  } else {
+    if(shippingSec) shippingSec.style.display = "none";
+    if(rowShipping) rowShipping.style.display = "none";
   }
 
   document.getElementById("r-total").textContent = total ? fmt(total) : "—";

@@ -86,10 +86,14 @@ dialog::backdrop{background:rgba(20,22,26,.55)}
   padding:12px 20px;border-radius:8px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:92vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.err{background:var(--out)}
+/* ロック中(パスワード未入力):ヘッダーも一覧も出さない */
+body.locked .top, body.locked main, body.locked .toast{display:none}
+body.locked{background:var(--ink)}
+#pinDlg::backdrop{background:var(--ink)}
 @media (prefers-reduced-motion:reduce){.toast,.person{transition:none}}
 </style>
 </head>
-<body>
+<body class="locked">
 
 <header class="top">
   <div class="top-in">
@@ -150,8 +154,8 @@ dialog::backdrop{background:rgba(20,22,26,.55)}
 
 <dialog id="pinDlg" aria-labelledby="pinTitle">
   <form class="sheet pin-form" id="pinForm">
-    <h2 id="pinTitle">PINを入力</h2>
-    <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" aria-label="PIN">
+    <h2 id="pinTitle">パスワードを入力</h2>
+    <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" aria-label="パスワード">
     <p class="msg" id="pinMsg"></p>
     <button class="act" type="submit">開く</button>
   </form>
@@ -211,8 +215,10 @@ async function load(silent) {
     if (!r.ok) throw new Error(r.error || '読み込みに失敗しました');
     S.needPin = false; S.loaded = true;
     S.stores = r.stores; S.store = r.store; S.staff = r.staff; S.adminPin = !!r.adminPin;
+    document.body.classList.remove('locked');
     render();
   } catch (e) {
+    if (!S.needPin) document.body.classList.remove('locked');
     if (!silent) toast(e.message, true);
   }
 }
@@ -360,11 +366,13 @@ $('#delForm').addEventListener('submit', async e => {
 
 /* ---------- PIN ---------- */
 function askPin(msg) {
+  document.body.classList.add('locked');
   $('#pinMsg').textContent = msg || '';
   $('#pinInput').value = '';
   if (!$('#pinDlg').open) $('#pinDlg').showModal();
   $('#pinInput').focus();
 }
+$('#pinDlg').addEventListener('cancel', e => e.preventDefault());
 $('#pinForm').addEventListener('submit', e => {
   e.preventDefault();
   S.pin = $('#pinInput').value.trim();

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>打刻</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#22252b; --sub:#6b6f76; --paper:#f3f2ee; --card:#fffefb; --line:#dcd7ca;
+  --gold:#a98332; --gold-d:#7d5f1f;
+  --in:#1b8a4c; --brk:#c76a00; --out:#2f62c9; --none:#7c828a;
+  --in-bg:#e8f6ee; --brk-bg:#fff2dc; --out-bg:#e7eefc;
+  --serif:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  --sans:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* ヘッダー:時計がこのページの主役 */
+.top{background:var(--ink);color:#f3efe4;padding:22px 20px 18px;border-bottom:3px solid var(--gold)}
+.top-in{max-width:960px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-size:clamp(2.2rem,8vw,3.4rem);line-height:1.1;letter-spacing:.16em;color:#d9c48a}
+.brand small{display:block;font-family:var(--sans);font-size:.9rem;letter-spacing:.04em;color:#a9abb1;margin-top:4px}
+.clock{text-align:right}
+.clock .d{font-size:.95rem;color:#c9cbd0}
+.clock .t{font-family:var(--serif);font-size:clamp(2.6rem,9vw,4rem);line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+
+main{max-width:960px;margin:0 auto;padding:18px 16px 56px}
+.demo{background:#fff4d6;border:1px solid #e6cf8f;border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:.9rem}
+
+/* スタッフ */
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.person{display:grid;grid-template-columns:1fr auto;grid-template-areas:"name status" "detail detail";
+  align-items:baseline;gap:2px 12px;text-align:left;background:var(--card);border:1px solid var(--line);
+  border-left:7px solid var(--c);border-radius:6px;padding:12px 14px;min-height:76px;transition:background .15s}
+.person.out:hover,.person.none:hover{background:#fff}
+.person.out{--c:var(--out)} .person.none{--c:var(--none)}
+/* 出勤中:濃い緑の帯に白文字 */
+.person.in{--c:#0f4a2f;background:#1f7a47;border-color:#14573a;color:#fff}
+.person.in .status{color:#fff}
+.person.in .detail{color:#dff1e6}
+/* 休憩中:黄色の帯に濃い文字 */
+.person.brk{--c:#a87400;background:#ffc233;border-color:#d9a000;color:#2b2000}
+.person.brk .status{color:#2b2000}
+.person.brk .detail{color:#5a4300}
+.person .name{grid-area:name;font-family:var(--serif);font-weight:700;font-size:1.3rem}
+.person .status{grid-area:status;font-weight:700;color:var(--c)}
+.person .detail{grid-area:detail;font-size:.88rem;color:var(--sub);font-variant-numeric:tabular-nums}
+.person.pending{opacity:.55;pointer-events:none}
+.empty{grid-column:1/-1;color:var(--sub);padding:28px 4px}
+.empty button{margin-left:8px;border:1px solid var(--gold-d);background:transparent;color:var(--gold-d);border-radius:6px;padding:8px 14px}
+
+/* 打刻ダイアログ */
+dialog{border:0;border-radius:12px;padding:0;width:min(92vw,420px);background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(20,22,26,.55)}
+.sheet{padding:22px 20px 18px}
+.sheet h2{margin:0;font-family:var(--serif);font-size:1.6rem}
+.sheet .now{margin:2px 0 16px;color:var(--sub);font-size:.92rem}
+.acts{display:grid;gap:10px}
+.act{border:0;border-radius:8px;color:#fff;font-weight:700;font-size:1.2rem;min-height:66px}
+.act.in{background:var(--in)} .act.brk{background:var(--brk)} .act.out{background:var(--out)}
+.act:active{filter:brightness(.9)}
+.sub-acts{display:flex;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:6px;padding:9px 14px;min-height:44px;color:var(--sub)}
+.ghost.warn{color:var(--out);border-color:#d8bcbc}
+.pin-form{display:grid;gap:12px}
+.pin-form input{font:inherit;font-size:1.4rem;letter-spacing:.3em;text-align:center;padding:10px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.pin-form .act{background:var(--ink)}
+.add-row{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+.add-row .ghost{border-color:var(--gold-d);color:var(--gold-d);font-weight:500}
+.add-row .ghost.del{border-color:#c9a3a3;color:#a33a3a}
+.act.del{background:#a33a3a}
+.field select{font:inherit;font-size:1.15rem;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.field{display:grid;gap:4px;font-size:.9rem;color:var(--sub)}
+.field input{font:inherit;font-size:1.15rem;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.msg{margin:0;color:var(--out);min-height:1.4em;font-size:.9rem}
+
+/* 通知 */
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#f3efe4;
+  padding:12px 20px;border-radius:8px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:92vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--out)}
+@media (prefers-reduced-motion:reduce){.toast,.person{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><span id="brandName">打刻</span><small>スタッフ打刻</small></div>
+    <div class="clock"><div class="d" id="date"></div><div class="t" id="time"></div></div>
+  </div>
+</header>
+
+<main>
+  <div class="demo" id="demo" hidden>デモ表示です。API_URL を設定すると、スプレッドシートにつながります。</div>
+  <div class="list" id="list"></div>
+  <div class="add-row">
+    <button class="ghost" id="addBtn" type="button">スタッフを追加</button>
+    <button class="ghost del" id="delBtn" type="button">削除</button>
+  </div>
+</main>
+
+<dialog id="delDlg" aria-labelledby="delTitle">
+  <form class="sheet pin-form" id="delForm">
+    <h2 id="delTitle">スタッフを削除</h2>
+    <p class="now">削除したスタッフは一覧から消えます。</p>
+    <label class="field">削除する人
+      <select id="delName" required></select>
+    </label>
+    <label class="field" id="delAdminField" hidden>管理用PIN
+      <input id="delAdminPin" type="password" autocomplete="off">
+    </label>
+    <p class="msg" id="delMsg"></p>
+    <button class="act del" type="submit" id="delSubmit">削除する</button>
+    <button class="ghost" type="button" id="delCancel">キャンセル</button>
+  </form>
+</dialog>
+
+<dialog id="addDlg" aria-labelledby="addTitle">
+  <form class="sheet pin-form" id="addForm">
+    <h2 id="addTitle">スタッフを追加</h2>
+    <p class="now" id="addStore"></p>
+    <label class="field">名前
+      <input id="addName" type="text" maxlength="20" autocomplete="off" placeholder="例 山田 花子" required>
+    </label>
+    <label class="field" id="adminField" hidden>管理用PIN
+      <input id="addAdminPin" type="password" autocomplete="off">
+    </label>
+    <p class="msg" id="addMsg"></p>
+    <button class="act in" type="submit" id="addSubmit">追加する</button>
+    <button class="ghost" type="button" id="addCancel">キャンセル</button>
+  </form>
+</dialog>
+
+<dialog id="sheet" aria-labelledby="sheetName">
+  <div class="sheet">
+    <h2 id="sheetName"></h2>
+    <p class="now" id="sheetInfo"></p>
+    <div class="acts" id="acts"></div>
+    <div class="sub-acts" id="subActs"></div>
+  </div>
+</dialog>
+
+<dialog id="pinDlg" aria-labelledby="pinTitle">
+  <form class="sheet pin-form" id="pinForm">
+    <h2 id="pinTitle">PINを入力</h2>
+    <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" aria-label="PIN">
+    <p class="msg" id="pinMsg"></p>
+    <button class="act" type="submit">開く</button>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ★ここに、Apps Script のウェブアプリURL(…/exec)を貼る。空のままだとデモ表示になります。
+const API_URL = '';
+
+// シート名 → 画面に出す店舗名(ここを直すと、ロゴ部分とタブの名前が変わります)
+const STORE_NAMES = {};
+const storeLabel = n => 'RAVINA';
+
+const DEMO = !API_URL;
+const $ = s => document.querySelector(s);
+const S = { stores: [], store: '', staff: [], pin: '', pending: new Set(), loaded: false, needPin: false };
+const STAT_CLASS = { '出勤中': 'in', '休憩中': 'brk', '退勤済': 'out', '無': 'none' };
+const ACT = {
+  in:        { label: '出勤',         cls: 'in'  },
+  brkStart:  { label: '休憩に入る',   cls: 'brk' },
+  brkEnd:    { label: '休憩を終える', cls: 'brk' },
+  out:       { label: '退勤',         cls: 'out' },
+  cancelIn:  { label: '出勤を取り消す' },
+  cancelOut: { label: '退勤を取り消す' },
+};
+
+function el(tag, attrs, text) {
+  const e = document.createElement(tag);
+  for (const k in (attrs || {})) e.setAttribute(k, attrs[k]);
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+/* ---------- 時計(表示用。記録される時刻はサーバー側の時刻) ---------- */
+function tick() {
+  const n = new Date();
+  $('#date').textContent = n.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+  $('#time').textContent = n.toLocaleTimeString('ja-JP', { hour12: false });
+}
+setInterval(tick, 1000); tick();
+
+/* ---------- 通信 ---------- */
+async function api(params) {
+  if (DEMO) return demo(params);
+  const q = new URLSearchParams(Object.assign({}, params, { pin: S.pin, _: Date.now() }));
+  const r = await fetch(API_URL + '?' + q.toString());
+  if (!r.ok) throw new Error('通信に失敗しました');
+  return r.json();
+}
+
+async function load(silent) {
+  try {
+    const r = await api({ op: 'list', store: S.store });
+    if (r.code === 'PIN') { S.needPin = true; S.loaded = true; render(); askPin(S.pin ? r.error : ''); return; }
+    if (!r.ok) throw new Error(r.error || '読み込みに失敗しました');
+    S.needPin = false; S.loaded = true;
+    S.stores = r.stores; S.store = r.store; S.staff = r.staff; S.adminPin = !!r.adminPin;
+    render();
+  } catch (e) {
+    if (!silent) toast(e.message, true);
+  }
+}
+
+/* ---------- 画面 ---------- */
+function detail(p) {
+  if (p.status === '休憩中') return '休憩開始 ' + p.brkTime + '、出勤 ' + p.inTime;
+  if (p.status === '退勤済') return '出勤 ' + p.inTime + ' から 退勤 ' + p.outTime;
+  if (p.status === '出勤中') return '出勤 ' + p.inTime + (p.breaks ? '、休憩 ' + p.breaks + '回' : '');
+  return '未打刻';
+}
+
+function render() {
+  // 店舗名は RAVINA 固定
+  $('#brandName').textContent = 'RAVINA';
+  document.title = 'RAVINA 打刻';
+
+  const list = $('#list'); list.replaceChildren();
+  if (S.needPin) {
+    const p = el('p', { class: 'empty' }, 'PINを入力すると打刻できます。');
+    const b = el('button', { type: 'button' }, 'PINを入力');
+    b.onclick = () => askPin('');
+    p.append(b); list.append(p); return;
+  }
+  if (!S.staff.length) {
+    list.append(el('p', { class: 'empty' }, S.loaded
+      ? 'この店舗にスタッフがいません。スプレッドシートのA列に名前を入力してください。'
+      : '読み込み中です…'));
+    return;
+  }
+  S.staff.forEach(p => {
+    const pend = S.pending.has(p.row);
+    const b = el('button', { type: 'button', class: 'person ' + STAT_CLASS[p.status] + (pend ? ' pending' : '') });
+    b.append(el('span', { class: 'name' }, p.name),
+             el('span', { class: 'status' }, pend ? '送信中…' : p.status),
+             el('span', { class: 'detail' }, detail(p)));
+    b.onclick = () => openSheet(p);
+    list.append(b);
+  });
+}
+
+function openSheet(p) {
+  $('#sheetName').textContent = p.name;
+  $('#sheetInfo').textContent = '現在は「' + p.status + '」です。' + detail(p);
+  const acts = $('#acts'), sub = $('#subActs');
+  acts.replaceChildren(); sub.replaceChildren();
+
+  p.actions.filter(a => !a.startsWith('cancel')).forEach(a => {
+    const b = el('button', { type: 'button', class: 'act ' + ACT[a].cls }, ACT[a].label);
+    b.onclick = () => run(p, a);
+    acts.append(b);
+  });
+  const close = el('button', { type: 'button', class: 'ghost' }, '閉じる');
+  close.onclick = () => $('#sheet').close();
+  sub.append(close);
+  p.actions.filter(a => a.startsWith('cancel')).forEach(a => {
+    const b = el('button', { type: 'button', class: 'ghost warn' }, ACT[a].label);
+    b.onclick = () => { if (confirm(p.name + ' さんの打刻を取り消しますか?')) run(p, a); };
+    sub.append(b);
+  });
+  $('#sheet').showModal();
+}
+
+async function run(p, act) {
+  $('#sheet').close();
+  S.pending.add(p.row); render();
+  try {
+    const r = await api({ op: 'punch', store: S.store, row: p.row, name: p.name, act: act });
+    if (r.code === 'PIN') { askPin(r.error); return; }
+    if (!r.ok) { toast(r.error || '打刻に失敗しました', true); if (r.reload) load(true); return; }
+    const i = S.staff.findIndex(x => x.row === p.row);
+    if (i >= 0) S.staff[i] = r.staff;
+    toast(r.message);
+  } catch (e) {
+    toast('通信に失敗しました。もう一度お試しください', true);
+    load(true);
+  } finally {
+    S.pending.delete(p.row); render();
+  }
+}
+
+/* ---------- スタッフ追加 ---------- */
+$('#addBtn').onclick = () => {
+  if (S.needPin || !S.store) { toast('先にPINを入力してください', true); return; }
+  $('#addStore').textContent = storeLabel(S.store) + ' に追加します';
+  $('#adminField').hidden = !S.adminPin;
+  $('#addName').value = ''; $('#addAdminPin').value = ''; $('#addMsg').textContent = '';
+  $('#addDlg').showModal();
+  $('#addName').focus();
+};
+$('#addCancel').onclick = () => $('#addDlg').close();
+$('#addForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('#addSubmit');
+  btn.disabled = true; $('#addMsg').textContent = '';
+  try {
+    const r = await api({ op: 'addStaff', store: S.store, name: $('#addName').value, adminPin: $('#addAdminPin').value });
+    if (r.code === 'PIN') { $('#addDlg').close(); askPin(r.error); return; }
+    if (!r.ok) { $('#addMsg').textContent = r.error || '追加できませんでした'; return; }
+    S.staff.push(r.staff);
+    S.staff.sort((a, b) => a.row - b.row);
+    $('#addDlg').close();
+    render();
+    toast(r.message);
+  } catch (err) {
+    $('#addMsg').textContent = '通信に失敗しました。もう一度お試しください';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ---------- スタッフ削除 ---------- */
+$('#delBtn').onclick = () => {
+  if (S.needPin || !S.store) { toast('先にPINを入力してください', true); return; }
+  if (!S.staff.length) { toast('削除できるスタッフがいません', true); return; }
+  const sel = $('#delName'); sel.replaceChildren(el('option', { value: '' }, '選んでください'));
+  S.staff.forEach(p => sel.append(el('option', { value: String(p.row) }, p.name)));
+  $('#delAdminField').hidden = !S.adminPin;
+  $('#delAdminPin').value = ''; $('#delMsg').textContent = '';
+  $('#delDlg').showModal();
+  sel.focus();
+};
+$('#delCancel').onclick = () => $('#delDlg').close();
+$('#delForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const row = Number($('#delName').value);
+  const p = S.staff.find(x => x.row === row);
+  if (!p) { $('#delMsg').textContent = '削除する人を選んでください'; return; }
+  if (!confirm(p.name + ' さんを削除しますか?')) return;
+  const btn = $('#delSubmit');
+  btn.disabled = true; $('#delMsg').textContent = '';
+  try {
+    const r = await api({ op: 'deleteStaff', store: S.store, row: p.row, name: p.name, adminPin: $('#delAdminPin').value });
+    if (r.code === 'PIN') { $('#delDlg').close(); askPin(r.error); return; }
+    if (!r.ok) { $('#delMsg').textContent = r.error || '削除できませんでした'; if (r.reload) load(true); return; }
+    $('#delDlg').close();
+    toast(r.message || (p.name + ' さんを削除しました'));
+    load(true);  // 行番号がずれるので一覧を読み直す
+  } catch (err) {
+    $('#delMsg').textContent = '通信に失敗しました。もう一度お試しください';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ---------- PIN ---------- */
+function askPin(msg) {
+  $('#pinMsg').textContent = msg || '';
+  $('#pinInput').value = '';
+  if (!$('#pinDlg').open) $('#pinDlg').showModal();
+  $('#pinInput').focus();
+}
+$('#pinForm').addEventListener('submit', e => {
+  e.preventDefault();
+  S.pin = $('#pinInput').value.trim();
+  try { localStorage.setItem('rv_pin', S.pin); } catch (_) {}
+  $('#pinDlg').close();
+  load();
+});
+
+/* ---------- 通知 ---------- */
+let toastTimer;
+function toast(text, isErr) {
+  const t = $('#toast');
+  t.textContent = text;
+  t.className = 'toast show' + (isErr ? ' err' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = 'toast'; }, 3200);
+}
+
+/* ---------- デモ(API_URL が空のときだけ使う) ---------- */
+const hhmm = () => new Date().toTimeString().slice(0, 5);
+const DEMO_DB = {
+  '店舗1':     ['山田 花子', '佐藤 太郎', '鈴木 一郎', '田中 美咲'],
+  '店舗2':     ['高橋 健', '伊藤 葵', '渡辺 凛'],
+};
+Object.keys(DEMO_DB).forEach(k => {
+  DEMO_DB[k] = DEMO_DB[k].map((name, i) => ({ row: i + 2, name, status: '無', inTime: '', outTime: '', brkTime: '', breaks: 0, actions: ['in'] }));
+});
+function demoActions(x) {
+  if (x.status === '無') return ['in'];
+  if (x.status === '休憩中') return ['brkEnd'];
+  if (x.status === '退勤済') return ['cancelOut'];
+  return (x.breaks < 4 ? ['brkStart'] : []).concat(['out', 'cancelIn']);
+}
+function demo(p) { return new Promise(res => setTimeout(() => res(demoRun(p)), 250)); }
+function demoRun(p) {
+  const stores = Object.keys(DEMO_DB);
+  const store = DEMO_DB[p.store] ? p.store : stores[0];
+  const list = DEMO_DB[store];
+  if (p.op === 'list') return { ok: true, stores, store, staff: list.map(x => Object.assign({}, x)) };
+  if (p.op === 'addStaff') {
+    const name = String(p.name || '').replace(/\s+/g, ' ').trim();
+    if (!name) return { ok: false, error: '名前を入力してください' };
+    if (list.some(q => q.name === name)) return { ok: false, error: '同じ名前のスタッフがすでにいます' };
+    const row = list.reduce((m, q) => Math.max(m, q.row), 1) + 1;
+    const nx = { row, name, status: '無', inTime: '', outTime: '', brkTime: '', breaks: 0, actions: ['in'] };
+    list.push(nx);
+    return { ok: true, message: name + ' さんを追加しました', staff: Object.assign({}, nx) };
+  }
+  if (p.op === 'deleteStaff') {
+    const i = list.findIndex(q => q.row == p.row && q.name === p.name);
+    if (i < 0) return { ok: false, error: 'スタッフが見つかりません', reload: true };
+    list.splice(i, 1);
+    list.forEach((q, j) => { q.row = j + 2; });  // シートの行詰めを再現
+    return { ok: true, message: p.name + ' さんを削除しました' };
+  }
+  const x = list.find(q => q.row == p.row), t = hhmm();
+  if (p.act === 'in')        { x.status = '出勤中'; x.inTime = t; x.outTime = ''; x.breaks = 0; }
+  if (p.act === 'brkStart')  { x.status = '休憩中'; x.brkTime = t; }
+  if (p.act === 'brkEnd')    { x.status = '出勤中'; x.brkTime = ''; x.breaks++; }
+  if (p.act === 'out')       { x.status = '退勤済'; x.outTime = t; }
+  if (p.act === 'cancelOut') { x.status = '出勤中'; x.outTime = ''; }
+  if (p.act === 'cancelIn')  { x.status = '無'; x.inTime = ''; x.breaks = 0; }
+  x.actions = demoActions(x);
+  return { ok: true, message: x.name + ' さん ' + ACT[p.act].label.replace('を', '') + ' ' + t, staff: Object.assign({}, x) };
+}
+
+/* ---------- 起動 ---------- */
+if (DEMO) $('#demo').hidden = false;
+try {
+  S.pin = localStorage.getItem('rv_pin') || '';
+  S.store = localStorage.getItem('rv_store') || '';
+} catch (_) {}
+render();
+load();
+setInterval(() => load(true), 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) load(true); });
+</script>
+</body>
+</html>

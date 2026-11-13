@@ -34,21 +34,22 @@ main{max-width:960px;margin:0 auto;padding:18px 16px 56px}
 
 /* スタッフ */
 .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
-.person{display:grid;grid-template-columns:1fr auto;grid-template-areas:"name status" "detail detail";
+.person{display:grid;grid-template-columns:1fr auto;grid-template-areas:"name status" "detail status";
   align-items:baseline;gap:2px 12px;text-align:left;background:var(--card);border:1px solid var(--line);
   border-left:7px solid var(--c);border-radius:6px;padding:12px 14px;min-height:76px;transition:background .15s}
 .person.out:hover,.person.none:hover{background:#fff}
 .person.out{--c:var(--out)} .person.none{--c:var(--none)}
+.person.none .status{color:#c4c7cc}
 /* 出勤中:濃い緑の帯に白文字 */
 .person.in{--c:#0f4a2f;background:#1f7a47;border-color:#14573a;color:#fff}
-.person.in .status{color:#fff}
+.person.in .status{color:#fff4c2}
 .person.in .detail{color:#dff1e6}
 /* 休憩中:黄色の帯に濃い文字 */
 .person.brk{--c:#a87400;background:#ffc233;border-color:#d9a000;color:#2b2000}
 .person.brk .status{color:#2b2000}
 .person.brk .detail{color:#5a4300}
 .person .name{grid-area:name;font-family:var(--serif);font-weight:700;font-size:1.3rem}
-.person .status{grid-area:status;font-weight:700;color:var(--c)}
+.person .status{grid-area:status;align-self:center;font-weight:700;font-size:1.6rem;line-height:1.2;letter-spacing:.04em;color:var(--c)}
 .person .detail{grid-area:detail;font-size:.88rem;color:var(--sub);font-variant-numeric:tabular-nums}
 .person.pending{opacity:.55;pointer-events:none}
 .empty{grid-column:1/-1;color:var(--sub);padding:28px 4px}

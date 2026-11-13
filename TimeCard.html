@@ -179,11 +179,12 @@ body.locked .lg{display:grid}
 
 <script>
 // Apps Script のウェブアプリURL(…/exec)
-const API_URL = 'https://script.google.com/macros/s/AKfycbw4kMcDQExsd9ZWRMYEeD4zkYDARs-xeim9nyuqTpZ5xmSbJ7nyITnkw2nrSpyIzkf9KA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx_srmAOGFfZdeFP4VfAwyPuB68fUwvmrv-_WEEWxrXyyAbVYQ4zdT39jGKI2k0TGDELw/exec';
 
 const $ = s => document.querySelector(s);
 const S = { staff: [], pin: '', adminPin: false, pending: new Set() };
 const STAT_CLASS = { '出勤中': 'in', '休憩中': 'brk', '退勤済': 'out', '無': 'none' };
+const STAT_ORDER = { '出勤中': 0, '休憩中': 1, '退勤済': 2, '無': 3 };
 const ACT = {
   in:        { label: '出勤',         cls: 'in'  },
   brkStart:  { label: '休憩に入る',   cls: 'brk' },
@@ -243,7 +244,9 @@ function render() {
     list.append(el('p', { class: 'empty' }, 'スタッフがいません。「スタッフを追加」から登録してください。'));
     return;
   }
-  S.staff.forEach(p => {
+  // 表示の順番: 出勤中 → 休憩中 → 退勤済 → 未打刻。同じ状態の中はシートの行の順
+  const rank = s => (STAT_ORDER[s] ?? 9);
+  S.staff.slice().sort((a, b) => rank(a.status) - rank(b.status) || a.row - b.row).forEach(p => {
     const pend = S.pending.has(p.row);
     const b = el('button', { type: 'button', class: 'person ' + STAT_CLASS[p.status] + (pend ? ' pending' : '') });
     b.append(el('span', { class: 'name' }, p.name),

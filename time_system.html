@@ -41,22 +41,21 @@ main{max-width:960px;margin:0 auto;padding:18px 16px 56px}
 
 /* スタッフ */
 .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
-.person{display:grid;grid-template-columns:1fr auto;grid-template-areas:"name status" "detail status";
+.person{display:grid;grid-template-columns:1fr auto;grid-template-areas:"name status" "detail detail";
   align-items:baseline;gap:2px 12px;text-align:left;background:var(--card);border:1px solid var(--line);
   border-left:7px solid var(--c);border-radius:6px;padding:12px 14px;min-height:76px;transition:background .15s}
 .person.out:hover,.person.none:hover{background:#fff}
 .person.out{--c:var(--out)} .person.none{--c:var(--none)}
 /* 出勤中:濃い緑の帯に白文字 */
 .person.in{--c:#0f4a2f;background:#1f7a47;border-color:#14573a;color:#fff}
-.person.in .status{color:#fff4c2}
+.person.in .status{color:#fff}
 .person.in .detail{color:#dff1e6}
 /* 休憩中:黄色の帯に濃い文字 */
 .person.brk{--c:#a87400;background:#ffc233;border-color:#d9a000;color:#2b2000}
 .person.brk .status{color:#2b2000}
 .person.brk .detail{color:#5a4300}
 .person .name{grid-area:name;font-family:var(--serif);font-weight:700;font-size:1.3rem}
-.person .status{grid-area:status;align-self:center;font-weight:700;font-size:1.6rem;line-height:1.2;letter-spacing:.04em;color:var(--c)}
-.person.none .status{color:#c4c7cc}
+.person .status{grid-area:status;font-weight:700;color:var(--c)}
 .person .detail{grid-area:detail;font-size:.88rem;color:var(--sub);font-variant-numeric:tabular-nums}
 .person.pending{opacity:.55;pointer-events:none}
 .empty{grid-column:1/-1;color:var(--sub);padding:28px 4px}
@@ -78,11 +77,8 @@ dialog::backdrop{background:rgba(20,22,26,.55)}
 .pin-form{display:grid;gap:12px}
 .pin-form input{font:inherit;font-size:1.4rem;letter-spacing:.3em;text-align:center;padding:10px;border:1px solid var(--line);border-radius:6px;background:#fff}
 .pin-form .act{background:var(--ink)}
-.add-row{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+.add-row{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end}
 .add-row .ghost{border-color:var(--gold-d);color:var(--gold-d);font-weight:500}
-.add-row .ghost.del{border-color:#c9a3a3;color:#a33a3a}
-.act.del{background:#a33a3a}
-.field select{font:inherit;font-size:1.15rem;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:#fff}
 .field{display:grid;gap:4px;font-size:.9rem;color:var(--sub)}
 .field input{font:inherit;font-size:1.15rem;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:#fff}
 .msg{margin:0;color:var(--out);min-height:1.4em;font-size:.9rem}
@@ -92,27 +88,10 @@ dialog::backdrop{background:rgba(20,22,26,.55)}
   padding:12px 20px;border-radius:8px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;max-width:92vw;text-align:center}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast.err{background:var(--out)}
-/* ロック中(パスワード未入力):ヘッダーも一覧も出さない */
-body.locked .top, body.locked main, body.locked .toast{display:none}
-body.locked{background:var(--ink)}
-/* ログインウィンドウ(ロック中だけ全面に出る) */
-.lg{display:none;min-height:100vh;place-items:center;padding:20px}
-body.locked .lg{display:grid}
-.lg-in{width:min(92vw,400px);text-align:center}
-.lg-brand{font-family:var(--serif);font-size:clamp(2.6rem,12vw,3.6rem);letter-spacing:.16em;color:#d9c48a;line-height:1.1}
-.lg-brand small{display:block;font-family:var(--sans);font-size:.9rem;letter-spacing:.04em;color:#a9abb1;margin-top:6px}
-.lg-box{margin-top:28px;background:var(--card);border-radius:12px;padding:22px 20px;text-align:left;border-top:3px solid var(--gold);color:var(--ink)}
-.lg-wait{text-align:center;color:var(--sub)}
-.lg-box label{display:grid;gap:6px;font-size:.9rem;color:var(--sub)}
-.lg-box input{font:inherit;font-size:1.3rem;padding:11px 12px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
-.lg-box .act{margin-top:14px;width:100%;background:var(--ink)}
-.lg-box .act:disabled{opacity:.6}
-.lg-msg{margin:10px 0 0;min-height:1.4em;color:#b3382c;font-size:.9rem}
-.lg [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){.toast,.person{transition:none}}
 </style>
 </head>
-<body class="locked">
+<body>
 
 <header class="top">
   <div class="top-in">
@@ -125,28 +104,8 @@ body.locked .lg{display:grid}
   <div class="demo" id="demo" hidden>デモ表示です。API_URL を設定すると、スプレッドシートにつながります。</div>
   <div class="tabs" id="tabs" role="group" aria-label="店舗"></div>
   <div class="list" id="list"></div>
-  <div class="add-row">
-    <button class="ghost" id="addBtn" type="button">スタッフを追加</button>
-    <button class="ghost del" id="delBtn" type="button">削除</button>
-    <button class="ghost" id="logoutBtn" type="button">ログアウト</button>
-  </div>
+  <div class="add-row"><button class="ghost" id="addBtn" type="button">スタッフを追加</button></div>
 </main>
-
-<dialog id="delDlg" aria-labelledby="delTitle">
-  <form class="sheet pin-form" id="delForm">
-    <h2 id="delTitle">スタッフを削除</h2>
-    <p class="now" id="delStore"></p>
-    <label class="field">削除する人
-      <select id="delName" required></select>
-    </label>
-    <label class="field" id="delAdminField" hidden>管理用PIN
-      <input id="delAdminPin" type="password" inputmode="numeric" autocomplete="off">
-    </label>
-    <p class="msg" id="delMsg"></p>
-    <button class="act del" type="submit" id="delSubmit">削除する</button>
-    <button class="ghost" type="button" id="delCancel">キャンセル</button>
-  </form>
-</dialog>
 
 <dialog id="addDlg" aria-labelledby="addTitle">
   <form class="sheet pin-form" id="addForm">
@@ -173,25 +132,20 @@ body.locked .lg{display:grid}
   </div>
 </dialog>
 
-<div class="lg" id="login">
-  <div class="lg-in">
-    <div class="lg-brand">RAVINA<small>スタッフ打刻</small></div>
-    <div class="lg-box lg-wait" id="loginWait">確認中…</div>
-    <form class="lg-box" id="loginForm" hidden>
-      <label>パスワード
-        <input id="loginPw" name="password" type="password" autocomplete="current-password" required>
-      </label>
-      <p class="lg-msg" id="loginMsg" role="alert"></p>
-      <button class="act" type="submit" id="loginGo">ログイン</button>
-    </form>
-  </div>
-</div>
+<dialog id="pinDlg" aria-labelledby="pinTitle">
+  <form class="sheet pin-form" id="pinForm">
+    <h2 id="pinTitle">PINを入力</h2>
+    <input id="pinInput" type="password" inputmode="numeric" autocomplete="off" aria-label="PIN">
+    <p class="msg" id="pinMsg"></p>
+    <button class="act" type="submit">開く</button>
+  </form>
+</dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 // ★ここに、Apps Script のウェブアプリURL(…/exec)を貼る。空のままだとデモ表示になります。
-const API_URL = 'https://script.google.com/macros/s/AKfycbwFVks3f1kKaI7XIuSVcmWeVlIK-cHxRB6JmcvO_mjDxJOPjkhVZLSPMhdqf_U68jpX/exec';
+const API_URL = '';
 
 // シート名 → 画面に出す店舗名(ここを直すと、ロゴ部分とタブの名前が変わります)
 const STORE_NAMES = { '店舗1': 'かなさんや～', '店舗2': 'ちゅらはま', 'ちゅらはま': 'ちゅらはま' };
@@ -201,7 +155,6 @@ const DEMO = !API_URL;
 const $ = s => document.querySelector(s);
 const S = { stores: [], store: '', staff: [], pin: '', pending: new Set(), loaded: false, needPin: false };
 const STAT_CLASS = { '出勤中': 'in', '休憩中': 'brk', '退勤済': 'out', '無': 'none' };
-const STAT_ORDER = { '出勤中': 0, '休憩中': 1, '退勤済': 2, '無': 3 };
 const ACT = {
   in:        { label: '出勤',         cls: 'in'  },
   brkStart:  { label: '休憩に入る',   cls: 'brk' },
@@ -238,55 +191,21 @@ async function api(params) {
 async function load(silent) {
   try {
     const r = await api({ op: 'list', store: S.store });
-    if (r.code === 'PIN') { S.needPin = true; S.loaded = true; askPin(S.pin ? r.error : ''); return; }
+    if (r.code === 'PIN') { S.needPin = true; S.loaded = true; render(); askPin(S.pin ? r.error : ''); return; }
     if (!r.ok) throw new Error(r.error || '読み込みに失敗しました');
     S.needPin = false; S.loaded = true;
     S.stores = r.stores; S.store = r.store; S.staff = r.staff; S.adminPin = !!r.adminPin;
-    document.body.classList.remove('locked');
     render();
   } catch (e) {
-    if (!silent) { document.body.classList.remove('locked'); toast(e.message, true); }
+    if (!silent) toast(e.message, true);
   }
-}
-
-/* ---------- 実際に打刻した時刻(画面表示だけに使う。シートの値は変えない) ---------- */
-const RAW_PREFIX = 'rv_rawin_';
-function rawKey() {
-  const n = new Date();
-  return RAW_PREFIX + n.getFullYear() + '-' + (n.getMonth() + 1) + '-' + n.getDate();
-}
-const rawName = name => S.store + '/' + name;  // 店舗ごとに分ける
-function rawAll() {
-  try { return JSON.parse(localStorage.getItem(rawKey()) || '{}') || {}; } catch (_) { return {}; }
-}
-function rawSave(name, time) {
-  try {
-    const m = rawAll(), k = rawName(name);
-    if (time) m[k] = time; else delete m[k];
-    localStorage.setItem(rawKey(), JSON.stringify(m));
-  } catch (_) {}
-}
-function rawCleanup() {  // 前日までの分を消す
-  try {
-    const today = rawKey();
-    Object.keys(localStorage).forEach(k => { if (k.startsWith(RAW_PREFIX) && k !== today) localStorage.removeItem(k); });
-  } catch (_) {}
-}
-function nowHM() {
-  const n = new Date();
-  return n.getHours() + ':' + String(n.getMinutes()).padStart(2, '0');
-}
-// 画面に出す出勤時刻: 実際に打刻した時刻があればそれ、なければシートの時刻(9:30 など)
-function shownIn(p) {
-  if (!p.inTime) return p.inTime;
-  return rawAll()[rawName(p.name)] || p.inTime;
 }
 
 /* ---------- 画面 ---------- */
 function detail(p) {
-  if (p.status === '休憩中') return '休憩開始 ' + p.brkTime + '、出勤 ' + shownIn(p);
-  if (p.status === '退勤済') return '出勤 ' + shownIn(p) + ' から 退勤 ' + p.outTime;
-  if (p.status === '出勤中') return '出勤 ' + shownIn(p) + (p.breaks ? '、休憩 ' + p.breaks + '回' : '');
+  if (p.status === '休憩中') return '休憩開始 ' + p.brkTime + '、出勤 ' + p.inTime;
+  if (p.status === '退勤済') return '出勤 ' + p.inTime + ' から 退勤 ' + p.outTime;
+  if (p.status === '出勤中') return '出勤 ' + p.inTime + (p.breaks ? '、休憩 ' + p.breaks + '回' : '');
   return '未打刻';
 }
 
@@ -307,15 +226,19 @@ function render() {
   document.title = S.store ? storeLabel(S.store) + ' 打刻' : '打刻';
 
   const list = $('#list'); list.replaceChildren();
+  if (S.needPin) {
+    const p = el('p', { class: 'empty' }, 'PINを入力すると打刻できます。');
+    const b = el('button', { type: 'button' }, 'PINを入力');
+    b.onclick = () => askPin('');
+    p.append(b); list.append(p); return;
+  }
   if (!S.staff.length) {
     list.append(el('p', { class: 'empty' }, S.loaded
       ? 'この店舗にスタッフがいません。スプレッドシートのA列に名前を入力してください。'
       : '読み込み中です…'));
     return;
   }
-  // 表示の順番: 出勤中 → 休憩中 → 退勤済 → 未打刻。同じ状態の中はシートの行の順
-  const rank = s => (STAT_ORDER[s] ?? 9);
-  S.staff.slice().sort((a, b) => rank(a.status) - rank(b.status) || a.row - b.row).forEach(p => {
+  S.staff.forEach(p => {
     const pend = S.pending.has(p.row);
     const b = el('button', { type: 'button', class: 'person ' + STAT_CLASS[p.status] + (pend ? ' pending' : '') });
     b.append(el('span', { class: 'name' }, p.name),
@@ -350,7 +273,6 @@ function openSheet(p) {
 
 async function run(p, act) {
   $('#sheet').close();
-  const pressedAt = nowHM();  // ボタンを押した時刻
   S.pending.add(p.row); render();
   try {
     const r = await api({ op: 'punch', store: S.store, row: p.row, name: p.name, act: act });
@@ -358,8 +280,6 @@ async function run(p, act) {
     if (!r.ok) { toast(r.error || '打刻に失敗しました', true); if (r.reload) load(true); return; }
     const i = S.staff.findIndex(x => x.row === p.row);
     if (i >= 0) S.staff[i] = r.staff;
-    if (act === 'in') rawSave(p.name, pressedAt);
-    if (act === 'cancelIn') rawSave(p.name, '');
     toast(r.message);
   } catch (e) {
     toast('通信に失敗しました。もう一度お試しください', true);
@@ -371,7 +291,7 @@ async function run(p, act) {
 
 /* ---------- スタッフ追加 ---------- */
 $('#addBtn').onclick = () => {
-  if (!S.store) { toast('店舗を選んでください', true); return; }
+  if (S.needPin || !S.store) { toast('先にPINを入力してください', true); return; }
   $('#addStore').textContent = storeLabel(S.store) + ' に追加します';
   $('#adminField').hidden = !S.adminPin;
   $('#addName').value = ''; $('#addAdminPin').value = ''; $('#addMsg').textContent = '';
@@ -399,64 +319,19 @@ $('#addForm').addEventListener('submit', async e => {
   }
 });
 
-/* ---------- ログアウト ---------- */
-$('#logoutBtn').onclick = () => {
-  if (!confirm('この端末のログインを解除しますか?')) return;
-  try { localStorage.removeItem('rv_pin'); } catch (_) {}
-  location.reload();
-};
-
-/* ---------- スタッフ削除 ---------- */
-$('#delBtn').onclick = () => {
-  if (!S.staff.length) { toast('削除できるスタッフがいません', true); return; }
-  $('#delStore').textContent = storeLabel(S.store) + ' のスタッフを削除します';
-  const sel = $('#delName'); sel.replaceChildren(el('option', { value: '' }, '選んでください'));
-  S.staff.forEach(p => sel.append(el('option', { value: String(p.row) }, p.name)));
-  $('#delAdminField').hidden = !S.adminPin;
-  $('#delAdminPin').value = ''; $('#delMsg').textContent = '';
-  $('#delDlg').showModal();
-  sel.focus();
-};
-$('#delCancel').onclick = () => $('#delDlg').close();
-$('#delForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const row = Number($('#delName').value);
-  const p = S.staff.find(x => x.row === row);
-  if (!p) { $('#delMsg').textContent = '削除する人を選んでください'; return; }
-  if (!confirm(p.name + ' さんを削除しますか?')) return;
-  const btn = $('#delSubmit');
-  btn.disabled = true; $('#delMsg').textContent = '';
-  try {
-    const r = await api({ op: 'deleteStaff', store: S.store, row: p.row, name: p.name, adminPin: $('#delAdminPin').value });
-    if (r.code === 'PIN') { $('#delDlg').close(); askPin(r.error); return; }
-    if (!r.ok) { $('#delMsg').textContent = r.error || '削除できませんでした'; if (r.reload) load(true); return; }
-    $('#delDlg').close();
-    toast(r.message || (p.name + ' さんを削除しました'));
-    load(true);  // 行番号がずれるので一覧を読み直す
-  } catch (err) {
-    $('#delMsg').textContent = '通信に失敗しました。もう一度お試しください';
-  } finally {
-    btn.disabled = false;
-  }
-});
-
-/* ---------- ログイン(パスワード) ---------- */
+/* ---------- PIN ---------- */
 function askPin(msg) {
-  document.body.classList.add('locked');
-  $('#loginWait').hidden = true;
-  $('#loginForm').hidden = false;
-  $('#loginMsg').textContent = msg ? 'パスワードが違います' : '';
-  $('#loginPw').value = '';
-  $('#loginGo').disabled = false;
-  $('#loginPw').focus();
+  $('#pinMsg').textContent = msg || '';
+  $('#pinInput').value = '';
+  if (!$('#pinDlg').open) $('#pinDlg').showModal();
+  $('#pinInput').focus();
 }
-$('#loginForm').addEventListener('submit', async e => {
+$('#pinForm').addEventListener('submit', e => {
   e.preventDefault();
-  S.pin = $('#loginPw').value.trim();
-  $('#loginGo').disabled = true;
+  S.pin = $('#pinInput').value.trim();
   try { localStorage.setItem('rv_pin', S.pin); } catch (_) {}
-  await load();
-  $('#loginGo').disabled = false;
+  $('#pinDlg').close();
+  load();
 });
 
 /* ---------- 通知 ---------- */
@@ -499,14 +374,6 @@ function demoRun(p) {
     list.push(nx);
     return { ok: true, message: name + ' さんを追加しました', staff: Object.assign({}, nx) };
   }
-  if (p.op === 'deleteStaff') {
-    const i = list.findIndex(q => q.row == p.row);
-    if (i < 0) return { ok: false, error: 'スタッフが見つかりません', reload: true };
-    const nm = list[i].name;
-    list.splice(i, 1);
-    list.forEach((q, k) => { q.row = k + 2; });  // 行番号を詰める(本番のシートと同じ動き)
-    return { ok: true, message: nm + ' さんを削除しました' };
-  }
   const x = list.find(q => q.row == p.row), t = hhmm();
   if (p.act === 'in')        { x.status = '出勤中'; x.inTime = t; x.outTime = ''; x.breaks = 0; }
   if (p.act === 'brkStart')  { x.status = '休憩中'; x.brkTime = t; }
@@ -524,12 +391,10 @@ try {
   S.pin = localStorage.getItem('rv_pin') || '';
   S.store = localStorage.getItem('rv_store') || '';
 } catch (_) {}
-rawCleanup();
+render();
 load();
-// ロック中(ログイン画面)は自動更新しない
-const refresh = () => { if (!document.hidden && !document.body.classList.contains('locked')) load(true); };
-setInterval(refresh, 60000);
-document.addEventListener('visibilitychange', refresh);
+setInterval(() => load(true), 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) load(true); });
 </script>
 </body>
 </html>

@@ -231,11 +231,43 @@ async function load(silent) {
   }
 }
 
+/* ---------- 実際に打刻した時刻(画面表示だけに使う。シートの値は変えない) ---------- */
+const RAW_PREFIX = 'rv_rawin_';
+function rawKey() {
+  const n = new Date();
+  return RAW_PREFIX + n.getFullYear() + '-' + (n.getMonth() + 1) + '-' + n.getDate();
+}
+function rawAll() {
+  try { return JSON.parse(localStorage.getItem(rawKey()) || '{}') || {}; } catch (_) { return {}; }
+}
+function rawSave(name, time) {
+  try {
+    const m = rawAll();
+    if (time) m[name] = time; else delete m[name];
+    localStorage.setItem(rawKey(), JSON.stringify(m));
+  } catch (_) {}
+}
+function rawCleanup() {  // 前日までの分を消す
+  try {
+    const today = rawKey();
+    Object.keys(localStorage).forEach(k => { if (k.startsWith(RAW_PREFIX) && k !== today) localStorage.removeItem(k); });
+  } catch (_) {}
+}
+function nowHM() {
+  const n = new Date();
+  return n.getHours() + ':' + String(n.getMinutes()).padStart(2, '0');
+}
+// 画面に出す出勤時刻: 実際に打刻した時刻があればそれ、なければシートの時刻(9:30 など)
+function shownIn(p) {
+  if (!p.inTime) return p.inTime;
+  return p.inTimeRaw || rawAll()[p.name] || p.inTime;
+}
+
 /* ---------- 画面 ---------- */
 function detail(p) {
-  if (p.status === '休憩中') return '休憩開始 ' + p.brkTime + '、出勤 ' + p.inTime;
-  if (p.status === '退勤済') return '出勤 ' + p.inTime + ' から 退勤 ' + p.outTime;
-  if (p.status === '出勤中') return '出勤 ' + p.inTime + (p.breaks ? '、休憩 ' + p.breaks + '回' : '');
+  if (p.status === '休憩中') return '休憩開始 ' + p.brkTime + '、出勤 ' + shownIn(p);
+  if (p.status === '退勤済') return '出勤 ' + shownIn(p) + ' から 退勤 ' + p.outTime;
+  if (p.status === '出勤中') return '出勤 ' + shownIn(p) + (p.breaks ? '、休憩 ' + p.breaks + '回' : '');
   return '未打刻';
 }
 
@@ -282,6 +314,7 @@ function openSheet(p) {
 
 async function run(p, act) {
   $('#sheet').close();
+  const pressedAt = nowHM();  // ボタンを押した時刻
   S.pending.add(p.row); render();
   try {
     const r = await api({ op: 'punch', row: p.row, name: p.name, act: act });
@@ -289,6 +322,8 @@ async function run(p, act) {
     if (!r.ok) { toast(r.error || '打刻に失敗しました', true); if (r.reload) load(true); return; }
     const i = S.staff.findIndex(x => x.row === p.row);
     if (i >= 0) S.staff[i] = r.staff;
+    if (act === 'in') rawSave(p.name, pressedAt);
+    if (act === 'cancelIn') rawSave(p.name, '');
     toast(r.message);
   } catch (e) {
     toast('通信に失敗しました。もう一度お試しください', true);
@@ -397,6 +432,7 @@ function toast(text, isErr) {
 
 /* ---------- 起動 ---------- */
 try { S.pin = localStorage.getItem('rv_pin') || ''; } catch (_) {}
+rawCleanup();
 load();
 // ロック中(ログイン画面)は自動更新しない
 const refresh = () => { if (!document.hidden && !document.body.classList.contains('locked')) load(true); };

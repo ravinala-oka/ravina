@@ -78,10 +78,10 @@ dialog::backdrop{background:rgba(20,22,26,.55)}
 .pin-form{display:grid;gap:12px}
 .pin-form input{font:inherit;font-size:1.4rem;letter-spacing:.3em;text-align:center;padding:10px;border:1px solid var(--line);border-radius:6px;background:#fff}
 .pin-form .act{background:var(--ink)}
-.add-row{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end}
+.add-row{margin-top:22px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
 .add-row .ghost{border-color:var(--gold-d);color:var(--gold-d);font-weight:500}
 .field{display:grid;gap:4px;font-size:.9rem;color:var(--sub)}
-.field input{font:inherit;font-size:1.15rem;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:#fff}
+.field input,.field select{font:inherit;font-size:1.15rem;color:var(--ink);padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:#fff}
 .msg{margin:0;color:var(--out);min-height:1.4em;font-size:.9rem}
 
 /* 通知 */
@@ -105,7 +105,10 @@ dialog::backdrop{background:rgba(20,22,26,.55)}
   <div class="demo" id="demo" hidden>デモ表示です。API_URL を設定すると、スプレッドシートにつながります。</div>
   <div class="tabs" id="tabs" role="group" aria-label="店舗"></div>
   <div class="list" id="list"></div>
-  <div class="add-row"><button class="ghost" id="addBtn" type="button">スタッフを追加</button></div>
+  <div class="add-row">
+    <button class="ghost" id="defBtn" type="button">最初に表示する店舗</button>
+    <button class="ghost" id="addBtn" type="button">スタッフを追加</button>
+  </div>
 </main>
 
 <dialog id="addDlg" aria-labelledby="addTitle">
@@ -121,6 +124,22 @@ dialog::backdrop{background:rgba(20,22,26,.55)}
     <p class="msg" id="addMsg"></p>
     <button class="act in" type="submit" id="addSubmit">追加する</button>
     <button class="ghost" type="button" id="addCancel">キャンセル</button>
+  </form>
+</dialog>
+
+<dialog id="defDlg" aria-labelledby="defTitle">
+  <form class="sheet pin-form" id="defForm">
+    <h2 id="defTitle">最初に表示する店舗</h2>
+    <p class="now">前回の店舗を覚えていない端末で、最初に出る店舗です。</p>
+    <label class="field">店舗
+      <select id="defStore"></select>
+    </label>
+    <label class="field" id="defAdminField" hidden>管理用PIN
+      <input id="defAdminPin" type="password" inputmode="numeric" autocomplete="off">
+    </label>
+    <p class="msg" id="defMsg"></p>
+    <button class="act in" type="submit" id="defSubmit">この店舗にする</button>
+    <button class="ghost" type="button" id="defCancel">キャンセル</button>
   </form>
 </dialog>
 
@@ -155,7 +174,7 @@ const storeLabel = n => STORE_NAMES[n] || n;
 
 const DEMO = !API_URL;
 const $ = s => document.querySelector(s);
-const S = { stores: [], store: '', staff: [], pin: '', pending: new Set(), loaded: false, needPin: false, loc: null };
+const S = { stores: [], store: '', defaultStore: '', staff: [], pin: '', pending: new Set(), loaded: false, needPin: false, loc: null };
 const STAT_CLASS = { '出勤中': 'in', '休憩中': 'brk', '退勤済': 'out', '無': 'none' };
 const ACT = {
   in:        { label: '出勤',         cls: 'in'  },
@@ -212,7 +231,7 @@ async function load(silent) {
     if (r.code === 'PIN') { S.needPin = true; S.loaded = true; render(); askPin(S.pin ? r.error : ''); return; }
     if (!r.ok) throw new Error(r.error || '読み込みに失敗しました');
     S.needPin = false; S.loaded = true;
-    S.stores = r.stores; S.store = r.store; S.staff = r.staff; S.adminPin = !!r.adminPin;
+    S.stores = r.stores; S.store = r.store; S.defaultStore = r.defaultStore || ''; S.staff = r.staff; S.adminPin = !!r.adminPin;
     render();
   } catch (e) {
     if (!silent) toast(e.message, true);
@@ -346,6 +365,37 @@ $('#addForm').addEventListener('submit', async e => {
   }
 });
 
+/* ---------- 最初に表示する店舗 ---------- */
+$('#defBtn').onclick = () => {
+  if (S.needPin || !S.stores.length) { toast('先にPINを入力してください', true); return; }
+  const sel = $('#defStore'); sel.replaceChildren();
+  S.stores.forEach(n => {
+    sel.append(el('option', { value: n }, storeLabel(n) + (n === S.defaultStore ? '(いまの設定)' : '')));
+  });
+  sel.value = S.defaultStore || S.stores[0];
+  $('#defAdminField').hidden = !S.adminPin;
+  $('#defAdminPin').value = ''; $('#defMsg').textContent = '';
+  $('#defDlg').showModal();
+};
+$('#defCancel').onclick = () => $('#defDlg').close();
+$('#defForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('#defSubmit');
+  btn.disabled = true; $('#defMsg').textContent = '';
+  try {
+    const r = await api({ op: 'setDefaultStore', defaultStore: $('#defStore').value, adminPin: $('#defAdminPin').value });
+    if (r.code === 'PIN') { $('#defDlg').close(); askPin(r.error); return; }
+    if (!r.ok) { $('#defMsg').textContent = r.error || '変更できませんでした'; return; }
+    S.defaultStore = r.defaultStore || $('#defStore').value;
+    $('#defDlg').close();
+    toast(r.message);
+  } catch (err) {
+    $('#defMsg').textContent = '通信に失敗しました。もう一度お試しください';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 /* ---------- PIN ---------- */
 function askPin(msg) {
   $('#pinMsg').textContent = msg || '';
@@ -391,7 +441,8 @@ function demoRun(p) {
   const stores = Object.keys(DEMO_DB);
   const store = DEMO_DB[p.store] ? p.store : stores[0];
   const list = DEMO_DB[store];
-  if (p.op === 'list') return { ok: true, stores, store, staff: list.map(x => Object.assign({}, x)) };
+  if (p.op === 'list') return { ok: true, stores, store, defaultStore: stores[0], staff: list.map(x => Object.assign({}, x)) };
+  if (p.op === 'setDefaultStore') return { ok: true, message: '最初に表示する店舗を「' + p.defaultStore + '」にしました', defaultStore: p.defaultStore };
   if (p.op === 'addStaff') {
     const name = String(p.name || '').replace(/\s+/g, ' ').trim();
     if (!name) return { ok: false, error: '名前を入力してください' };

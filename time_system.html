@@ -72,6 +72,7 @@ dialog::backdrop{background:rgba(20,22,26,.55)}
 .act.in{background:var(--in)} .act.brk{background:var(--brk)} .act.out{background:var(--out)}
 .act:active{filter:brightness(.9)}
 .sub-acts{display:flex;justify-content:space-between;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.loc-note{margin:12px 0 0;font-size:.8rem;color:var(--sub);text-align:center}
 .ghost{background:transparent;border:1px solid var(--line);border-radius:6px;padding:9px 14px;min-height:44px;color:var(--sub)}
 .ghost.warn{color:var(--out);border-color:#d8bcbc}
 .pin-form{display:grid;gap:12px}
@@ -129,6 +130,7 @@ dialog::backdrop{background:rgba(20,22,26,.55)}
     <p class="now" id="sheetInfo"></p>
     <div class="acts" id="acts"></div>
     <div class="sub-acts" id="subActs"></div>
+    <p class="loc-note">打刻時に現在地を記録します</p>
   </div>
 </dialog>
 
@@ -153,7 +155,7 @@ const storeLabel = n => STORE_NAMES[n] || n;
 
 const DEMO = !API_URL;
 const $ = s => document.querySelector(s);
-const S = { stores: [], store: '', staff: [], pin: '', pending: new Set(), loaded: false, needPin: false };
+const S = { stores: [], store: '', staff: [], pin: '', pending: new Set(), loaded: false, needPin: false, loc: null };
 const STAT_CLASS = { '出勤中': 'in', '休憩中': 'brk', '退勤済': 'out', '無': 'none' };
 const ACT = {
   in:        { label: '出勤',         cls: 'in'  },
@@ -169,6 +171,22 @@ function el(tag, attrs, text) {
   for (const k in (attrs || {})) e.setAttribute(k, attrs[k]);
   if (text != null) e.textContent = text;
   return e;
+}
+
+/* ---------- 位置情報(取得できなくても打刻は通す) ---------- */
+function getLocation() {
+  return new Promise(resolve => {
+    if (!navigator.geolocation) return resolve({ locErr: 'unsupported' });
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({
+        lat: pos.coords.latitude.toFixed(6),
+        lng: pos.coords.longitude.toFixed(6),
+        acc: Math.round(pos.coords.accuracy)
+      }),
+      err => resolve({ locErr: ['', 'denied', 'unavailable', 'timeout'][err.code] || 'error' }),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 15000 }
+    );
+  });
 }
 
 /* ---------- 時計(表示用。記録される時刻はサーバー側の時刻) ---------- */
@@ -250,6 +268,7 @@ function render() {
 }
 
 function openSheet(p) {
+  S.loc = getLocation();   // メニューを開いた時点で位置情報の取得を始めておく
   $('#sheetName').textContent = p.name;
   $('#sheetInfo').textContent = '現在は「' + p.status + '」です。' + detail(p);
   const acts = $('#acts'), sub = $('#subActs');
@@ -274,13 +293,21 @@ function openSheet(p) {
 async function run(p, act) {
   $('#sheet').close();
   S.pending.add(p.row); render();
+  let locErr = '';
   try {
-    const r = await api({ op: 'punch', store: S.store, row: p.row, name: p.name, act: act });
+    const params = { op: 'punch', store: S.store, row: p.row, name: p.name, act: act };
+    if (!act.startsWith('cancel')) {            // 取り消しには位置情報を付けない
+      const loc = await (S.loc || getLocation());
+      Object.assign(params, loc);
+      locErr = loc.locErr || '';
+    }
+    S.loc = null;
+    const r = await api(params);
     if (r.code === 'PIN') { askPin(r.error); return; }
     if (!r.ok) { toast(r.error || '打刻に失敗しました', true); if (r.reload) load(true); return; }
     const i = S.staff.findIndex(x => x.row === p.row);
     if (i >= 0) S.staff[i] = r.staff;
-    toast(r.message);
+    toast(r.message + (locErr ? '(位置情報なし)' : ''));
   } catch (e) {
     toast('通信に失敗しました。もう一度お試しください', true);
     load(true);
